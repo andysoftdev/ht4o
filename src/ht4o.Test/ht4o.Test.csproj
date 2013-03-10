@@ -91,6 +91,7 @@
     <Compile Include="Common\Rng.cs" />
     <Compile Include="Common\Equatable.cs" />
     <Compile Include="Common\Entities.cs" />
+    <Compile Include="TestNativeMethods.cs" />
     <Compile Include="TestReadCache.cs" />
     <Compile Include="TestPersistLogging.cs" />
     <Compile Include="TestTableAndColumnBindingInherit.cs" />
