@@ -12,7 +12,6 @@ TestResults/
 *.aps
 *.DotSettings
 *.ReSharper
-*.StyleCop
 *.shfbproj_*
 *.Cache
 *.nupkg
