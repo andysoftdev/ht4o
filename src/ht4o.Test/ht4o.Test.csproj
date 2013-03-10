@@ -1,0 +1,137 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{966986C3-4B6F-40B9-B2D7-26100A746507}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Hypertable.Persistence.Test</RootNamespace>
+    <AssemblyName>ht4o.Test</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\..\dist\Win32\$(Configuration)\tests</OutputPath>
+    <IntermediateOutputPath>..\..\build\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <Ht4n>..\..\..\ht4n\dist\Win32\Debug\ht4n.dll</Ht4n>
+    <NoWarn>1587</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>..\..\dist\Win32\$(Configuration)\tests</OutputPath>
+    <IntermediateOutputPath>..\..\build\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <Ht4n>..\..\..\ht4n\dist\Win32\Release\ht4n.dll</Ht4n>
+    <NoWarn>1587</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\..\dist\$(Platform)\$(Configuration)\tests</OutputPath>
+    <IntermediateOutputPath>..\..\build\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
+    <DefineConstants>TRACE;DEBUG;X64</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <Ht4n>..\..\..\ht4n\dist\x64\Debug\ht4n.dll</Ht4n>
+    <NoWarn>1587</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>..\..\dist\$(Platform)\$(Configuration)\tests</OutputPath>
+    <IntermediateOutputPath>..\..\build\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
+    <DefineConstants>TRACE;X64</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <Ht4n>..\..\..\ht4n\dist\x64\Release\ht4n.dll</Ht4n>
+    <NoWarn>1587</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ht4n, Culture=neutral, PublicKeyToken=09a4dd7a5db0efca, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(Ht4n)</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.XML" />
+  </ItemGroup>
+  <ItemGroup>
+    <CodeAnalysisDependentAssemblyPaths Condition=" '$(VS100COMNTOOLS)' != '' " Include="$(VS100COMNTOOLS)..\IDE\PrivateAssemblies">
+      <Visible>False</Visible>
+    </CodeAnalysisDependentAssemblyPaths>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Common\Rng.cs" />
+    <Compile Include="Common\Equatable.cs" />
+    <Compile Include="Common\Entities.cs" />
+    <Compile Include="TestReadCache.cs" />
+    <Compile Include="TestPersistLogging.cs" />
+    <Compile Include="TestTableAndColumnBindingInherit.cs" />
+    <Compile Include="TestEntityAttributeInherit.cs" />
+    <Compile Include="TestCollection.cs" />
+    <Compile Include="TestColumnBinding.cs" />
+    <Compile Include="TestCustomEncoderDecoder.cs" />
+    <Compile Include="TestCyclicReferences.cs" />
+    <Compile Include="TestEntityAttribute.cs" />
+    <Compile Include="TestIdAttribute.cs" />
+    <Compile Include="TestGuidProperty.cs" />
+    <Compile Include="TestIdField.cs" />
+    <Compile Include="TestIdProperty.cs" />
+    <Compile Include="TestKeyBinding.cs" />
+    <Compile Include="TestKeyProperty.cs" />
+    <Compile Include="TestQuery.cs" />
+    <Compile Include="TestRemove.cs" />
+    <Compile Include="TestPersistChildren.cs" />
+    <Compile Include="TestTableBinding.cs" />
+    <Compile Include="TestBase.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Serialization\TestSerialization.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Settings.StyleCop" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ht4o\ht4o.csproj">
+      <Project>{492EC4F9-6694-48FE-99BF-E773D0B664DD}</Project>
+      <Name>ht4o</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

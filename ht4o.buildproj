@@ -1,0 +1,388 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Make" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+
+	<!-- Master files to make -->
+	<PropertyGroup>
+		<Version>0.9.6.5</Version>
+		<Ht4nVersion Condition="'$(Ht4nVersion)' == ''">0.9.6.5</Ht4nVersion>
+		<FxVersion Condition="'$(FxVersion)' == ''">4.0</FxVersion>
+		<VcVersion Condition="'$(VcVersion)' == ''">10.0</VcVersion>
+
+		<Master_x86>dist\ht4o-$(Version)-x86-fx$(FxVersion)-vc$(VcVersion).zip</Master_x86>
+		<Master_x64>dist\ht4o-$(Version)-x64-fx$(FxVersion)-vc$(VcVersion).zip</Master_x64>
+
+		<Master_ApiDoc>dist\ht4o-$(Version)-api-doc.zip</Master_ApiDoc>
+	</PropertyGroup>
+
+	<!-- Check for MSBuildCommunityTasks -->
+	<PropertyGroup>
+		<MSBuildCommunityTasksTargets>$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets</MSBuildCommunityTasksTargets>
+		<HasMSBuildCommunityTasks>false</HasMSBuildCommunityTasks>
+		<HasMSBuildCommunityTasks Condition="Exists('$(MSBuildCommunityTasksTargets)')">true</HasMSBuildCommunityTasks>
+	</PropertyGroup>
+
+	<!-- Check for sandcastle -->
+	<PropertyGroup>
+		<Sandcastle>$(ProgramFiles)\EWSoftware\Sandcastle Help File Builder\SandcastleHelpFileBuilder.targets</Sandcastle>
+		<SandcastleX86>$(ProgramFiles(x86))\EWSoftware\Sandcastle Help File Builder\SandcastleHelpFileBuilder.targets</SandcastleX86>
+		<HasSandcastle>false</HasSandcastle>
+		<HasSandcastle Condition="Exists('$(Sandcastle)')">true</HasSandcastle>
+		<HasSandcastle Condition="Exists('$(SandcastleX86)')">true</HasSandcastle>
+	</PropertyGroup>
+
+	<!-- Get machine's architecture -->
+	<PropertyGroup>
+		<MachineProcessorArchitecture>$(registry:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment@PROCESSOR_ARCHITECTURE)</MachineProcessorArchitecture>
+		<Is32Bit>False</Is32Bit>
+		<Is32Bit
+			Condition="'$(MachineProcessorArchitecture)' == 'x86'">true</Is32Bit>
+		<Is64Bit>False</Is64Bit>
+		<Is64Bit
+			Condition="'$(MachineProcessorArchitecture)' == 'AMD64'">true</Is64Bit>
+	</PropertyGroup>
+
+	<!-- Check for mstest64 -->
+	<PropertyGroup>
+		<MSTest64>$(VSInstallDir)\Common7\IDE\mstest64.exe</MSTest64>
+		<HasMSTest64>false</HasMSTest64>
+		<HasMSTest64 Condition="Exists('$(MSTest64)')">true</HasMSTest64>
+	</PropertyGroup>
+
+	<!-- Make configuration Debug or Release -->
+	<PropertyGroup>
+		<Debug>false</Debug>
+		<Debug Condition="'$(Configuration)' == '' Or '$(Configuration)' == 'Debug'">true</Debug>
+		<Release>false</Release>
+		<Release Condition="'$(Configuration)' == '' Or '$(Configuration)' == 'Release'">true</Release>
+	</PropertyGroup>
+
+	<!-- Default provider uri -->
+	<PropertyGroup>
+		<ProviderUri Condition="'$(ProviderUri)' == ''">net.tcp://localhost</ProviderUri>
+	</PropertyGroup>
+
+	<!-- Configuration group -->
+	<ItemGroup>
+		<MakeConfiguration Include="." Condition="$(Debug) == true" >
+			<Configuration>Debug</Configuration>
+			<Platform>Win32</Platform>
+		</MakeConfiguration>
+		<MakeConfiguration Include="." Condition="$(Release) == true" >
+			<Configuration>Release</Configuration>
+			<Platform>Win32</Platform>
+		</MakeConfiguration>
+		<MakeConfiguration Include="." Condition="$(Is64Bit) == true And $(Debug) == true" >
+			<Configuration>Debug</Configuration>
+			<Platform>x64</Platform>
+		</MakeConfiguration>
+		<MakeConfiguration Include="." Condition="$(Is64Bit) == true And $(Release) == true" >
+			<Configuration>Release</Configuration>
+			<Platform>x64</Platform>
+		</MakeConfiguration>
+	</ItemGroup>
+
+	<!-- Start/stop servers scripts -->
+	<PropertyGroup>
+		<StartServers>
+			<![CDATA[
+			public static void ScriptMain() {
+				ProcessStartInfo psi = new ProcessStartInfo(@"..\ht4w\dist\Win32\release\hypertable.service.exe", @"--stop-all-services --kill-servers --start-servers");
+				psi.WindowStyle = ProcessWindowStyle.Hidden;
+				Process p = Process.Start(psi);
+				p.WaitForExit();
+			}
+			]]>
+		</StartServers>
+
+		<StopServers>
+			<![CDATA[
+			public static void ScriptMain() {
+				ProcessStartInfo psi = new ProcessStartInfo(@"..\ht4w\dist\Win32\release\hypertable.service.exe", @"--stop-all-services --kill-servers");
+				psi.WindowStyle = ProcessWindowStyle.Hidden;
+				Process p = Process.Start(psi);
+				p.WaitForExit();
+			}
+			]]>
+		</StopServers>
+	</PropertyGroup>
+	
+	<!-- Import MSBuildCommunityTasksTargets if available -->
+	<Import Project="$(MSBuildCommunityTasksTargets)"
+			Condition="$(HasMSBuildCommunityTasks) == true"/>
+
+	<!-- Build, tests, make documentation, make master -->
+	<Target Name="Make"
+		DependsOnTargets="CleanMaster;Build;ExecTests;MakeDoc;MakeMaster;MakeNuGetPackage">
+	</Target>
+
+	<!-- Build -->
+	<Target Name="Build">
+		<MSBuild
+			Projects="ht4o.sln"
+			Targets="Build"
+			Properties="Configuration=%(MakeConfiguration.Configuration);Platform=%(MakeConfiguration.Platform)"
+			ContinueOnError="false" />
+	</Target>
+
+	<!-- Make documentation-->
+	<Target Name="MakeDoc"
+			Condition="$(HasSandcastle) == true">
+		<Error
+			Text="ht4o.xml does not exist."
+			Condition="!Exists('dist\Win32\Debug\ht4o.xml')" />
+		<MSBuild
+			Projects="ht4o.shfbproj"
+			Targets="Build"
+			ContinueOnError="false" />
+
+		<Unzip
+			ZipFileName="src\ht4o-doc-api-styles.zip" 
+			TargetDirectory="doc\api\"/>
+	</Target>
+
+	<!-- Make master -->
+	<Target Name="MakeMaster"
+			Condition="$(HasMSBuildCommunityTasks) == true" >
+
+		<ItemGroup>
+			<MasterFiles_x86 Include="dist\Win32\Release\ht4o.dll;dist\Win32\Release\ht4o.xml;dist\Win32\Release\ht4o.pdb" />
+		</ItemGroup>
+
+		<ItemGroup>
+			<MasterFiles_x64 Include="dist\x64\Release\ht4o.dll;dist\x64\Release\ht4o.xml;dist\x64\Release\ht4o.pdb" />
+		</ItemGroup>
+		
+		<ItemGroup>
+			<MasterFiles_ApiDoc Include="doc\api\**\*.html;doc\api\**\*.htm;doc\api\**\*.css;doc\api\**\*.js;doc\api\**\*.gif;doc\api\**\*.png;doc\api\**\*.jpg;doc\api\**\*.bmp;doc\api\**\*.ico" />
+		</ItemGroup>
+
+		<Zip
+			Files="@(MasterFiles_x86)"
+			ZipFileName="$(Master_x86)"
+			Flatten="true" />
+
+		<Zip
+			Files="@(MasterFiles_x64)"
+			ZipFileName="$(Master_x64)"
+			Flatten="true"
+			Condition="$(Is64Bit) == true" />
+
+		<Zip
+			Files="@(MasterFiles_ApiDoc)"
+			ZipFileName="$(Master_ApiDoc)"
+			WorkingDirectory="doc\api" />
+	</Target>
+
+	<!-- Make nuspec-->
+	<Target Name="MakeNuSpec">
+		<Exec
+			Condition="'%(MakeConfiguration.Platform)' == 'Win32'"
+			Command="copy .\nuget\ht4o.nuspec .\nuget\ht4o.x86.nuspec > nul" />
+
+		<XmlPoke
+			Condition="'%(MakeConfiguration.Platform)' == 'Win32'"
+			XmlInputPath="nuget/ht4o.x86.nuspec"
+			Query="/package/metadata/id"
+			Value="ht4o.x86" />
+
+		<XmlPoke
+			Condition="'%(MakeConfiguration.Platform)' == 'Win32'"
+			XmlInputPath="nuget/ht4o.x86.nuspec"
+			Query="/package/metadata/version"
+			Value="$(Version)" />
+
+		<XmlPoke
+			Condition="'%(MakeConfiguration.Platform)' == 'Win32'"
+			XmlInputPath="nuget/ht4o.x86.nuspec"
+			Query="/package/metadata/title"
+			Value="ht4o (x86)" />
+
+		<XmlPoke
+			Condition="'%(MakeConfiguration.Platform)' == 'Win32'"
+			XmlInputPath="nuget/ht4o.x86.nuspec"
+			Query="/package/metadata/description"
+			Value="Hypertable for Objects (x86)" />
+
+		<XmlPoke
+				Condition="'%(MakeConfiguration.Platform)' == 'Win32'"
+				XmlInputPath="nuget/ht4o.x86.nuspec"
+				Query="/package/metadata/dependencies/dependency/@id"
+				Value="ht4n.x86" />
+
+		<XmlPoke
+				Condition="'%(MakeConfiguration.Platform)' == 'Win32'"
+				XmlInputPath="nuget/ht4o.x86.nuspec"
+				Query="/package/metadata/dependencies/dependency/@version"
+				Value="$(Ht4nVersion)" />
+
+		<Exec
+			Condition="'%(MakeConfiguration.Platform)' == 'x64'"
+			Command="copy .\nuget\ht4o.nuspec .\nuget\ht4o.x64.nuspec > nul" />
+
+		<XmlPoke
+			Condition="'%(MakeConfiguration.Platform)' == 'x64'"
+			XmlInputPath="nuget/ht4o.x64.nuspec"
+			Query="/package/metadata/id"
+			Value="ht4o.x64" />
+
+		<XmlPoke
+			Condition="'%(MakeConfiguration.Platform)' == 'x64'"
+			XmlInputPath="nuget/ht4o.x64.nuspec"
+			Query="/package/metadata/version"
+			Value="$(Version)" />
+
+		<XmlPoke
+			Condition="'%(MakeConfiguration.Platform)' == 'x64'"
+			XmlInputPath="nuget/ht4o.x64.nuspec"
+			Query="/package/metadata/title"
+			Value="ht4o (x64)" />
+
+		<XmlPoke
+			Condition="'%(MakeConfiguration.Platform)' == 'x64'"
+			XmlInputPath="nuget/ht4o.x64.nuspec"
+			Query="/package/metadata/description"
+			Value="Hypertable for Objects (x64)" />
+
+		<XmlPoke
+				Condition="'%(MakeConfiguration.Platform)' == 'x64'"
+				XmlInputPath="nuget/ht4o.x64.nuspec"
+				Query="/package/metadata/dependencies/dependency/@id"
+				Value="ht4n.x64" />
+
+		<XmlPoke
+				Condition="'%(MakeConfiguration.Platform)' == 'x64'"
+				XmlInputPath="nuget/ht4o.x64.nuspec"
+				Query="/package/metadata/dependencies/dependency/@version"
+				Value="$(Ht4nVersion)" />
+
+	</Target>
+
+	<!-- Make nuget package-->
+	<Target Name="MakeNuGetPackage"
+					DependsOnTargets="MakeNuSpec">
+		<Exec
+			Command="nuget/ht4o.nuget.pack.cmd %(MakeConfiguration.Platform)" />
+	</Target>
+
+	<!-- Publish nuget package-->
+	<Target Name="PublishNuGetPackage">
+		<Exec
+			Command="nuget/ht4o.nuget.push.cmd %(MakeConfiguration.Platform) $(Version)" />
+	</Target>
+
+	<!-- Execute tests -->
+	<Target Name="ExecTests"
+			DependsOnTargets="StartServers"
+			Condition="$(HasMSBuildCommunityTasks) == true" >
+
+		<CallTarget
+			Targets="InvokeTests" />
+
+		<CallTarget
+			Targets="StopServers" />
+
+		<OnError ExecuteTargets="StopServers" />
+	</Target>
+
+	<!-- Ececute tests w'out start/stop servers -->
+	<Target Name="InvokeTests"
+			Condition="$(HasMSBuildCommunityTasks) == true" >
+
+		<!-- Hyper tests -->
+		<XmlPoke
+			XmlInputPath="dist\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll.config"
+			Query="/configuration/appSettings/add[@key='ConnectionString']/@value"
+			Value="--Provider=Hyper --Uri=$(ProviderUri)" />
+
+		<Exec
+			Condition="'%(MakeConfiguration.Platform)' == 'Win32'"
+			Command="mstest /testsettings:src\ht4o.Test\x86.testsettings /testcontainer:dist\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll" />
+
+		<Exec
+			Condition="'%(MakeConfiguration.Platform)' == 'x64' AND $(HasMSTest64) == true"
+			Command="mstest64 /testsettings:src\ht4o.Test\x64.testsettings /testcontainer:dist\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll" />
+
+		<!-- Thrift tests -->
+		<XmlPoke
+			XmlInputPath="dist\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll.config"
+			Query="/configuration/appSettings/add[@key='ConnectionString']/@value"
+			Value="--Provider=Thrift --Uri=$(ProviderUri)" />
+
+		<Exec
+			Condition="'%(MakeConfiguration.Platform)' == 'Win32'"
+			Command="mstest /testsettings:src\ht4o.Test\x86.testsettings /testcontainer:dist\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll" />
+
+		<Exec
+			Condition="'%(MakeConfiguration.Platform)' == 'x64' AND $(HasMSTest64) == true"
+			Command="mstest64 /testsettings:src\ht4o.Test\x64.testsettings /testcontainer:dist\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll" />
+
+		<!-- SQLite tests -->
+		<XmlPoke
+			XmlInputPath="dist\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll.config"
+			Query="/configuration/appSettings/add[@key='ConnectionString']/@value"
+			Value="--Provider=SQLite --Uri=file://test.db" />
+
+		<Exec
+			Condition="'%(MakeConfiguration.Platform)' == 'Win32'"
+			Command="mstest /testsettings:src\ht4o.Test\x86.testsettings /testcontainer:dist\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll" />
+
+		<Exec
+			Condition="'%(MakeConfiguration.Platform)' == 'x64' AND $(HasMSTest64) == true"
+			Command="mstest64 /testsettings:src\ht4o.Test\x64.testsettings /testcontainer:dist\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll" />
+
+		<Exec
+			Command="if exist TestResults rd /S /Q TestResults" />
+
+	</Target>
+
+	<!-- Cleans build, doc and deletes the master files -->
+	<Target Name="Clean"
+			DependsOnTargets="CleanMaster">
+		<MSBuild
+			Projects="ht4o.sln"
+			Targets="Clean"
+			Properties="Configuration=%(MakeConfiguration.Configuration);Platform=%(MakeConfiguration.Platform)"
+			ContinueOnError="false" />
+
+		<Exec
+			Command="if exist doc\api rd /S /Q doc\api" />
+
+		<Exec
+			Command="if exist TestResults rd /S /Q TestResults" />
+
+		<Exec
+			Command="if exist nuget\lib rd /S /Q nuget\lib" />
+
+		<Exec
+			Command="if exist nuget\*.x??.nuspec del *.x??.nuspec" />
+	</Target>
+
+	<!-- Deletes the master files -->
+	<Target Name="CleanMaster">
+		<Delete
+			Files="$(Master_x86)" />
+		<Delete
+			Files="$(Master_x64)" />
+		<Delete
+			Files="$(Master_ApiDoc)" />
+	</Target>
+
+	<!-- Start servers -->
+	<Target Name="StartServers"
+			Condition="$(HasMSBuildCommunityTasks) == true" >
+		<Script
+			Language="C#"
+			Code="$(StartServers)"
+			Imports="System.Diagnostics" />
+	</Target>
+
+	<!-- Stop servers -->
+	<Target Name="StopServers"
+			Condition="$(HasMSBuildCommunityTasks) == true" >
+		<Script
+			Language="C#"
+			Code="$(StopServers)"
+			Imports="System.Diagnostics" />
+	</Target>
+
+</Project>

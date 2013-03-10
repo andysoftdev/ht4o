@@ -1,1 +1,19 @@
 
+/build
+/dist
+/doc/api
+/ipch
+obj/
+TestResults/
+*.user
+*.suo
+*.sdf
+*.opensdf
+*.aps
+*.DotSettings
+*.ReSharper
+*.StyleCop
+*.shfbproj_*
+*.Cache
+*.nupkg
+*.x??.nuget

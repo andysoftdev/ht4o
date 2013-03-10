@@ -1,0 +1,189 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{492EC4F9-6694-48FE-99BF-E773D0B664DD}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Hypertable.Persistence</RootNamespace>
+    <AssemblyName>ht4o</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\..\dist\Win32\$(Configuration)</OutputPath>
+    <IntermediateOutputPath>..\..\build\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>..\..\ht4o.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <DocumentationFile>..\..\dist\Win32\Debug\ht4o.xml</DocumentationFile>
+    <Ht4n>..\..\..\ht4n\dist\Win32\Debug\ht4n.dll</Ht4n>
+    <NoWarn>1587</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>..\..\dist\Win32\$(Configuration)</OutputPath>
+    <IntermediateOutputPath>..\..\build\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <CodeAnalysisRuleSet>ht4o.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <DocumentationFile>..\..\dist\Win32\Release\ht4o.xml</DocumentationFile>
+    <Ht4n>..\..\..\ht4n\dist\Win32\Release\ht4n.dll</Ht4n>
+    <NoWarn>1587</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\..\dist\$(Platform)\$(Configuration)</OutputPath>
+    <IntermediateOutputPath>..\..\build\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
+    <DefineConstants>TRACE;DEBUG;X64</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>ht4o.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <DocumentationFile>..\..\dist\x64\Debug\ht4o.xml</DocumentationFile>
+    <Ht4n>..\..\..\ht4n\dist\x64\Debug\ht4n.dll</Ht4n>
+    <NoWarn>1587</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>..\..\dist\$(Platform)\$(Configuration)</OutputPath>
+    <IntermediateOutputPath>..\..\build\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
+    <DefineConstants>TRACE;X64</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisRuleSet>ht4o.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <DocumentationFile>..\..\dist\x64\Release\ht4o.xml</DocumentationFile>
+    <Ht4n>..\..\..\ht4n\dist\x64\Release\ht4n.dll</Ht4n>
+    <NoWarn>1587</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ht4n, Culture=neutral, PublicKeyToken=09a4dd7a5db0efca, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(Ht4n)</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Attributes\IgnoreAttribute.cs" />
+    <Compile Include="Attributes\TransientAttribute.cs" />
+    <Compile Include="Attributes\IdAttribute.cs" />
+    <Compile Include="Attributes\EntityAttribute.cs" />
+    <Compile Include="Bindings\PartialKeyBinding.cs" />
+    <Compile Include="Bindings\KeyBinding.cs" />
+    <Compile Include="Bindings\DefaultColumnBinding.cs" />
+    <Compile Include="Bindings\ColumnBinding.cs" />
+    <Compile Include="Bindings\StringPropertyKeyBinding.cs" />
+    <Compile Include="Bindings\GuidPropertyKeyBinding.cs" />
+    <Compile Include="Bindings\InspectedPropertyKeyBinding.cs" />
+    <Compile Include="Bindings\DefaultTableBinding.cs" />
+    <Compile Include="Bindings\KeyPropertyKeyBinding.cs" />
+    <Compile Include="Collections\ChunkedCollection.cs" />
+    <Compile Include="Collections\ConcurrentSet.cs" />
+    <Compile Include="Collections\ConcurrentTypeDictionary.cs" />
+    <Compile Include="Collections\IdentityComparer.cs" />
+    <Compile Include="Collections\IdentitySet.cs" />
+    <Compile Include="Collections\Map.cs" />
+    <Compile Include="BindingContext.cs" />
+    <Compile Include="BehaviorExtensions.cs" />
+    <Compile Include="NullableExtensions.cs" />
+    <Compile Include="Pair.cs" />
+    <Compile Include="PersistenceConfiguration.cs" />
+    <Compile Include="Behaviors.cs" />
+    <Compile Include="ColumnBindingComparer.cs" />
+    <Compile Include="Reflection\InspectedSerializable.cs" />
+    <Compile Include="Scanner\TryGetFetchedEntity.cs" />
+    <Compile Include="Scanner\TableScan\TableScan.cs" />
+    <Compile Include="Scanner\TableScan\TableScanAndFilter.cs" />
+    <Compile Include="Scanner\TableScan\ITableScan.cs" />
+    <Compile Include="Scanner\EntityFetched.cs" />
+    <Compile Include="Serialization\CollectionFlags.cs" />
+    <Compile Include="Serialization\Delegates\SerializingEntity.cs" />
+    <Compile Include="Serialization\Delegates\DeserializingEntity.cs" />
+    <Compile Include="Serialization\Delegates\Serialize.cs" />
+    <Compile Include="Serialization\Delegates\Encode.cs" />
+    <Compile Include="Serialization\Delegates\Deserialize.cs" />
+    <Compile Include="Serialization\DictionaryFlags.cs" />
+    <Compile Include="TableBindingComparer.cs" />
+    <Compile Include="FactoryContext.cs" />
+    <Compile Include="EntityBindingContext.cs" />
+    <Compile Include="Logging.cs" />
+    <Compile Include="IColumnBinding.cs" />
+    <Compile Include="Reflection\TypeFinder.cs" />
+    <Compile Include="Reflection\ReflectionExtensions.cs" />
+    <Compile Include="Scanner\EntityQueryScanTarget.cs" />
+    <Compile Include="Scanner\EntityScanResult.cs" />
+    <Compile Include="Scanner\EntityIndexerScanTarget.cs" />
+    <Compile Include="Scanner\EntityCollectionScanTarget.cs" />
+    <Compile Include="Scanner\EntityArrayScanTarget.cs" />
+    <Compile Include="Scanner\EntitySpec.cs" />
+    <Compile Include="Scanner\FetchedCell.cs" />
+    <Compile Include="Scanner\EntityScanner.cs" />
+    <Compile Include="Scanner\EntityScanTarget.cs" />
+    <Compile Include="ITableBinding.cs" />
+    <Compile Include="IKeyBinding.cs" />
+    <Compile Include="EntityManagerFactory.cs" />
+    <Compile Include="EntityReader.cs" />
+    <Compile Include="EntityWriter.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="EntityManager.cs" />
+    <Compile Include="EntityReference.cs" />
+    <Compile Include="EntityContext.cs" />
+    <Compile Include="PersistenceException.cs" />
+    <Compile Include="Serialization\TypeSchemaProperty.cs" />
+    <Compile Include="Serialization\DecoderInfo.cs" />
+    <Compile Include="Serialization\EncoderInfo.cs" />
+    <Compile Include="Serialization\TypeSchema.cs" />
+    <Compile Include="Serialization\Decoder.cs" />
+    <Compile Include="Serialization\Encoder.cs" />
+    <Compile Include="Serialization\EntityDeserializer.cs" />
+    <Compile Include="Serialization\EntitySerializer.cs" />
+    <Compile Include="Serialization\SerializationBase.cs" />
+    <Compile Include="Serialization\SerializationException.cs" />
+    <Compile Include="Reflection\TypeLoader.cs" />
+    <Compile Include="Reflection\DelegateFactory.cs" />
+    <Compile Include="Reflection\InspectedEnumerable.cs" />
+    <Compile Include="Serialization\Deserializer.cs" />
+    <Compile Include="Reflection\InspectedProperty.cs" />
+    <Compile Include="Reflection\Inspector.cs" />
+    <Compile Include="Collections\IdentityDictionary.cs" />
+    <Compile Include="Serialization\Serializer.cs" />
+    <Compile Include="Serialization\Tags.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Settings.StyleCop" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
