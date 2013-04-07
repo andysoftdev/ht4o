@@ -10,6 +10,7 @@
 
 		<Master_x86>dist\ht4o-$(Version)-x86-fx$(FxVersion)-vc$(VcVersion).zip</Master_x86>
 		<Master_x64>dist\ht4o-$(Version)-x64-fx$(FxVersion)-vc$(VcVersion).zip</Master_x64>
+		<Master_AnyCPU>dist\ht4o.Serialization-$(Version)-fx$(FxVersion)-vc$(VcVersion).zip</Master_AnyCPU>
 
 		<Master_ApiDoc>dist\ht4o-$(Version)-api-doc.zip</Master_ApiDoc>
 	</PropertyGroup>
@@ -151,7 +152,11 @@
 		<ItemGroup>
 			<MasterFiles_x64 Include="dist\x64\Release\ht4o.dll;dist\x64\Release\ht4o.xml;dist\x64\Release\ht4o.pdb" />
 		</ItemGroup>
-		
+
+		<ItemGroup>
+			<MasterFiles_AnyCPU Include="dist\AnyCPU\Release\ht4o.Serialization.dll;dist\AnyCPU\Release\ht4o.Serialization.xml;dist\AnyCPU\Release\ht4o.Serialization.pdb" />
+		</ItemGroup>
+
 		<ItemGroup>
 			<MasterFiles_ApiDoc Include="doc\api\**\*.html;doc\api\**\*.htm;doc\api\**\*.css;doc\api\**\*.js;doc\api\**\*.gif;doc\api\**\*.png;doc\api\**\*.jpg;doc\api\**\*.bmp;doc\api\**\*.ico" />
 		</ItemGroup>
@@ -168,6 +173,11 @@
 			Condition="$(Is64Bit) == true" />
 
 		<Zip
+			Files="@(MasterFiles_AnyCPU)"
+			ZipFileName="$(Master_AnyCPU)"
+			Flatten="true" />
+
+		<Zip
 			Files="@(MasterFiles_ApiDoc)"
 			ZipFileName="$(Master_ApiDoc)"
 			WorkingDirectory="doc\api" />
@@ -177,7 +187,7 @@
 	<Target Name="MakeNuSpec">
 		<Exec
 			Condition="'%(MakeConfiguration.Platform)' == 'Win32'"
-			Command="copy .\nuget\ht4o.nuspec .\nuget\ht4o.x86.nuspec > nul" />
+			Command="copy .\nuget\ht4o.nuspec.template .\nuget\ht4o.x86.nuspec > nul" />
 
 		<XmlPoke
 			Condition="'%(MakeConfiguration.Platform)' == 'Win32'"
@@ -217,7 +227,7 @@
 
 		<Exec
 			Condition="'%(MakeConfiguration.Platform)' == 'x64'"
-			Command="copy .\nuget\ht4o.nuspec .\nuget\ht4o.x64.nuspec > nul" />
+			Command="copy .\nuget\ht4o.nuspec.template .\nuget\ht4o.x64.nuspec > nul" />
 
 		<XmlPoke
 			Condition="'%(MakeConfiguration.Platform)' == 'x64'"
@@ -255,19 +265,31 @@
 				Query="/package/metadata/dependencies/dependency/@version"
 				Value="$(Ht4nVersion)" />
 
+		<Exec
+			Command="copy .\nuget\ht4o.Serialization.nuspec.template .\nuget\ht4o.Serialization.nuspec > nul" />
+
+		<XmlPoke
+			XmlInputPath="nuget/ht4o.Serialization.nuspec"
+			Query="/package/metadata/version"
+			Value="$(Version)" />
+
 	</Target>
 
 	<!-- Make nuget package-->
 	<Target Name="MakeNuGetPackage"
-					DependsOnTargets="MakeNuSpec">
+			DependsOnTargets="MakeNuSpec">
 		<Exec
 			Command="nuget/ht4o.nuget.pack.cmd %(MakeConfiguration.Platform)" />
+		<Exec
+			Command="nuget/ht4o.Serialization.nuget.pack.cmd" />
 	</Target>
 
 	<!-- Publish nuget package-->
 	<Target Name="PublishNuGetPackage">
 		<Exec
 			Command="nuget/ht4o.nuget.push.cmd %(MakeConfiguration.Platform) $(Version)" />
+		<Exec
+			Command="nuget/ht4o.Serialization.nuget.push.cmd $(Version)" />
 	</Target>
 
 	<!-- Execute tests -->

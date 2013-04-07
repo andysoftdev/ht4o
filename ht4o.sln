@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ht4o", "src\ht4o\ht4o.csproj", "{492EC4F9-6694-48FE-99BF-E773D0B664DD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ht4o.Serialization", "src\ht4o.Serialization\ht4o.Serialization.csproj", "{20B09F8E-7106-49D4-A125-54B05719B3A0}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{83287D77-7B2E-4330-B0A3-658C1216099F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ht4o.Test", "src\ht4o.Test\ht4o.Test.csproj", "{966986C3-4B6F-40B9-B2D7-26100A746507}"
@@ -23,6 +25,14 @@ Global
 		{492EC4F9-6694-48FE-99BF-E773D0B664DD}.Release|Win32.Build.0 = Release|x86
 		{492EC4F9-6694-48FE-99BF-E773D0B664DD}.Release|x64.ActiveCfg = Release|x64
 		{492EC4F9-6694-48FE-99BF-E773D0B664DD}.Release|x64.Build.0 = Release|x64
+		{20B09F8E-7106-49D4-A125-54B05719B3A0}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{20B09F8E-7106-49D4-A125-54B05719B3A0}.Debug|Win32.Build.0 = Debug|Any CPU
+		{20B09F8E-7106-49D4-A125-54B05719B3A0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{20B09F8E-7106-49D4-A125-54B05719B3A0}.Debug|x64.Build.0 = Debug|Any CPU
+		{20B09F8E-7106-49D4-A125-54B05719B3A0}.Release|Win32.ActiveCfg = Release|Any CPU
+		{20B09F8E-7106-49D4-A125-54B05719B3A0}.Release|Win32.Build.0 = Release|Any CPU
+		{20B09F8E-7106-49D4-A125-54B05719B3A0}.Release|x64.ActiveCfg = Release|Any CPU
+		{20B09F8E-7106-49D4-A125-54B05719B3A0}.Release|x64.Build.0 = Release|Any CPU
 		{966986C3-4B6F-40B9-B2D7-26100A746507}.Debug|Win32.ActiveCfg = Debug|x86
 		{966986C3-4B6F-40B9-B2D7-26100A746507}.Debug|Win32.Build.0 = Debug|x86
 		{966986C3-4B6F-40B9-B2D7-26100A746507}.Debug|x64.ActiveCfg = Debug|x64

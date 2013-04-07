@@ -93,7 +93,13 @@ namespace Hypertable.Persistence.Reflection
             }
 
             this.Member = propertyInfo;
+
+#if!HT4O_SERIALIZATION
+
             this.IdAttribute = propertyInfo.GetAttribute<IdAttribute>();
+
+#endif
+
             this.IsTransient = propertyInfo.HasAttribute<TransientAttribute>() || propertyInfo.HasAttribute<IgnoreDataMemberAttribute>();
             this.Ignore = propertyInfo.HasAttribute<IgnoreAttribute>();
         }
@@ -153,7 +159,12 @@ namespace Hypertable.Persistence.Reflection
             }
 
             this.Member = fieldInfo;
+
+#if!HT4O_SERIALIZATION
+
             this.IdAttribute = fieldInfo.GetAttribute<IdAttribute>();
+
+#endif
             this.IsTransient = fieldInfo.HasAttribute<TransientAttribute>() || fieldInfo.HasAttribute<NonSerializedAttribute>()
                                || fieldInfo.HasAttribute<IgnoreDataMemberAttribute>();
 
@@ -186,6 +197,8 @@ namespace Hypertable.Persistence.Reflection
             }
         }
 
+#if!HT4O_SERIALIZATION
+
         /// <summary>
         /// Gets a value indicating whether the inspected property is of type <see cref="Hypertable.Key"/>.
         /// </summary>
@@ -199,6 +212,8 @@ namespace Hypertable.Persistence.Reflection
                 return this.PropertyType == typeof(Key);
             }
         }
+
+#endif
 
         /// <summary>
         /// Gets a value indicating whether the inspected property has a setter.
@@ -214,6 +229,8 @@ namespace Hypertable.Persistence.Reflection
             }
         }
 
+#if!HT4O_SERIALIZATION
+
         /// <summary>
         /// Gets the identifier attribute.
         /// </summary>
@@ -221,6 +238,8 @@ namespace Hypertable.Persistence.Reflection
         /// The identifier attribute or null.
         /// </value>
         internal IdAttribute IdAttribute { get; private set; }
+
+#endif
 
         /// <summary>
         /// Gets or sets a value indicating whether to ignore this property on serialization.

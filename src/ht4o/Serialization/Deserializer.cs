@@ -26,13 +26,16 @@ namespace Hypertable.Persistence.Serialization
     using System.Globalization;
     using System.IO;
     using System.Linq;
-    using System.Reflection;
     using System.Runtime.Serialization;
 
-    using Hypertable.Persistence.Attributes;
     using Hypertable.Persistence.Collections;
     using Hypertable.Persistence.Reflection;
+
+#if !HT4O_SERIALIZATION
+
     using Hypertable.Persistence.Scanner;
+
+#endif
 
     /// <summary>
     /// The deserializer.
@@ -216,11 +219,16 @@ namespace Hypertable.Persistence.Serialization
             }
             catch (InvalidCastException e)
             {
+
+#if!HT4O_SERIALIZATION
+
                 if (value is EntitySpec)
                 {
                     throw new SerializationException(
                         string.Format(CultureInfo.InvariantCulture, @"Unable to resolve entity reference for {0} , consider deferred reading", typeof(T)), e);
                 }
+
+#endif
 
                 throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid cast {0} to {1}", value.GetType(), typeof(T)), e);
             }

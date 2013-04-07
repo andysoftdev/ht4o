@@ -1,0 +1,21 @@
+﻿<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>ht4o.Serialization</id>
+    <version />
+    <title>ht4o Serialization</title>
+    <authors>Andy Thalmann</authors>
+    <owners>www.softdev.ch</owners>
+    <licenseUrl>http://ht4o.softdev.ch/index.php/license</licenseUrl>
+    <projectUrl>http://ht4o.softdev.ch</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Hypertable for Objects Serialization</description>
+    <iconUrl>http://ht4o.softdev.ch/favicon.ico</iconUrl>
+    <releaseNotes />
+    <copyright>Copyright © 2010-2013</copyright>
+    <tags>ht4o serialization</tags>
+  </metadata>
+  <files>
+    <file src="lib\**\*.*" target="lib" />
+  </files>
+</package>

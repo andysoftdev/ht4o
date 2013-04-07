@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{20B09F8E-7106-49D4-A125-54B05719B3A0}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Hypertable.Persistence</RootNamespace>
+    <AssemblyName>ht4o.Serialization</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\..\dist\AnyCPU\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;;CODE_ANALYSIS;HT4O_SERIALIZATION</DefineConstants>
+    <NoWarn>1587</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <CodeAnalysisLogFile>..\..\dist\Win32\Debug\ht4o.Serialization.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>..\..\ht4o.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <DocumentationFile>..\..\dist\AnyCPU\Debug\ht4o.Serialization.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <OutputPath>..\..\dist\AnyCPU\Release\</OutputPath>
+    <DefineConstants>TRACE;HT4O_SERIALIZATION</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoWarn>1587</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisLogFile>..\..\dist\Win32\Release\ht4o.Serialization.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>ht4o.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <DocumentationFile>..\..\dist\AnyCPU\Release\ht4o.Serialization.xml</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\ht4o\Attributes\IgnoreAttribute.cs" />
+    <Compile Include="..\ht4o\Attributes\TransientAttribute.cs" />
+    <Compile Include="..\ht4o\Collections\ChunkedCollection.cs" />
+    <Compile Include="..\ht4o\Collections\ConcurrentTypeDictionary.cs" />
+    <Compile Include="..\ht4o\Collections\IdentityComparer.cs" />
+    <Compile Include="..\ht4o\Collections\IdentityDictionary.cs" />
+    <Compile Include="..\ht4o\Collections\IdentitySet.cs" />
+    <Compile Include="..\ht4o\Logging.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="..\ht4o\Reflection\DelegateFactory.cs" />
+    <Compile Include="..\ht4o\Reflection\InspectedEnumerable.cs" />
+    <Compile Include="..\ht4o\Reflection\InspectedProperty.cs" />
+    <Compile Include="..\ht4o\Reflection\InspectedSerializable.cs" />
+    <Compile Include="..\ht4o\Reflection\Inspector.cs" />
+    <Compile Include="..\ht4o\Reflection\ReflectionExtensions.cs" />
+    <Compile Include="..\ht4o\Reflection\TypeLoader.cs" />
+    <Compile Include="..\ht4o\Serialization\CollectionFlags.cs" />
+    <Compile Include="..\ht4o\Serialization\Decoder.cs" />
+    <Compile Include="..\ht4o\Serialization\DecoderInfo.cs" />
+    <Compile Include="..\ht4o\Serialization\Delegates\Deserialize.cs" />
+    <Compile Include="..\ht4o\Serialization\Delegates\Encode.cs" />
+    <Compile Include="..\ht4o\Serialization\Delegates\Serialize.cs" />
+    <Compile Include="..\ht4o\Serialization\Deserializer.cs" />
+    <Compile Include="..\ht4o\Serialization\DictionaryFlags.cs" />
+    <Compile Include="..\ht4o\Serialization\Encoder.cs" />
+    <Compile Include="..\ht4o\Serialization\EncoderInfo.cs" />
+    <Compile Include="..\ht4o\Serialization\SerializationBase.cs" />
+    <Compile Include="..\ht4o\Serialization\SerializationException.cs" />
+    <Compile Include="..\ht4o\Serialization\Serializer.cs" />
+    <Compile Include="..\ht4o\Serialization\Tags.cs" />
+    <Compile Include="..\ht4o\Serialization\TypeSchema.cs" />
+    <Compile Include="..\ht4o\Serialization\TypeSchemaProperty.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
