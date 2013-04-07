@@ -2320,6 +2320,16 @@ namespace Hypertable.Persistence.Test.Serialization
                 Assert.IsNotNull(avr);
                 Assert.IsTrue(Equatable.AreEqual((object)av, avr));
             }
+
+            {
+                var av = new byte[3] { 1, 2, 3 };
+                var b = Serializer.ToByteArray(av);
+                Assert.IsNotNull(b);
+                var avr = Deserializer.FromByteArray<object>(b);
+                Assert.IsNotNull(avr);
+                Assert.IsInstanceOfType(avr, typeof(byte[]));
+                Assert.IsTrue(Equatable.AreEqual((object)av, avr));
+            }
         }
 
         /// <summary>

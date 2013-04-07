@@ -545,6 +545,11 @@ namespace Hypertable.Persistence.Serialization
             }
             else
             {
+                if (destinationType == typeof(object))
+                {
+                    destinationType = Serializer.TypeFromTag(tag);
+                }
+
                 switch (tag)
                 {
                     case Tags.Null:
@@ -681,7 +686,7 @@ namespace Hypertable.Persistence.Serialization
 
             if (destinationType.IsArray || destinationType == typeof(object))
             {
-                var elementType = destinationType.IsArray ? destinationType.GetElementType() : typeof(object);
+                var elementType = destinationType.IsArray ? destinationType.GetElementType() : Serializer.TypeFromTag(tag);
                 var array = Array.CreateInstance(elementType, lengths);
                 this.objectRefs.Add(array);
                 this.ReadArrayElementsInRank(array, 0, new int[rank], elementType, tag, Serializer.HasElementTag(tag, elementType));
@@ -970,11 +975,11 @@ namespace Hypertable.Persistence.Serialization
             {
                 this.objectRefs.Add(obj);
 
-                var keyType = destinationType.IsGenericType ? destinationType.GetGenericArguments()[0] : typeof(object);
                 var tagKey = (flags & DictionaryFlags.KeyTagged) > 0 ? Decoder.ReadTag(this.binaryReader) : Tags.Null;
+                var keyType = destinationType.IsGenericType ? destinationType.GetGenericArguments()[0] : Serializer.TypeFromTag(tagKey);
 
-                var valueType = destinationType.IsGenericType ? destinationType.GetGenericArguments()[1] : typeof(object);
                 var tagValue = (flags & DictionaryFlags.ValueTagged) > 0 ? Decoder.ReadTag(this.binaryReader) : Tags.Null;
+                var valueType = destinationType.IsGenericType ? destinationType.GetGenericArguments()[1] : Serializer.TypeFromTag(tagValue);
 
                 var count = Decoder.ReadCount(this.binaryReader);
                 for (var n = 0; n < count; ++n)
