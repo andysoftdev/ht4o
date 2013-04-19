@@ -1811,6 +1811,22 @@ namespace Hypertable.Persistence.Test.Serialization
             kvp2 = Deserializer.FromByteArray<KeyValuePair<int, ObjectA>>(b);
             Assert.IsTrue(kvp2.Key == 31);
             oA.AssertIsEqualObjectA(kvp2.Value);
+
+            IfcA iA = new IfcAImpl();
+            IfcB iB = new IfcBImpl();
+            var kvp3 = new KeyValuePair<IfcA, IfcB>(iA, iB);
+            b = Serializer.ToByteArray(kvp3);
+            Assert.IsNotNull(b);
+            kvp3 = Deserializer.FromByteArray<KeyValuePair<IfcA, IfcB>>(b);
+            iA.AssertIsEqualIfcA(kvp3.Key);
+            iB.AssertIsEqualIfcB(kvp3.Value);
+
+            var kvp4 = new KeyValuePair<object, IfcB>(iA, iB);
+            b = Serializer.ToByteArray(kvp3);
+            Assert.IsNotNull(b);
+            kvp4 = Deserializer.FromByteArray<KeyValuePair<object, IfcB>>(b);
+            iA.AssertIsEqualIfcA(kvp4.Key);
+            iB.AssertIsEqualIfcB(kvp4.Value);
         }
 
         /// <summary>

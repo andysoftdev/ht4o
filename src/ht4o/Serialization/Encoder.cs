@@ -83,6 +83,12 @@ namespace Hypertable.Persistence.Serialization
                 };
 
             EncoderInfos = new ConcurrentDictionary<Type, EncoderInfo>(encoderInfos);
+
+            RegisterInternalTypeCode((int)Tags.Object, typeof(object));
+            foreach (var kv in encoderInfos)
+            {
+                RegisterInternalTypeCode((int)kv.Value.Tag, kv.Key);
+            }
         }
 
         #endregion
@@ -116,6 +122,9 @@ namespace Hypertable.Persistence.Serialization
         /// <exception cref="ArgumentNullException">
         /// If <paramref name="type"/> is null.
         /// </exception>
+        /// <exception cref="ArgumentException">
+        /// If a different type code already registered for type.
+        /// </exception>
         public static bool Register(int typeCode, Type type)
         {
             if (type == null)
@@ -123,12 +132,15 @@ namespace Hypertable.Persistence.Serialization
                 throw new ArgumentNullException("type");
             }
 
-            if (!Decoder.Register(typeCode, type))
+            var internalTypeCode = ToInternalTypeCode(typeCode);
+
+            int existingTypeCode;
+            if (TypeCodes.TryGetValue(type, out existingTypeCode) && existingTypeCode != internalTypeCode)
             {
-                return false;
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "Different type code already registered for type {0}", type));
             }
 
-            return TypeCodes.TryAdd(type, typeCode);
+            return RegisterInternalTypeCode(internalTypeCode, type);
         }
 
         /// <summary>
@@ -167,13 +179,9 @@ namespace Hypertable.Persistence.Serialization
                 throw new ArgumentNullException("serialize");
             }
 
-            if (typeCode < 0 || 2 * typeCode + (long)Tags.FirstCustomType > int.MaxValue)
-            {
-                throw new ArgumentException("Invalid type code");
-            }
-
-            typeCode = 2 * typeCode + (int)Tags.FirstCustomType;
-            return EncoderInfos.TryAdd(type, new EncoderInfo((Tags)typeCode, serialize));
+            Register(typeCode, type);
+            var internalTypeCode = ToInternalTypeCode(typeCode);
+            return EncoderInfos.TryAdd(type, new EncoderInfo((Tags)internalTypeCode, serialize));
         }
 
         /// <summary>
@@ -815,6 +823,29 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
+        /// Converts a type code to it's internal value.
+        /// </summary>
+        /// <param name="typeCode">
+        /// The type code.
+        /// </param>
+        /// <returns>
+        /// The <see cref="int"/>.
+        /// The internal type code value.
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        /// If <paramref name="typeCode"/> is out of the valid range.
+        /// </exception>
+        internal static int ToInternalTypeCode(int typeCode)
+        {
+            if (typeCode < 0 || 2 * typeCode + (long)Tags.FirstCustomType > int.MaxValue)
+            {
+                throw new ArgumentException("Invalid type code");
+            }
+
+            return 2 * typeCode + (int)Tags.FirstCustomType;
+        }
+
+        /// <summary>
         /// Attempts to get the encoder info associated with the type.
         /// </summary>
         /// <param name="type">
@@ -873,6 +904,28 @@ namespace Hypertable.Persistence.Serialization
             }
 
             binaryWriter.Write(value.AssemblyQualifiedName); //// TODO better approach ????
+        }
+
+        /// <summary>
+        /// The register internal type code.
+        /// </summary>
+        /// <param name="internalTypeCode">
+        /// The internal type code.
+        /// </param>
+        /// <param name="type">
+        /// The type.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if the type code has been registered successfully, otherwise <c>false</c>.
+        /// </returns>
+        private static bool RegisterInternalTypeCode(int internalTypeCode, Type type)
+        {
+            if (!Decoder.RegisterInternalTypeCode(internalTypeCode, type))
+            {
+                return false;
+            }
+
+            return TypeCodes.TryAdd(type, internalTypeCode);
         }
 
         /// <summary>

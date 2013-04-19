@@ -316,16 +316,18 @@ namespace Hypertable.Persistence.Serialization
         /// <returns>
         /// The string value.
         /// </returns>
-        public static string ReadString(BinaryReader binaryReader, bool readTag) {
+        public static string ReadString(BinaryReader binaryReader, bool readTag)
+        {
             if (readTag)
             {
-                switch (Decoder.ReadTag(binaryReader)) {
+                switch (ReadTag(binaryReader))
+                {
                     case Tags.Null:
                         return null;
                     case Tags.StringEmpty:
                         return string.Empty;
                     case Tags.String:
-                        return Decoder.ReadString(binaryReader);
+                        return ReadString(binaryReader);
                 }
 
                 throw new SerializationException(@"Deserialize string failed");
@@ -482,13 +484,9 @@ namespace Hypertable.Persistence.Serialization
                 throw new ArgumentNullException("deserialize");
             }
 
-            if (typeCode < 0 || 2 * typeCode + (long)Tags.FirstCustomType > int.MaxValue)
-            {
-                throw new ArgumentException("Invalid type code");
-            }
-
-            typeCode = 2 * typeCode + (int)Tags.FirstCustomType;
-            return DecoderInfos.TryAdd((Tags)typeCode, new DecoderInfo(type, deserialize));
+            Encoder.Register(typeCode, type);
+            var internalTypeCode = Encoder.ToInternalTypeCode(typeCode);
+            return DecoderInfos.TryAdd((Tags)internalTypeCode, new DecoderInfo(type, deserialize));
         }
 
         /// <summary>
@@ -542,8 +540,8 @@ namespace Hypertable.Persistence.Serialization
         /// <summary>
         /// Register a type by the type code specified.
         /// </summary>
-        /// <param name="typeCode">
-        /// The type code.
+        /// <param name="internalTypeCode">
+        /// The internal type code.
         /// </param>
         /// <param name="type">
         /// The type.
@@ -551,17 +549,14 @@ namespace Hypertable.Persistence.Serialization
         /// <returns>
         /// <c>true</c> if the type code has been registered successfully, otherwise <c>false</c>.
         /// </returns>
-        /// <exception cref="ArgumentNullException">
-        /// If <paramref name="type"/> is null.
-        /// </exception>
-        internal static bool Register(int typeCode, Type type)
+        internal static bool RegisterInternalTypeCode(int internalTypeCode, Type type)
         {
             if (type == null)
             {
                 throw new ArgumentNullException("type");
             }
 
-            return TypeCodes.TryAdd(typeCode, type);
+            return TypeCodes.TryAdd(internalTypeCode, type);
         }
 
         /// <summary>
