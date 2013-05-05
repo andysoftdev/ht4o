@@ -31,11 +31,11 @@ using System.Runtime.InteropServices;
 #endif
 
 [assembly: AssemblyProduct("ht4o")]
-[assembly: AssemblyDescription("TODO: <File description>")]
+[assembly: AssemblyDescription("Hypertable for Objects")]
 [assembly: AssemblyCompany("ht4o.softdev.ch")]
 [assembly: AssemblyCopyright("Copyright © 2010-2013")]
-[assembly: AssemblyVersion("0.9.6.5")]
-[assembly: AssemblyFileVersion("0.9.6.5")]
+[assembly: AssemblyVersion("0.9.7.5")]
+[assembly: AssemblyFileVersion("0.9.7.5")]
 [assembly: CLSCompliant(true)]
 [assembly: ComVisible(false)]
 [assembly: Guid("a065c528-0e86-454d-85fb-93f98225a81a")]
