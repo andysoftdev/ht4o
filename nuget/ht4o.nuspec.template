@@ -13,7 +13,7 @@
     <iconUrl>http://ht4o.softdev.ch/images/nuget-logo.png</iconUrl>
     <releaseNotes />
     <copyright>Copyright © 2010-2013</copyright>
-    <tags>ht4o ht4w hypertable nosql persistence orm database db client</tags>
+    <tags>ht4o ht4n ht4w hypertable nosql persistence orm database db client</tags>
     <dependencies>
       <dependency id="" version="" />
     </dependencies>
