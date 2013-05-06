@@ -12,6 +12,8 @@ for %%p in (%*) do (
 	) else (
 		if /i "%%~p" == "debug" (
 			set configuration=Debug
+		) else (
+			set version=%%p
 		)
 	)
 )
