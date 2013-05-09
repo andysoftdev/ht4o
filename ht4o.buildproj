@@ -10,7 +10,7 @@
 
 		<Master_x86>dist\ht4o-$(Version)-x86-fx$(FxVersion)-vc$(VcVersion).zip</Master_x86>
 		<Master_x64>dist\ht4o-$(Version)-x64-fx$(FxVersion)-vc$(VcVersion).zip</Master_x64>
-		<Master_AnyCPU>dist\ht4o.Serialization-$(Version)-fx$(FxVersion)-vc$(VcVersion).zip</Master_AnyCPU>
+		<Master_AnyCPU>dist\ht4o-$(Version)-serialization-fx$(FxVersion)-vc$(VcVersion).zip</Master_AnyCPU>
 
 		<Master_ApiDoc>dist\ht4o-$(Version)-api-doc.zip</Master_ApiDoc>
 	</PropertyGroup>
@@ -146,11 +146,11 @@
 			Condition="$(HasMSBuildCommunityTasks) == true" >
 
 		<ItemGroup>
-			<MasterFiles_x86 Include="dist\Win32\Release\ht4o.dll;dist\Win32\Release\ht4o.xml;dist\Win32\Release\ht4o.pdb" />
+			<MasterFiles_x86 Include="dist\Win32\Release\ht4o.dll;dist\Win32\Release\ht4o.xml;dist\Win32\Release\ht4o.pdb;dist\Win32\Release\ht4n.dll" />
 		</ItemGroup>
 
 		<ItemGroup>
-			<MasterFiles_x64 Include="dist\x64\Release\ht4o.dll;dist\x64\Release\ht4o.xml;dist\x64\Release\ht4o.pdb" />
+			<MasterFiles_x64 Include="dist\x64\Release\ht4o.dll;dist\x64\Release\ht4o.xml;dist\x64\Release\ht4o.pdb;dist\x64\Release\ht4n.dll" />
 		</ItemGroup>
 
 		<ItemGroup>
