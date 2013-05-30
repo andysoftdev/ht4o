@@ -22,8 +22,8 @@ namespace Hypertable.Persistence.Reflection
 {
     using System;
     using System.Collections.Concurrent;
+    using System.IO;
     using System.Linq;
-    using System.Reflection;
 
     /// <summary>
     /// The type loader.
@@ -36,12 +36,6 @@ namespace Hypertable.Persistence.Reflection
         /// The types.
         /// </summary>
         private static readonly ConcurrentDictionary<string, Type> Types = new ConcurrentDictionary<string, Type>();
-
-        /// <summary>
-        /// Indicating whether the code is running on the expected thread.
-        /// </summary>
-        [ThreadStatic]
-        private static bool runningOnThisThread;
 
         #endregion
 
@@ -62,46 +56,34 @@ namespace Hypertable.Persistence.Reflection
                 typeName, 
                 tn =>
                     {
+                        Type type = null;
+
+                        // Catching any exceptions that could be thrown from a failure on assembly load 
+                        // This is necessary, for example, if there are generic parameters that are qualified with a version of the assembly that predates the one available
                         try
                         {
-                            // Attach our custom assembly name resolver, attempt to resolve again, and detach it
-                            AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver;
-                            runningOnThisThread = true;
-                            return Type.GetType(typeName);
+                            type = Type.GetType(typeName, false, false);
                         }
-                        finally
+                        catch (TypeLoadException)
                         {
-                            runningOnThisThread = false;
-                            AppDomain.CurrentDomain.AssemblyResolve -= AssemblyResolver;
                         }
+                        catch (FileNotFoundException)
+                        {
+                        }
+                        catch (FileLoadException)
+                        {
+                        }
+                        catch (BadImageFormatException)
+                        {
+                        }
+
+                        return type
+                               ??
+                               Type.GetType(
+                                   typeName, 
+                                   assemblyName => AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => string.Equals(assembly.GetName().Name, assemblyName.Name)), 
+                                   (assembly, simpleTypeName, ignoreCase) => assembly.GetType(simpleTypeName, false, ignoreCase));
                     });
-        }
-
-        /// <summary>
-        /// The assembly resolver event handler.
-        /// </summary>
-        /// <param name="sender">
-        /// The sender object.
-        /// </param>
-        /// <param name="args">
-        /// The event arguments.
-        /// </param>
-        /// <returns>
-        /// The resolved assembly.
-        /// </returns>
-        private static Assembly AssemblyResolver(object sender, ResolveEventArgs args)
-        {
-            // Only process events from the thread that started it, not any other thread
-            if (runningOnThisThread)
-            {
-                // Extract assembly name, and checking it's the same as args.Name to prevent an infinite loop
-                var assemblyName = new AssemblyName(args.Name);
-                return assemblyName.Name != args.Name
-                           ? ((AppDomain)sender).Load(assemblyName.Name)
-                           : ((AppDomain)sender).GetAssemblies().FirstOrDefault(a => string.Equals(a.GetName().Name, args.Name));
-            }
-
-            return null;
         }
 
         #endregion

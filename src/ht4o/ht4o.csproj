@@ -124,6 +124,7 @@
     <Compile Include="Scanner\TableScan\ITableScan.cs" />
     <Compile Include="Scanner\EntityFetched.cs" />
     <Compile Include="Serialization\CollectionFlags.cs" />
+    <Compile Include="Serialization\Binder.cs" />
     <Compile Include="Serialization\Delegates\SerializingEntity.cs" />
     <Compile Include="Serialization\Delegates\DeserializingEntity.cs" />
     <Compile Include="Serialization\Delegates\Serialize.cs" />

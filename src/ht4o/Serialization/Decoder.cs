@@ -24,6 +24,7 @@ namespace Hypertable.Persistence.Serialization
     using System.Collections.Concurrent;
     using System.Globalization;
     using System.IO;
+    using System.Runtime.Serialization;
 
     using Hypertable.Persistence.Reflection;
     using Hypertable.Persistence.Serialization.Delegates;
@@ -386,7 +387,7 @@ namespace Hypertable.Persistence.Serialization
         /// </returns>
         public static Type ReadType(BinaryReader binaryReader)
         {
-            return TypeLoader.GetType(ReadString(binaryReader)); //// TODO better approach ????
+            return Encoder.Binder.BindToType(ReadString(binaryReader), ReadString(binaryReader));
         }
 
         /// <summary>

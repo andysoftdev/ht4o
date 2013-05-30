@@ -41,7 +41,7 @@ namespace Hypertable.Persistence.Extensions
         /// <summary>
         /// The unqualified full type name cache.
         /// </summary>
-        private static readonly ConcurrentDictionary<Type, string> UnqualifiedFullTypeNameCache = new ConcurrentDictionary<Type, string>();
+        private static readonly ConcurrentDictionary<Type, string> ShortQualifiedNameCache = new ConcurrentDictionary<Type, string>();
 
         #endregion
 
@@ -312,32 +312,6 @@ namespace Hypertable.Persistence.Extensions
         internal static bool IsTransient(this Type type)
         {
             return IsDelegate(type) || type == typeof(IntPtr);
-        }
-
-        /// <summary>
-        /// Returns the short qualified name of the type specified.
-        /// </summary>
-        /// <param name="type">
-        /// The type.
-        /// </param>
-        /// <returns>
-        /// The <see cref="string"/>.
-        /// </returns>
-        internal static string ShortQualifiedName(this Type type)
-        {
-            if (type == null)
-            {
-                throw new ArgumentNullException("type");
-            }
-
-            return UnqualifiedFullTypeNameCache.GetOrAdd(
-                type, 
-                _ =>
-                    {
-                        var typeName = type.AssemblyQualifiedName ?? type.FullName ?? type.Name;
-                        typeName = Regex.Replace(typeName, @", Version=\d+.\d+.\d+.\d+", string.Empty);
-                        return Regex.Replace(typeName, @", Culture=\w+", string.Empty);
-                    });
         }
 
         /// <summary>

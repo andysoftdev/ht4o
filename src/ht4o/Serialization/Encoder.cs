@@ -25,9 +25,9 @@ namespace Hypertable.Persistence.Serialization
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
+    using System.Runtime.Serialization;
     using System.Text;
 
-    using Hypertable.Persistence.Extensions;
     using Hypertable.Persistence.Serialization.Delegates;
 
     //// TODO support for custom types via interface method
@@ -48,6 +48,16 @@ namespace Hypertable.Persistence.Serialization
         /// The type codes.
         /// </summary>
         private static readonly ConcurrentDictionary<Type, int> TypeCodes = new ConcurrentDictionary<Type, int>();
+
+        /// <summary>
+        /// The type name cache.
+        /// </summary>
+        private static readonly ConcurrentDictionary<Type, Tuple<string, string>> TypeNameCache = new ConcurrentDictionary<Type, Tuple<string, string>>();
+
+        /// <summary>
+        /// The binder.
+        /// </summary>
+        private static SerializationBinder binder = new Binder();
 
         #endregion
 
@@ -95,6 +105,28 @@ namespace Hypertable.Persistence.Serialization
         #endregion
 
         #region Public Properties
+
+        /// <summary>
+        /// Gets or sets the binder.
+        /// </summary>
+        /// <value>
+        /// The binder.
+        /// </value>
+        public static SerializationBinder Binder
+        {
+            get
+            {
+                return binder;
+            }
+
+            set
+            {
+                if (value != null)
+                {
+                    binder = value;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether to strictly use explicit type codes.
@@ -904,7 +936,18 @@ namespace Hypertable.Persistence.Serialization
                 WriteTag(binaryWriter, Tags.Type);
             }
 
-            binaryWriter.Write(value.ShortQualifiedName());
+            var tuple = TypeNameCache.GetOrAdd(
+                value,
+                _ =>
+                    {
+                        string assemblyName;
+                        string typeName;
+                        binder.BindToName(value, out assemblyName, out typeName);
+                        return new Tuple<string, string>(assemblyName, typeName);
+                    });
+
+            binaryWriter.Write(tuple.Item1);
+            binaryWriter.Write(tuple.Item2);
         }
 
         /// <summary>

@@ -68,6 +68,7 @@
     <Compile Include="..\ht4o\Reflection\Inspector.cs" />
     <Compile Include="..\ht4o\Reflection\TypeLoader.cs" />
     <Compile Include="..\ht4o\Serialization\CollectionFlags.cs" />
+    <Compile Include="..\ht4o\Serialization\Binder.cs" />
     <Compile Include="..\ht4o\Serialization\Decoder.cs" />
     <Compile Include="..\ht4o\Serialization\DecoderInfo.cs" />
     <Compile Include="..\ht4o\Serialization\Delegates\Deserialize.cs" />
