@@ -32,6 +32,20 @@ namespace Hypertable.Persistence.Serialization
     /// </summary>
     public class Binder : SerializationBinder
     {
+        #region Static Fields
+
+        /// <summary>
+        /// The remove assembly culture.
+        /// </summary>
+        private static bool removeAssemblyCulture = true;
+
+        /// <summary>
+        /// The remove assembly version.
+        /// </summary>
+        private static bool removeAssemblyVersion = true;
+
+        #endregion
+
         #region Public Properties
 
         /// <summary>
@@ -40,7 +54,18 @@ namespace Hypertable.Persistence.Serialization
         /// <value>
         /// The strict explicit type codes.
         /// </value>
-        public static bool RemoveAssemblyCulture { get; set; }
+        public static bool RemoveAssemblyCulture
+        {
+            get
+            {
+                return removeAssemblyCulture;
+            }
+
+            set
+            {
+                removeAssemblyCulture = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether the assembly public key token should be removed from the qualified type name.
@@ -56,7 +81,18 @@ namespace Hypertable.Persistence.Serialization
         /// <value>
         /// The strict explicit type codes.
         /// </value>
-        public static bool RemoveAssemblyVersion { get; set; }
+        public static bool RemoveAssemblyVersion
+        {
+            get
+            {
+                return removeAssemblyVersion;
+            }
+
+            set
+            {
+                removeAssemblyVersion = value;
+            }
+        }
 
         #endregion
 
