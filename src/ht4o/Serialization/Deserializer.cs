@@ -29,6 +29,7 @@ namespace Hypertable.Persistence.Serialization
     using System.Runtime.Serialization;
 
     using Hypertable.Persistence.Collections;
+    using Hypertable.Persistence.Extensions;
     using Hypertable.Persistence.Reflection;
 
 #if !HT4O_SERIALIZATION

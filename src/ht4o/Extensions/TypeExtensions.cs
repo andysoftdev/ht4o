@@ -18,23 +18,33 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
-namespace Hypertable.Persistence.Reflection
+namespace Hypertable.Persistence.Extensions
 {
     using System;
     using System.Collections;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
-    using System.Runtime.Serialization;
     using System.Text;
+    using System.Text.RegularExpressions;
 
     /// <summary>
-    /// The reflection extensions.
+    /// The type extensions.
     /// </summary>
-    internal static class ReflectionExtensions
+    internal static class TypeExtensions
     {
+        #region Static Fields
+
+        /// <summary>
+        /// The unqualified full type name cache.
+        /// </summary>
+        private static readonly ConcurrentDictionary<Type, string> UnqualifiedFullTypeNameCache = new ConcurrentDictionary<Type, string>();
+
+        #endregion
+
         #region Methods
 
         /// <summary>
@@ -106,42 +116,6 @@ namespace Hypertable.Persistence.Reflection
         }
 
         /// <summary>
-        /// Gets a single attribute from the member info specified.
-        /// </summary>
-        /// <param name="memberInfo">
-        /// The member info.
-        /// </param>
-        /// <typeparam name="T">
-        /// The attribute type.
-        /// </typeparam>
-        /// <returns>
-        /// The attribute instance or null.
-        /// </returns>
-        internal static T GetAttribute<T>(this MemberInfo memberInfo) where T : Attribute
-        {
-            var attributes = memberInfo.GetCustomAttributes(typeof(T), false);
-            return attributes.Length > 0 ? (T)attributes[0] : null;
-        }
-
-        /// <summary>
-        /// Gets a single attribute from the assembly specified.
-        /// </summary>
-        /// <param name="assembly">
-        /// The assembly.
-        /// </param>
-        /// <typeparam name="T">
-        /// The attribute type.
-        /// </typeparam>
-        /// <returns>
-        /// The attribute instance or null.
-        /// </returns>
-        internal static T GetAttribute<T>(this Assembly assembly) where T : Attribute
-        {
-            var attributes = assembly.GetCustomAttributes(typeof(T), false);
-            return attributes.Length > 0 ? (T)attributes[0] : null;
-        }
-
-        /// <summary>
         /// Gets a single attribute from the type specified.
         /// </summary>
         /// <param name="type">
@@ -204,40 +178,6 @@ namespace Hypertable.Persistence.Reflection
 
             methodInfos.Reverse(); // We should invoke the methods starting from base
             return methodInfos.Count > 0 ? methodInfos : null;
-        }
-
-        /// <summary>
-        /// Returns a value indicating whether the assembly has the attribute declared.
-        /// </summary>
-        /// <param name="assembly">
-        /// The assembly.
-        /// </param>
-        /// <typeparam name="T">
-        /// The attribute type.
-        /// </typeparam>
-        /// <returns>
-        /// <c>true</c> if the assembly has the attribute declared, otherwise <c>false</c>.
-        /// </returns>
-        internal static bool HasAttribute<T>(this Assembly assembly) where T : Attribute
-        {
-            return assembly.GetCustomAttributes(typeof(T), false).Length > 0;
-        }
-
-        /// <summary>
-        /// Returns a value indicating whether the member info has the attribute declared.
-        /// </summary>
-        /// <param name="memberInfo">
-        /// The member info.
-        /// </param>
-        /// <typeparam name="T">
-        /// The attribute type.
-        /// </typeparam>
-        /// <returns>
-        /// <c>true</c> if the member info has the attribute declared, otherwise <c>false</c>.
-        /// </returns>
-        internal static bool HasAttribute<T>(this MemberInfo memberInfo) where T : Attribute
-        {
-            return memberInfo.GetCustomAttributes(typeof(T), false).Length > 0;
         }
 
         /// <summary>
@@ -375,48 +315,29 @@ namespace Hypertable.Persistence.Reflection
         }
 
         /// <summary>
-        /// Creates a serializable name for the member info specified.
+        /// Returns the short qualified name of the type specified.
         /// </summary>
-        /// <param name="memberInfo">
-        /// The member info.
+        /// <param name="type">
+        /// The type.
         /// </param>
         /// <returns>
-        /// The serializable name.
+        /// The <see cref="string"/>.
         /// </returns>
-        internal static string SerializableName(this MemberInfo memberInfo)
+        internal static string ShortQualifiedName(this Type type)
         {
-            var dataMemberAttribute = memberInfo.GetAttribute<DataMemberAttribute>();
-            if (dataMemberAttribute != null && !string.IsNullOrEmpty(dataMemberAttribute.Name))
+            if (type == null)
             {
-                return dataMemberAttribute.Name;
+                throw new ArgumentNullException("type");
             }
 
-            var fieldInfo = memberInfo as FieldInfo;
-            return fieldInfo != null ? EscapeFieldInfoName(fieldInfo) : memberInfo.Name;
-        }
-
-        /// <summary>
-        /// Escapes the field info name.
-        /// </summary>
-        /// <param name="fieldInfo">
-        /// The field info.
-        /// </param>
-        /// <returns>
-        /// The escaped field info name.
-        /// </returns>
-        private static string EscapeFieldInfoName(FieldInfo fieldInfo)
-        {
-            var name = fieldInfo.Name;
-            if (name.StartsWith("<", StringComparison.Ordinal))
-            {
-                var closure = name.IndexOf('>');
-                if (closure > 1)
-                {
-                    name = name.StartsWith("<backing_store>", StringComparison.Ordinal) ? name.Substring(closure + 1) : name.Substring(1, closure - 1);
-                }
-            }
-
-            return name;
+            return UnqualifiedFullTypeNameCache.GetOrAdd(
+                type, 
+                _ =>
+                    {
+                        var typeName = type.AssemblyQualifiedName ?? type.FullName ?? type.Name;
+                        typeName = Regex.Replace(typeName, @", Version=\d+.\d+.\d+.\d+", string.Empty);
+                        return Regex.Replace(typeName, @", Culture=\w+", string.Empty);
+                    });
         }
 
         /// <summary>

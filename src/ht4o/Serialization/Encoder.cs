@@ -27,6 +27,7 @@ namespace Hypertable.Persistence.Serialization
     using System.IO;
     using System.Text;
 
+    using Hypertable.Persistence.Extensions;
     using Hypertable.Persistence.Serialization.Delegates;
 
     //// TODO support for custom types via interface method
@@ -903,7 +904,7 @@ namespace Hypertable.Persistence.Serialization
                 WriteTag(binaryWriter, Tags.Type);
             }
 
-            binaryWriter.Write(value.AssemblyQualifiedName); //// TODO better approach ????
+            binaryWriter.Write(value.ShortQualifiedName());
         }
 
         /// <summary>

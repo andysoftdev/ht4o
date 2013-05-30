@@ -22,6 +22,7 @@ namespace Hypertable.Persistence.Reflection
 {
     using System;
     using System.Collections.Concurrent;
+    using System.Linq;
     using System.Reflection;
 
     /// <summary>
@@ -95,10 +96,9 @@ namespace Hypertable.Persistence.Reflection
             {
                 // Extract assembly name, and checking it's the same as args.Name to prevent an infinite loop
                 var assemblyName = new AssemblyName(args.Name);
-                if (assemblyName.Name != args.Name)
-                {
-                    return ((AppDomain)sender).Load(assemblyName.Name);
-                }
+                return assemblyName.Name != args.Name
+                           ? ((AppDomain)sender).Load(assemblyName.Name)
+                           : ((AppDomain)sender).GetAssemblies().FirstOrDefault(a => string.Equals(a.GetName().Name, args.Name));
             }
 
             return null;

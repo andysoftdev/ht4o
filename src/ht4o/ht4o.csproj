@@ -111,6 +111,7 @@
     <Compile Include="Collections\Map.cs" />
     <Compile Include="BindingContext.cs" />
     <Compile Include="BehaviorExtensions.cs" />
+    <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="NullableExtensions.cs" />
     <Compile Include="Pair.cs" />
     <Compile Include="PersistenceConfiguration.cs" />
@@ -135,7 +136,7 @@
     <Compile Include="Logging.cs" />
     <Compile Include="IColumnBinding.cs" />
     <Compile Include="Reflection\TypeFinder.cs" />
-    <Compile Include="Reflection\ReflectionExtensions.cs" />
+    <Compile Include="Extensions\ReflectionExtensions.cs" />
     <Compile Include="Scanner\EntityQueryScanTarget.cs" />
     <Compile Include="Scanner\EntityScanResult.cs" />
     <Compile Include="Scanner\EntityIndexerScanTarget.cs" />

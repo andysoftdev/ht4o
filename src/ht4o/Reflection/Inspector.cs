@@ -29,6 +29,7 @@ namespace Hypertable.Persistence.Reflection
     using System.Runtime.Serialization;
 
     using Hypertable.Persistence.Collections;
+    using Hypertable.Persistence.Extensions;
 
     /// <summary>
     /// The inspector.

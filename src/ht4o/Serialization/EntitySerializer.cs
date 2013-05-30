@@ -26,6 +26,7 @@ namespace Hypertable.Persistence.Serialization
     using System.IO;
 
     using Hypertable;
+    using Hypertable.Persistence.Extensions;
     using Hypertable.Persistence.Reflection;
     using Hypertable.Persistence.Serialization.Delegates;
 
