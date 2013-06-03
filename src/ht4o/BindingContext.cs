@@ -27,7 +27,6 @@ namespace Hypertable.Persistence
     using System.Text.RegularExpressions;
 
     using Hypertable;
-    using Hypertable.Persistence.Attributes;
     using Hypertable.Persistence.Bindings;
     using Hypertable.Persistence.Collections;
     using Hypertable.Persistence.Reflection;
@@ -301,6 +300,88 @@ namespace Hypertable.Persistence
                 this.tableBindings.Remove(from kv in this.tableBindings where kv.Value.Derived && type.IsAssignableFrom(kv.Key) select kv.Key);
                 return this.tableBindings.AddOrUpdate(type, new BindingSpec<ITableBinding>(tableBinding));
             }
+        }
+
+        /// <summary>
+        /// Gets the column binding associated with the specified type.
+        /// </summary>
+        /// <param name="type">
+        /// The type.
+        /// </param>
+        /// <param name="columnBinding">
+        /// When this method returns, contains the column binding associated with the specified type, if the type is found; otherwise null.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if a column binding exists for the type specified; otherwise, <c>false</c>.
+        /// </returns>
+        public bool TryGetColumnBinding(Type type, out IColumnBinding columnBinding)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException("type");
+            }
+
+            lock (this.syncRoot)
+            {
+                columnBinding = this.GetColumnBindingForType(type);
+            }
+
+            return columnBinding != null;
+        }
+
+        /// <summary>
+        /// Gets the key binding associated with the specified type.
+        /// </summary>
+        /// <param name="type">
+        /// The type.
+        /// </param>
+        /// <param name="keyBinding">
+        /// When this method returns, contains the key binding associated with the specified type, if the type is found; otherwise null.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if a key binding exists for the type specified; otherwise, <c>false</c>.
+        /// </returns>
+        public bool TryGetKeyBinding(Type type, out IKeyBinding keyBinding)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException("type");
+            }
+
+            lock (this.syncRoot)
+            {
+                var columnBinding = this.GetColumnBindingForType(type);
+                keyBinding = this.GetKeyBindingForType(type, columnBinding);
+            }
+
+            return keyBinding != null;
+        }
+
+        /// <summary>
+        /// Gets the table binding associated with the specified type.
+        /// </summary>
+        /// <param name="type">
+        /// The type.
+        /// </param>
+        /// <param name="tableBinding">
+        /// When this method returns, contains the table binding associated with the specified type, if the type is found; otherwise null.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if a table binding exists for the type specified; otherwise, <c>false</c>.
+        /// </returns>
+        public bool TryGetTableBinding(Type type, out ITableBinding tableBinding)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException("type");
+            }
+
+            lock (this.syncRoot)
+            {
+                tableBinding = this.GetTableBindingForType(type);
+            }
+
+            return tableBinding != null;
         }
 
         /// <summary>
