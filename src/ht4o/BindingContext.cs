@@ -27,6 +27,7 @@ namespace Hypertable.Persistence
     using System.Text.RegularExpressions;
 
     using Hypertable;
+    using Hypertable.Persistence.Attributes;
     using Hypertable.Persistence.Bindings;
     using Hypertable.Persistence.Collections;
     using Hypertable.Persistence.Reflection;
@@ -702,39 +703,39 @@ namespace Hypertable.Persistence
         /// </returns>
         private IColumnBinding GetColumnBindingForType(Type type)
         {
-            DefaultColumnBinding defaultColumnBinding = null;
-            BindingSpec<IColumnBinding> columnBinding;
-            if (!this.columnBindings.TryGetValue(type, out columnBinding))
+            DefaultColumnBinding columnBinding = null;
+            BindingSpec<IColumnBinding> columnBindingSpec;
+            if (!this.columnBindings.TryGetValue(type, out columnBindingSpec))
             {
-                var strict = this.StrictExplicitColumnBinding || type.IsInterface || type.IsAbstract;
+                var strict = this.StrictExplicitColumnBinding || type.IsInterface;
                 var entityType = type;
-                while (columnBinding.Binding == null)
+                while (columnBindingSpec.Binding == null)
                 {
                     if (!strict)
                     {
-                        if (defaultColumnBinding == null)
+                        if (columnBinding == null)
                         {
-                            defaultColumnBinding = new DefaultColumnBinding(type, this.DefaultColumnFamily);
+                            columnBinding = DefaultColumnBinding.Create(type, this.DefaultColumnFamily);
                         }
                         else
                         {
-                            defaultColumnBinding.Merge(type);
+                            columnBinding.Merge(type);
                         }
                     }
 
-                    if ((defaultColumnBinding != null && defaultColumnBinding.IsComplete) || type.BaseType == null)
+                    if ((columnBinding != null && columnBinding.IsComplete) || type.BaseType == null)
                     {
-                        return defaultColumnBinding;
+                        return columnBinding;
                     }
 
                     type = type.BaseType;
-                    columnBinding = this.columnBindings.GetValue(type);
+                    columnBindingSpec = this.columnBindings.GetValue(type);
                 }
 
-                this.columnBindings.AddOrUpdate(entityType, columnBinding.Derive());
+                this.columnBindings.AddOrUpdate(entityType, columnBindingSpec.Derive());
             }
 
-            return columnBinding.Binding;
+            return columnBindingSpec.Binding;
         }
 
         /// <summary>

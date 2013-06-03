@@ -199,14 +199,7 @@ namespace Hypertable.Persistence
                 throw new PersistenceException(string.Format(CultureInfo.InvariantCulture, @"{0} is not a valid entity", entityType));
             }
 
-            entityReference.EstablishColumnSets(() => this.ColumnNames(entityReference));
-            var scanSpec = new ScanSpec { MaxVersions = 1 };
-            scanSpec.AddColumn(entityReference.ColumnSet);
-            if (scanSpec.ColumnCount == 0)
-            {
-                throw new PersistenceException(string.Format(CultureInfo.InvariantCulture, @"{0} is not a valid entity", entityType));
-            }
-
+            var scanSpec = this.ScanSpecForType(entityType);
             return EntityReader.Read(this, entityReference, scanSpec, behaviors);
         }
 
@@ -232,38 +225,13 @@ namespace Hypertable.Persistence
                 throw new ArgumentNullException("entityType");
             }
 
-            if (queryTypes == null)
-            {
-                throw new ArgumentNullException("queryTypes");
-            }
-
             var entityReference = this.EntityReferenceForType(entityType);
             if (entityReference == null)
             {
                 throw new PersistenceException(string.Format(CultureInfo.InvariantCulture, @"{0} is not a valid entity", entityType));
             }
 
-            var columnNames = new List<string>();
-            foreach (var queryType in queryTypes)
-            {
-                var er = this.EntityReferenceForType(queryType);
-                if (er == null)
-                {
-                    throw new PersistenceException(string.Format(CultureInfo.InvariantCulture, @"{0} is not a valid query type", queryType));
-                }
-
-                er.EstablishColumnSets(() => this.ColumnNames(er));
-                columnNames.AddRange(er.ColumnSet);
-            }
-
-            var scanSpec = new ScanSpec { MaxVersions = 1 };
-            scanSpec.AddColumn(ScanSpec.DistictColumn(columnNames));
-            if (scanSpec.ColumnCount == 0)
-            {
-                throw new PersistenceException(string.Format(CultureInfo.InvariantCulture, @"{0} is not a valid entity", entityType));
-            }
-
-            return EntityReader.Read(this, entityReference, scanSpec, behaviors);
+            return EntityReader.Read(this, entityReference, this.ScanSpecForType(queryTypes), behaviors);
         }
 
         /// <summary>
@@ -553,6 +521,78 @@ namespace Hypertable.Persistence
                     mutator.Delete(cell.Key);
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the scan spec for the type specified.
+        /// </summary>
+        /// <param name="entityType">
+        /// The entity type.
+        /// </param>
+        /// <returns>
+        /// The scan spec.
+        /// </returns>
+        public ScanSpec ScanSpecForType(Type entityType)
+        {
+            if (entityType == null)
+            {
+                throw new ArgumentNullException("entityType");
+            }
+
+            var entityReference = this.EntityReferenceForType(entityType);
+            if (entityReference == null)
+            {
+                throw new PersistenceException(string.Format(CultureInfo.InvariantCulture, @"{0} is not a valid entity", entityType));
+            }
+
+            entityReference.EstablishColumnSets(() => this.ColumnNames(entityReference));
+            var scanSpec = new ScanSpec { MaxVersions = 1 };
+            scanSpec.AddColumn(entityReference.ColumnSet);
+            if (scanSpec.ColumnCount == 0)
+            {
+                throw new PersistenceException(string.Format(CultureInfo.InvariantCulture, @"{0} is not a valid entity", entityType));
+            }
+
+            return scanSpec;
+        }
+
+        /// <summary>
+        /// Gets the merged scan spec for the types specified.
+        /// </summary>
+        /// <param name="entityTypes">
+        /// The query types.
+        /// </param>
+        /// <returns>
+        /// The merged scan spec.
+        /// </returns>
+        public ScanSpec ScanSpecForType(IEnumerable<Type> entityTypes)
+        {
+            if (entityTypes == null)
+            {
+                throw new ArgumentNullException("entityTypes");
+            }
+
+            var columnNames = new List<string>();
+            foreach (var queryType in entityTypes)
+            {
+                var entityReference = this.EntityReferenceForType(queryType);
+                if (entityReference == null)
+                {
+                    throw new PersistenceException(string.Format(CultureInfo.InvariantCulture, @"{0} is not a valid query type", queryType));
+                }
+
+                entityReference.EstablishColumnSets(() => this.ColumnNames(entityReference));
+                columnNames.AddRange(entityReference.ColumnSet);
+            }
+
+            var scanSpec = new ScanSpec { MaxVersions = 1 };
+            scanSpec.AddColumn(ScanSpec.DistictColumn(columnNames));
+            if (scanSpec.ColumnCount == 0)
+            {
+                throw new PersistenceException("Missing ot invalid entity types");
+            }
+
+            return scanSpec;
         }
 
         #endregion

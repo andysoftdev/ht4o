@@ -26,6 +26,7 @@ namespace Hypertable.Persistence
     using System.Linq;
 
     using Hypertable;
+    using Hypertable.Persistence.Reflection;
 
     ////TODO see also https://nhibernate.svn.sourceforge.net/svnroot/nhibernate/trunk/nhibernate/src/NHibernate/ISession.cs
     ////TODO cascading
@@ -132,6 +133,106 @@ namespace Hypertable.Persistence
         #endregion
 
         #region Public Methods and Operators
+
+        /// <summary>
+        /// Determines whether the database contains any elements of type <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">
+        /// The entity type.
+        /// </typeparam>
+        /// <returns>
+        /// <c>true</c> if the there are any entities; otherwise <c>false</c>.
+        /// </returns>
+        public bool Any<T>() where T : class
+        {
+            return this.Any(typeof(T));
+        }
+
+        /// <summary>
+        /// Determines whether the database contains any entities of the type specified.
+        /// </summary>
+        /// <param name="entityType">
+        /// The entity type.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if the there are any entities; otherwise <c>false</c>.
+        /// </returns>
+        public bool Any(Type entityType)
+        {
+            this.ThrowIfDisposed();
+            var scanSpec = this.entityContext.ScanSpecForType(entityType);
+            scanSpec.MaxCells = 1;
+            var entities = this.Fetch(entityType, scanSpec, Behaviors.DoNotCache);
+            return entities != null && entities.OfType<object>().Any();
+        }
+
+        /// <summary>
+        /// Determines whether the database contains any entities of the types specified.
+        /// </summary>
+        /// <param name="entityTypes">
+        /// The entity types.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if the there are any entities; otherwise <c>false</c>.
+        /// </returns>
+        public bool Any(IEnumerable<Type> entityTypes)
+        {
+            if (entityTypes == null)
+            {
+                throw new ArgumentNullException("entityTypes");
+            }
+
+            this.ThrowIfDisposed();
+            var types = entityTypes.ToArray();
+            var scanSpec = this.entityContext.ScanSpecForType(types);
+            scanSpec.MaxCells = 1;
+            var entities = this.Fetch(TypeFinder.GetCommonBaseType(types), scanSpec, Behaviors.DoNotCache);
+            return entities != null && entities.OfType<object>().Any();
+        }
+
+        /// <summary>
+        /// Creates a scan spec for type <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">
+        /// The entity type.
+        /// </typeparam>
+        /// <returns>
+        /// Newly created scan spec.
+        /// </returns>
+        public ScanSpec CreateScanSpec<T>() where T : class
+        {
+            return this.CreateScanSpec(typeof(T));
+        }
+
+        /// <summary>
+        /// Creates a scan spec for the type specified.
+        /// </summary>
+        /// <param name="entityType">
+        /// The entity type.
+        /// </param>
+        /// <returns>
+        /// Newly created scan spec.
+        /// </returns>
+        public ScanSpec CreateScanSpec(Type entityType)
+        {
+            this.ThrowIfDisposed();
+            return this.entityContext.ScanSpecForType(entityType);
+        }
+
+        /// <summary>
+        /// Creates a scan spec for the types specified.
+        /// </summary>
+        /// <param name="entityTypes">
+        /// The entity types.
+        /// </param>
+        /// <returns>
+        /// Newly created scan spec.
+        /// </returns>
+        public ScanSpec CreateScanSpec(IEnumerable<Type> entityTypes)
+        {
+            this.ThrowIfDisposed();
+            return this.entityContext.ScanSpecForType(entityTypes);
+        }
 
         /// <summary>
         /// The dispose.

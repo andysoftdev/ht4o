@@ -21,6 +21,7 @@
 namespace Hypertable.Persistence.Bindings
 {
     using System;
+    using System.Globalization;
 
     using Hypertable.Persistence.Attributes;
     using Hypertable.Persistence.Reflection;
@@ -56,7 +57,7 @@ namespace Hypertable.Persistence.Bindings
         /// <exception cref="ArgumentException">
         /// If the <paramref name="type"/> is typeof(object).
         /// </exception>
-        internal DefaultColumnBinding(Type type, string defaultColumnFamily)
+        private DefaultColumnBinding(Type type, string defaultColumnFamily)
         {
             if (type == null)
             {
@@ -68,6 +69,11 @@ namespace Hypertable.Persistence.Bindings
                 throw new ArgumentException(@"typeof(object) is not a valid column binding type", "type");
             }
 
+            if (type.IsInterface)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, @"interface type {0} is not a valid column binding type", type), "type");
+            }
+
             this.defaultColumnFamily = defaultColumnFamily;
 
             var entityAttribute = type.GetAttribute<EntityAttribute>();
@@ -75,6 +81,19 @@ namespace Hypertable.Persistence.Bindings
             {
                 this.ColumnFamily = entityAttribute.ColumnFamily;
                 this.ColumnQualifier = entityAttribute.ColumnQualifier;
+            }
+
+            if (type.IsAbstract)
+            {
+                if (string.IsNullOrEmpty(this.ColumnFamily))
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, @"abstract type {0} requires a column family binding", type), "type");
+                }
+
+                if (!string.IsNullOrEmpty(this.ColumnQualifier))
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, @"abstract type {0} may not bind to a column qualifier", type), "type");
+                }
             }
         }
 
@@ -115,6 +134,48 @@ namespace Hypertable.Persistence.Bindings
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="DefaultColumnBinding"/> class.
+        /// </summary>
+        /// <param name="type">
+        /// The entity type.
+        /// </param>
+        /// <param name="defaultColumnFamily">
+        /// The default column family.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        /// If the <paramref name="type"/> is null.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// If the <paramref name="type"/> is typeof(object).
+        /// </exception>
+        /// <returns>
+        /// The <see cref="DefaultColumnBinding"/>.
+        /// </returns>
+        internal static DefaultColumnBinding Create(Type type, string defaultColumnFamily)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException("type");
+            }
+
+            if (type == typeof(object))
+            {
+                return null;
+            }
+
+            if (type.IsAbstract)
+            {
+                var entityAttribute = type.GetAttribute<EntityAttribute>();
+                if (entityAttribute == null || string.IsNullOrEmpty(entityAttribute.ColumnFamily))
+                {
+                    return null;
+                }
+            }
+
+            return new DefaultColumnBinding(type, defaultColumnFamily);
+        }
 
         /// <summary>
         /// Merge in binding elements from the type specified.

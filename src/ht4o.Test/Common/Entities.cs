@@ -189,6 +189,7 @@ namespace Hypertable.Persistence.Test.Common
     /// <summary>
     /// The entity x base.
     /// </summary>
+    [Entity(ColumnFamily = "a")]
     internal abstract class EntityXBase : EntityBase
     {
     }
@@ -196,7 +197,7 @@ namespace Hypertable.Persistence.Test.Common
     /// <summary>
     /// The entity x.
     /// </summary>
-    [Entity(ColumnFamily = "a", ColumnQualifier = "1")]
+    [Entity(ColumnQualifier = "1")]
     internal class EntityX : EntityXBase
     {
         #region Constructors and Destructors
@@ -261,7 +262,7 @@ namespace Hypertable.Persistence.Test.Common
     /// <summary>
     /// The entity x 2.
     /// </summary>
-    [Entity(ColumnFamily = "a", ColumnQualifier = "2")]
+    [Entity(ColumnQualifier = "2")]
     internal class EntityX2 : EntityXBase
     {
         #region Constructors and Destructors

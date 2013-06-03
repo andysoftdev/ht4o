@@ -20,13 +20,18 @@
  */
 namespace Hypertable.Persistence.Test
 {
+    using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Linq;
 
     using Hypertable;
     using Hypertable.Persistence.Test.Common;
+    using Hypertable.Persistence.Test.TestEntityAttributeInheritTypes;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using EntityBase = Hypertable.Persistence.Test.Common.EntityBase;
 
     /// <summary>
     /// The test query.
@@ -37,7 +42,78 @@ namespace Hypertable.Persistence.Test
         #region Public Methods and Operators
 
         /// <summary>
-        /// The fetch.
+        /// Tests the entity manager Any method.
+        /// </summary>
+        [TestMethod]
+        public void Any()
+        {
+            var ec1 = new EntityC { A = new EntityA(), B = new EntityB(), X = new EntityX(), Y = new EntityY() };
+            TestBase.TestSerialization(ec1);
+
+            using (var em = Emf.CreateEntityManager())
+            {
+                Assert.IsFalse(em.Any<EntityC>());
+                Assert.IsFalse(em.Any<EntityA>());
+                Assert.IsFalse(em.Any<EntityB>());
+                Assert.IsFalse(em.Any<EntityXBase>());
+                Assert.IsFalse(em.Any<EntityX>());
+                Assert.IsFalse(em.Any<EntityX2>());
+                Assert.IsFalse(em.Any<EntityY>());
+
+                Assert.IsFalse(em.Any(new[] { typeof(EntityX), typeof(EntityX2) }));
+            }
+
+            using (var em = Emf.CreateEntityManager())
+            {
+                em.Persist(ec1);
+            }
+
+            using (var em = Emf.CreateEntityManager())
+            {
+                Assert.IsTrue(em.Any<EntityC>());
+                Assert.IsTrue(em.Any<EntityA>());
+                Assert.IsTrue(em.Any<EntityB>());
+                Assert.IsTrue(em.Any<EntityXBase>());
+                Assert.IsTrue(em.Any<EntityX>());
+                Assert.IsFalse(em.Any<EntityX2>());
+                Assert.IsTrue(em.Any<EntityY>());
+
+                Assert.IsTrue(em.Any(new[] { typeof(EntityX), typeof(EntityX2) }));
+            }
+
+            var ex21 = new EntityX2();
+            TestBase.TestSerialization(ex21);
+
+            using (var em = Emf.CreateEntityManager())
+            {
+                em.Persist(ex21);
+                em.Flush();
+
+                Assert.IsTrue(em.Any<EntityXBase>());
+                Assert.IsTrue(em.Any<EntityX>());
+                Assert.IsTrue(em.Any<EntityX2>());
+                Assert.IsTrue(em.Any(new[] { typeof(EntityX), typeof(EntityX2) }));
+
+                em.Remove(ec1.X);
+                em.Flush();
+
+                Assert.IsTrue(em.Any<EntityXBase>());
+                Assert.IsFalse(em.Any<EntityX>());
+                Assert.IsTrue(em.Any<EntityX2>());
+                Assert.IsTrue(em.Any(new[] { typeof(EntityX), typeof(EntityX2) }));
+
+                em.Remove(ex21);
+                em.Flush();
+
+                Assert.IsFalse(em.Any<EntityXBase>());
+                Assert.IsFalse(em.Any<EntityX>());
+                Assert.IsFalse(em.Any<EntityX2>());
+                Assert.IsFalse(em.Any(new[] { typeof(EntityX), typeof(EntityX2) }));
+            }
+        }
+
+        /// <summary>
+        /// Tests the entity manager Fetch method.
         /// </summary>
         [TestMethod]
         public void Fetch()
@@ -108,7 +184,42 @@ namespace Hypertable.Persistence.Test
         }
 
         /// <summary>
-        /// The find.
+        /// Tests the entity manager Fetch method.
+        /// </summary>
+        [TestMethod]
+        public void FetchByScanSpec()
+        {
+            var ec1 = new EntityC { A = new EntityA(), B = new EntityB(), X = new EntityX(), Y = new EntityY() };
+            TestBase.TestSerialization(ec1);
+
+            var ex21 = new EntityX2();
+            TestBase.TestSerialization(ex21);
+
+            using (var em = Emf.CreateEntityManager())
+            {
+                em.Persist(ec1);
+                em.Persist(ex21);
+            }
+
+            using (var em = Emf.CreateEntityManager())
+            {
+                var _ec = em.Fetch<EntityC>(new ScanSpec(ec1.Id));
+                Assert.IsNotNull(_ec);
+                Assert.AreEqual(1, _ec.Count());
+                Assert.AreEqual(ec1, _ec.First());
+
+                var ss = new ScanSpec();
+                ss.AddColumn("a");
+                var _ex = em.Fetch<EntityXBase>(ss);
+                Assert.IsNotNull(_ex);
+                Assert.AreEqual(2, _ex.Count());
+                Assert.AreEqual(ec1.X, _ex.OfType<EntityX>().First());
+                Assert.AreEqual(ex21, _ex.OfType<EntityX2>().First());
+            }
+        }
+
+        /// <summary>
+        /// Tests the entity manager Find method.
         /// </summary>
         [TestMethod]
         public void Find()
@@ -138,7 +249,7 @@ namespace Hypertable.Persistence.Test
         }
 
         /// <summary>
-        /// The find many.
+        /// Tests the entity manager FindMany method.
         /// </summary>
         [TestMethod]
         public void FindMany()
@@ -157,7 +268,8 @@ namespace Hypertable.Persistence.Test
                 Assert.IsFalse(string.IsNullOrEmpty(ec2.Id));
             }
 
-            using (var em = Emf.CreateEntityManager()) {
+            using (var em = Emf.CreateEntityManager())
+            {
                 {
                     var _ec = em.FindMany<EntityC>(new[] { ec1.Id, ec2.Id });
                     Assert.IsNotNull(_ec);
