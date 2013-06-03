@@ -175,6 +175,61 @@ namespace Hypertable.Persistence
         #region Public Methods and Operators
 
         /// <summary>
+        /// Determines whether the binding context contains a column binding for the specified type.
+        /// </summary>
+        /// <param name="type">
+        /// The type.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if the binding context contains a column binding for the specified type; otherwise, <c>false</c>.
+        /// </returns>
+        public bool ContainsColumnBinding(Type type) {
+            if( type == null ) {
+                throw new ArgumentNullException("type");
+            }
+
+            return this.columnBindings.ContainsKey(type);
+        }
+
+        /// <summary>
+        /// Determines whether the binding context contains a key binding for the specified type.
+        /// </summary>
+        /// <param name="type">
+        /// The type.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if the binding context contains a key binding for the specified type; otherwise, <c>false</c>.
+        /// </returns>
+        public bool ContainsKeyBinding(Type type)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException("type");
+            }
+
+            return this.keyBindings.ContainsKey(type);
+        }
+
+        /// <summary>
+        /// Determines whether the binding context contains a table binding for the specified type.
+        /// </summary>
+        /// <param name="type">
+        /// The type.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if the binding context contains a table binding for the specified type; otherwise, <c>false</c>.
+        /// </returns>
+        public bool ContainsTableBinding(Type type)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException("type");
+            }
+
+            return this.tableBindings.ContainsKey(type);
+        }
+
+        /// <summary>
         /// Registers a column binding for the type specified.
         /// </summary>
         /// <param name="type">
