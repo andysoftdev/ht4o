@@ -23,7 +23,8 @@ namespace Hypertable.Persistence.Reflection
     using System;
     using System.Collections.Concurrent;
     using System.IO;
-    using System.Linq;
+
+    using Hypertable.Persistence.Serialization;
 
     /// <summary>
     /// The type loader.
@@ -77,12 +78,7 @@ namespace Hypertable.Persistence.Reflection
                         {
                         }
 
-                        return type
-                               ??
-                               Type.GetType(
-                                   typeName, 
-                                   assemblyName => AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => string.Equals(assembly.GetName().Name, assemblyName.Name)), 
-                                   (assembly, simpleTypeName, ignoreCase) => assembly.GetType(simpleTypeName, false, ignoreCase));
+                        return type ?? Type.GetType(typeName, Resolver.AssemblyResolver, Resolver.TypeResolver);
                     });
         }
 

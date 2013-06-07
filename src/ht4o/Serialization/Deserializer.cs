@@ -1153,8 +1153,18 @@ namespace Hypertable.Persistence.Serialization
 
                 if (value == null)
                 {
-                    throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Unable to create instance for type {0}", destinationType));
+                    value = Resolver.InstanceResolver(type, destinationType);
+
+                    if (value == null)
+                    {
+                        throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Unable to create instance for type {0}/{1}", type, destinationType));
+                    }
                 }
+            }
+
+            if (inspector == null)
+            {
+                throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Unable to create inspector for type {0}/{1}", type, destinationType));
             }
 
             var streamingContext = inspector.HasSerializationHandlers ? new StreamingContext() : default(StreamingContext);
@@ -1178,7 +1188,7 @@ namespace Hypertable.Persistence.Serialization
                 }
                 else
                 {
-                    this.Deserialize(typeof(object), tag); // Read unassignable values
+                    Resolver.ObsoletePropertyResolver(value, this.Deserialize(typeof(object), tag)); // Read unassignable values
                 }
             }
 

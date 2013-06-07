@@ -118,6 +118,7 @@
     <Compile Include="Behaviors.cs" />
     <Compile Include="ColumnBindingComparer.cs" />
     <Compile Include="Reflection\InspectedSerializable.cs" />
+    <Compile Include="Serialization\Resolver.cs" />
     <Compile Include="Scanner\TryGetFetchedEntity.cs" />
     <Compile Include="Scanner\TableScan\TableScan.cs" />
     <Compile Include="Scanner\TableScan\TableScanAndFilter.cs" />
