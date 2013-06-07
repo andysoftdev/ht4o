@@ -78,10 +78,10 @@ namespace Hypertable.Persistence
                 throw new ArgumentNullException("tableBinding");
             }
 
-            var hashCode = tableBinding.TableName.GetHashCode();
+            var hashCode = 17 + tableBinding.TableName.GetHashCode();
             if (tableBinding.Namespace != null)
             {
-                hashCode ^= 17 * tableBinding.Namespace.GetHashCode();
+                hashCode = (29 * hashCode) + tableBinding.Namespace.GetHashCode();
             }
 
             return hashCode;

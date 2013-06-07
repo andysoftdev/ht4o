@@ -94,14 +94,14 @@ namespace Hypertable.Persistence.Scanner
             this.tableName = tableName;
             this.key = key;
 
-            this.hashCode = 0;
+            this.hashCode = 17;
             if (this.key != null)
             {
-                this.hashCode ^= KeyComparer.GetHashCode(this.key);
+                this.hashCode = (29 * this.hashCode) + KeyComparer.GetHashCode(this.key);
             }
 
-            this.hashCode ^= this.tableName.GetHashCode();
-            this.hashCode ^= (this.ns ?? string.Empty).GetHashCode();
+            this.hashCode = (29 * this.hashCode) + this.tableName.GetHashCode();
+            this.hashCode = (29 * this.hashCode) + (this.ns ?? string.Empty).GetHashCode();
         }
 
         /// <summary>

@@ -78,10 +78,10 @@ namespace Hypertable.Persistence
                 throw new ArgumentNullException("columnBinding");
             }
 
-            var hashCode = columnBinding.ColumnFamily.GetHashCode();
+            var hashCode = 17 + columnBinding.ColumnFamily.GetHashCode();
             if (columnBinding.ColumnQualifier != null)
             {
-                hashCode ^= 17 * columnBinding.ColumnQualifier.GetHashCode();
+                hashCode = (29 * hashCode) + columnBinding.ColumnQualifier.GetHashCode();
             }
 
             return hashCode;
