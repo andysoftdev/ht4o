@@ -180,6 +180,9 @@ namespace Hypertable.Persistence.Test
 
             using (var em = Emf.CreateEntityManager(bindingContext))
             {
+                Assert.IsTrue(em.IsTypeDeclared<EntityA>());
+                Assert.IsTrue(em.IsTypeDeclared<EntityB>());
+
                 em.Configuration.Binding.StrictExplicitColumnBinding = true;
 
                 em.Persist(eb1);

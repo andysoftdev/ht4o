@@ -27,6 +27,7 @@ namespace Hypertable.Persistence
 
     using Hypertable;
     using Hypertable.Persistence.Reflection;
+    using Hypertable.Xml;
 
     ////TODO see also https://nhibernate.svn.sourceforge.net/svnroot/nhibernate/trunk/nhibernate/src/NHibernate/ISession.cs
     ////TODO cascading
@@ -470,6 +471,23 @@ namespace Hypertable.Persistence
         /// <summary>
         /// Gets the database namespace instance for the entity type specified.
         /// </summary>
+        /// <typeparam name="T">
+        /// The entity type.
+        /// </typeparam>
+        /// <returns>
+        /// The database namespace instance.
+        /// </returns>
+        /// <remarks>
+        /// Do not dispose the returned namespace instance, it's owned by the entity manager.
+        /// </remarks>
+        public INamespace GetNamespace<T>()
+        {
+            return this.GetNamespace(typeof(T));
+        }
+
+        /// <summary>
+        /// Gets the database namespace instance for the entity type specified.
+        /// </summary>
         /// <param name="entityType">
         /// The entity type.
         /// </param>
@@ -486,20 +504,20 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets the database namespace instance for the entity type specified.
+        /// Gets the database table instance for the entity type specified.
         /// </summary>
         /// <typeparam name="T">
         /// The entity type.
         /// </typeparam>
         /// <returns>
-        /// The database namespace instance.
+        /// The database table instance.
         /// </returns>
         /// <remarks>
-        /// Do not dispose the returned namespace instance, it's owned by the entity manager.
+        /// Do not dispose the returned table instance, it's owned by the factory context.
         /// </remarks>
-        public INamespace GetNamespace<T>()
+        public ITable GetTable<T>()
         {
-            return this.GetNamespace(typeof(T));
+            return this.GetTable(typeof(T));
         }
 
         /// <summary>
@@ -521,20 +539,41 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets the database table instance for the entity type specified.
+        /// Gets value that indicates whether the entity type specified is declared in the corresponding table schema.
         /// </summary>
         /// <typeparam name="T">
         /// The entity type.
         /// </typeparam>
         /// <returns>
-        /// The database table instance.
+        /// <c>true</c> if the entity type is declared in the corresponding table schema; otherwise <c>false</c>.
         /// </returns>
-        /// <remarks>
-        /// Do not dispose the returned table instance, it's owned by the factory context.
-        /// </remarks>
-        public ITable GetTable<T>()
+        public bool IsTypeDeclared<T>()
         {
-            return this.GetTable(typeof(T));
+            return this.IsTypeDeclared(typeof(T));
+        }
+
+        /// <summary>
+        /// Gets value that indicates whether the entity type specified is declared in the corresponding table schema.
+        /// </summary>
+        /// <param name="entityType">
+        /// The entity type.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if the entity type is declared in the corresponding table schema; otherwise <c>false</c>.
+        /// </returns>
+        public bool IsTypeDeclared(Type entityType)
+        {
+            this.ThrowIfDisposed();
+
+            var columnFamilies = this.entityContext.ColumnFamiliesForType(entityType);
+            var table = this.GetTable(entityType);
+            var tableSchema = TableSchema.Parse(table.Schema);
+            foreach (var name in tableSchema.AccessGroups.SelectMany(ag => ag.ColumnFamilies).Select(cf => cf.Name))
+            {
+                columnFamilies.Remove(name);
+            }
+
+            return columnFamilies.Count == 0;
         }
 
         /// <summary>

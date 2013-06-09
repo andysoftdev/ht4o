@@ -166,6 +166,32 @@ namespace Hypertable.Persistence
         #region Public Methods and Operators
 
         /// <summary>
+        /// Gets the column families for type specified.
+        /// </summary>
+        /// <param name="entityType">
+        /// The entity type.
+        /// </param>
+        /// <returns>
+        /// The column families.
+        /// </returns>
+        public ISet<string> ColumnFamiliesForType(Type entityType)
+        {
+            if (entityType == null)
+            {
+                throw new ArgumentNullException("entityType");
+            }
+
+            var entityReference = this.EntityReferenceForType(entityType);
+            if (entityReference == null)
+            {
+                throw new PersistenceException(string.Format(CultureInfo.InvariantCulture, @"{0} is not a valid entity", entityType));
+            }
+
+            entityReference.EstablishColumnSets(() => this.ColumnNames(entityReference));
+            return entityReference.ColumnFamilySet;
+        }
+
+        /// <summary>
         /// The dispose.
         /// </summary>
         public void Dispose()
