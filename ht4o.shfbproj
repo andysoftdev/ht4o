@@ -37,7 +37,7 @@
       <NamespaceSummaryItem name="Hypertable.Persistence.Serialization" isDocumented="True">TODO</NamespaceSummaryItem>
     </NamespaceSummaries>
     <VisibleItems>Attributes, InheritedMembers, InheritedFrameworkMembers, Protected</VisibleItems>
-    <MissingTags>Summary, Parameter, Returns, Namespace, TypeParameter, AutoDocumentDispose</MissingTags>
+    <MissingTags>Summary, Parameter, Returns, AutoDocumentCtors, Namespace, TypeParameter, AutoDocumentDispose</MissingTags>
     <ApiFilter>
     </ApiFilter>
     <CopyrightText>ht4o.softdev.ch, Copyright &amp;#169%3b 2010-2013</CopyrightText>
