@@ -35,6 +35,21 @@ namespace Hypertable.Persistence.Serialization
         #region Static Fields
 
         /// <summary>
+        /// The culture.
+        /// </summary>
+        private static readonly Regex Culture = new Regex(@", Culture=\w+", RegexOptions.Compiled);
+
+        /// <summary>
+        /// The public key token.
+        /// </summary>
+        private static readonly Regex PublicKeyToken = new Regex(@", PublicKeyToken=\w+", RegexOptions.Compiled);
+
+        /// <summary>
+        /// The version.
+        /// </summary>
+        private static readonly Regex Version = new Regex(@", Version=\d+.\d+.\d+.\d+", RegexOptions.Compiled);
+
+        /// <summary>
         /// The remove assembly culture.
         /// </summary>
         private static bool removeAssemblyCulture = true;
@@ -119,30 +134,30 @@ namespace Hypertable.Persistence.Serialization
             {
                 if (assemblyName != null)
                 {
-                    assemblyName = Regex.Replace(assemblyName, @", Version=\d+.\d+.\d+.\d+", string.Empty);
+                    assemblyName = Version.Replace(assemblyName, string.Empty);
                 }
 
-                typeName = Regex.Replace(typeName, @", Version=\d+.\d+.\d+.\d+", string.Empty);
+                typeName = Version.Replace(typeName, string.Empty);
             }
 
             if (RemoveAssemblyCulture)
             {
                 if (assemblyName != null)
                 {
-                    assemblyName = Regex.Replace(assemblyName, @", Culture=\w+", string.Empty);
+                    assemblyName = Culture.Replace(assemblyName, string.Empty);
                 }
 
-                typeName = Regex.Replace(typeName, @", Culture=\w+", string.Empty);
+                typeName = Culture.Replace(typeName, string.Empty);
             }
 
             if (RemoveAssemblyPublicKeyToken)
             {
                 if (assemblyName != null)
                 {
-                    assemblyName = Regex.Replace(assemblyName, @", PublicKeyToken=\w+", string.Empty);
+                    assemblyName = PublicKeyToken.Replace(assemblyName, string.Empty);
                 }
 
-                typeName = Regex.Replace(typeName, @", PublicKeyToken=\w+", string.Empty);
+                typeName = PublicKeyToken.Replace(typeName, string.Empty);
             }
         }
 
