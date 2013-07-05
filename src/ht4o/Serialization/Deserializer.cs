@@ -1424,7 +1424,7 @@ namespace Hypertable.Persistence.Serialization
                 case Tags.Null:
                     return null;
                 case Tags.Type:
-                    var type = Decoder.ReadType(this.binaryReader);
+                    var type = Decoder.TypeReader(this.binaryReader);
                     this.typeRefs.Add(type);
                     return type;
                 case Tags.TypeCode:

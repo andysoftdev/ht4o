@@ -30,8 +30,6 @@ namespace Hypertable.Persistence.Serialization
 
     using Hypertable.Persistence.Serialization.Delegates;
 
-    //// TODO support for custom types via interface method
-
     /// <summary>
     /// The encoder.
     /// </summary>
@@ -59,6 +57,11 @@ namespace Hypertable.Persistence.Serialization
         /// </summary>
         private static SerializationBinder binder = new Binder();
 
+        /// <summary>
+        /// The type writer.
+        /// </summary>
+        private static Action<BinaryWriter, Type> typeWriter;
+
         #endregion
 
         #region Constructors and Destructors
@@ -68,6 +71,8 @@ namespace Hypertable.Persistence.Serialization
         /// </summary>
         static Encoder()
         {
+            typeWriter = WriteType;
+
             var encoderInfos = new Dictionary<Type, EncoderInfo>
                 {
                     { typeof(sbyte), new EncoderInfo(Tags.SByte, WriteSByte) }, 
@@ -135,6 +140,28 @@ namespace Hypertable.Persistence.Serialization
         /// The strict explicit type codes.
         /// </value>
         public static bool StrictExplicitTypeCodes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type writer.
+        /// </summary>
+        /// <value>
+        /// The type writer.
+        /// </value>
+        public static Action<BinaryWriter, Type> TypeWriter
+        {
+            get
+            {
+                return typeWriter;
+            }
+
+            set
+            {
+                if (value != null)
+                {
+                    typeWriter = value;
+                }
+            }
+        }
 
         #endregion
 
@@ -936,18 +963,7 @@ namespace Hypertable.Persistence.Serialization
                 WriteTag(binaryWriter, Tags.Type);
             }
 
-            var tuple = TypeNameCache.GetOrAdd(
-                value,
-                _ =>
-                    {
-                        string assemblyName;
-                        string typeName;
-                        binder.BindToName(value, out assemblyName, out typeName);
-                        return new Tuple<string, string>(assemblyName, typeName);
-                    });
-
-            binaryWriter.Write(tuple.Item1);
-            binaryWriter.Write(tuple.Item2);
+            typeWriter(binaryWriter, value);
         }
 
         /// <summary>
@@ -1302,6 +1318,31 @@ namespace Hypertable.Persistence.Serialization
         private static void WriteType(BinaryWriter binaryWriter, object value, bool writeTag)
         {
             WriteType(binaryWriter, (Type)value, writeTag);
+        }
+
+        /// <summary>
+        /// Write a type value to the binary writer.
+        /// </summary>
+        /// <param name="binaryWriter">
+        /// The binary writer.
+        /// </param>
+        /// <param name="type">
+        /// The type.
+        /// </param>
+        private static void WriteType(BinaryWriter binaryWriter, Type type)
+        {
+            var tuple = TypeNameCache.GetOrAdd(
+                type, 
+                _ =>
+                    {
+                        string assemblyName;
+                        string typeName;
+                        binder.BindToName(type, out assemblyName, out typeName);
+                        return new Tuple<string, string>(assemblyName, typeName);
+                    });
+
+            binaryWriter.Write(tuple.Item1);
+            binaryWriter.Write(tuple.Item2);
         }
 
         /// <summary>

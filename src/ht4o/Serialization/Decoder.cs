@@ -24,12 +24,8 @@ namespace Hypertable.Persistence.Serialization
     using System.Collections.Concurrent;
     using System.Globalization;
     using System.IO;
-    using System.Runtime.Serialization;
 
-    using Hypertable.Persistence.Reflection;
     using Hypertable.Persistence.Serialization.Delegates;
-
-    //// TODO support for custom types via interface method
 
     /// <summary>
     /// The decoder.
@@ -66,6 +62,37 @@ namespace Hypertable.Persistence.Serialization
         /// The type codes.
         /// </summary>
         private static readonly ConcurrentDictionary<int, Type> TypeCodes = new ConcurrentDictionary<int, Type>();
+
+        /// <summary>
+        /// The type reader.
+        /// </summary>
+        private static Func<BinaryReader, Type> typeReader = ReadType;
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Gets or sets the type reader.
+        /// </summary>
+        /// <value>
+        /// The type reader.
+        /// </value>
+        public static Func<BinaryReader, Type> TypeReader
+        {
+            get
+            {
+                return typeReader;
+            }
+
+            set
+            {
+                if (value != null)
+                {
+                    typeReader = value;
+                }
+            }
+        }
 
         #endregion
 
@@ -708,7 +735,7 @@ namespace Hypertable.Persistence.Serialization
                     any = ReadGuid(binaryReader);
                     break;
                 case Tags.Type:
-                    any = ReadType(binaryReader);
+                    any = TypeReader(binaryReader);
                     break;
                 case Tags.TypeCode:
                     any = ReadTypeCode(binaryReader);
