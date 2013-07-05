@@ -29,7 +29,7 @@ namespace Hypertable.Persistence.Reflection
     /// <summary>
     /// The type loader.
     /// </summary>
-    internal static class TypeLoader
+    public static class TypeLoader
     {
         #region Static Fields
 
@@ -51,7 +51,7 @@ namespace Hypertable.Persistence.Reflection
         /// <returns>
         /// The resolved type.
         /// </returns>
-        internal static Type GetType(string typeName)
+        public static Type GetType(string typeName)
         {
             return Types.GetOrAdd(
                 typeName, 
