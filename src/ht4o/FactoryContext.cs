@@ -284,6 +284,7 @@ namespace Hypertable.Persistence
             else
             {
                 ns = this.configuration.RootNamespace;
+                ns = ns.TrimEnd('/');
             }
 
             return this.namespaces.GetOrAdd(ns, _ns => this.client.OpenNamespace(_ns, OpenDispositions.OpenAlways | OpenDispositions.CreateIntermediate));
