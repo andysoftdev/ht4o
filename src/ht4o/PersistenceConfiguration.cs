@@ -165,7 +165,7 @@ namespace Hypertable.Persistence
 
             set
             {
-                this.rootNamespace = NormalizeRootNamespace(value);
+                this.rootNamespace = NormalizeNamespace(value);
             }
         }
 
@@ -184,45 +184,45 @@ namespace Hypertable.Persistence
         /// <summary>
         /// Normalizes the root namespace.
         /// </summary>
-        /// <param name="rootNamespace">
+        /// <param name="ns">
         /// The root namespace.
         /// </param>
         /// <returns>
         /// The normalized root namespace.
         /// </returns>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="rootNamespace"/> is null.
+        /// If <paramref name="ns"/> is null.
         /// </exception>
         /// <exception cref="ArgumentException">
-        /// If the trimed <paramref name="rootNamespace"/> is empty.
+        /// If the trimed <paramref name="ns"/> is empty.
         /// </exception>
-        public static string NormalizeRootNamespace(string rootNamespace)
+        public static string NormalizeNamespace(string ns)
         {
-            if (rootNamespace == null)
+            if (ns == null)
             {
-                throw new ArgumentNullException("rootNamespace");
+                throw new ArgumentNullException("ns");
             }
 
-            rootNamespace = rootNamespace.Trim();
-            if (string.IsNullOrEmpty(rootNamespace))
+            ns = ns.Trim();
+            if (string.IsNullOrEmpty(ns))
             {
-                throw new ArgumentException(@"Invalid root namespace name", "rootNamespace");
+                throw new ArgumentException(@"Invalid root namespace name", "ns");
             }
 
-            if (rootNamespace != "/")
+            if (ns != "/")
             {
-                if (!rootNamespace.EndsWith("/", StringComparison.Ordinal))
+                if (!ns.EndsWith("/", StringComparison.Ordinal))
                 {
-                    rootNamespace += '/';
+                    ns += '/';
                 }
 
-                if (!rootNamespace.StartsWith("/", StringComparison.Ordinal))
+                if (!ns.StartsWith("/", StringComparison.Ordinal))
                 {
-                    rootNamespace = rootNamespace.Insert(0, "/");
+                    ns = ns.Insert(0, "/");
                 }
             }
 
-            return rootNamespace;
+            return ns;
         }
 
         #endregion
