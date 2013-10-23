@@ -106,7 +106,7 @@ namespace Hypertable.Persistence.Reflection
                     this.serializable = InspectSerializable(type);
                     if (this.serializable != null)
                     {
-                        this.inspectedProperties = null;
+                        this.inspectedProperties.Clear();
                     }
                 }
 
@@ -150,7 +150,7 @@ namespace Hypertable.Persistence.Reflection
         {
             get
             {
-                return this.inspectedProperties != null && this.inspectedProperties.Count > 0;
+                return this.inspectedProperties.Count > 0;
             }
         }
 
