@@ -567,7 +567,7 @@ namespace Hypertable.Persistence
             var keyBinding = this.GetKeyBindingForType(type, columnBinding);
 
             ////TODO set (or not set) Ignore flag to other valid candidates
-            if (!this.StrictExplicitKeyBinding)
+            if (!this.StrictExplicitKeyBinding && inspector.HasProperties)
             {
                 // Has entity key?
                 var property = inspector.Properties.FirstOrDefault(p => p.HasKey);
