@@ -46,14 +46,14 @@ namespace Hypertable.Persistence
         /// </returns>
         public bool Equals(IColumnBinding x, IColumnBinding y)
         {
-            if (x == null)
+            if (object.ReferenceEquals(x, y))
             {
-                throw new ArgumentNullException("x");
+                return true;
             }
 
-            if (y == null)
+            if (x == null || y == null)
             {
-                throw new ArgumentNullException("y");
+                return false;
             }
 
             return string.Equals(x.ColumnFamily, y.ColumnFamily) && string.Equals(x.ColumnQualifier, y.ColumnQualifier);
@@ -62,26 +62,26 @@ namespace Hypertable.Persistence
         /// <summary>
         /// Returns a hash code for the specified object.
         /// </summary>
-        /// <param name="columnBinding">
+        /// <param name="obj">
         /// The <see cref="IColumnBinding"/> for which a hash code is to be returned.
         /// </param>
         /// <returns>
         /// A hash code for the specified object.
         /// </returns>
         /// <exception cref="ArgumentNullException">
-        /// The type of <paramref name="columnBinding"/> is a reference type and <paramref name="columnBinding"/> is null.
+        /// The type of <paramref name="obj"/> is a reference type and <paramref name="obj"/> is null.
         /// </exception>
-        public int GetHashCode(IColumnBinding columnBinding)
+        public int GetHashCode(IColumnBinding obj)
         {
-            if (columnBinding == null)
+            if (obj == null)
             {
-                throw new ArgumentNullException("columnBinding");
+                throw new ArgumentNullException("obj");
             }
 
-            var hashCode = 17 + columnBinding.ColumnFamily.GetHashCode();
-            if (columnBinding.ColumnQualifier != null)
+            var hashCode = 17 + obj.ColumnFamily.GetHashCode();
+            if (obj.ColumnQualifier != null)
             {
-                hashCode = (29 * hashCode) + columnBinding.ColumnQualifier.GetHashCode();
+                hashCode = (29 * hashCode) + obj.ColumnQualifier.GetHashCode();
             }
 
             return hashCode;

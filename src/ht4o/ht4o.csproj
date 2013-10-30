@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
- <PropertyGroup>
+  <PropertyGroup>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{492EC4F9-6694-48FE-99BF-E773D0B664DD}</ProjectGuid>
@@ -112,6 +112,7 @@
     <Compile Include="BindingContext.cs" />
     <Compile Include="BehaviorExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="NullableExtensions.cs" />
     <Compile Include="Pair.cs" />
     <Compile Include="PersistenceConfiguration.cs" />

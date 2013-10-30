@@ -49,13 +49,27 @@ namespace Hypertable.Persistence.Bindings
         /// <param name="columnFamily">
         /// The column family.
         /// </param>
+        /// <exception cref="ArgumentNullException">
+        /// If the <paramref name="columnFamily"/> is null or empty.
+        /// </exception>
+        public ColumnBinding(string columnFamily)
+            : this(columnFamily, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ColumnBinding"/> class.
+        /// </summary>
+        /// <param name="columnFamily">
+        /// The column family.
+        /// </param>
         /// <param name="columnQualifier">
         /// The column qualifier.
         /// </param>
         /// <exception cref="ArgumentNullException">
         /// If the <paramref name="columnFamily"/> is null or empty.
         /// </exception>
-        public ColumnBinding(string columnFamily, string columnQualifier = null)
+        public ColumnBinding(string columnFamily, string columnQualifier)
         {
             if (string.IsNullOrEmpty(columnFamily))
             {

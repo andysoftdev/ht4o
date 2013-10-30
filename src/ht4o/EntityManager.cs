@@ -265,6 +265,20 @@ namespace Hypertable.Persistence
         /// <summary>
         /// Fetches all entities of the entity type specified from the database.
         /// </summary>
+        /// <typeparam name="T">
+        /// Type of the entities to fetch.
+        /// </typeparam>
+        /// <returns>
+        /// The entities fetched.
+        /// </returns>
+        public IEnumerable<T> Fetch<T>() where T : class
+        {
+            return this.Fetch<T>(Behaviors.Default);
+        }
+
+        /// <summary>
+        /// Fetches all entities of the entity type specified from the database.
+        /// </summary>
         /// <param name="behaviors">
         /// The behaviors.
         /// </param>
@@ -274,9 +288,26 @@ namespace Hypertable.Persistence
         /// <returns>
         /// The entities fetched.
         /// </returns>
-        public IEnumerable<T> Fetch<T>(Behaviors behaviors = Behaviors.Default) where T : class
+        public IEnumerable<T> Fetch<T>(Behaviors behaviors) where T : class
         {
             return OfType<T>(this.Fetch(typeof(T), this.CheckBehaviors(behaviors)));
+        }
+
+        /// <summary>
+        /// Fetches all entities of the types specified from the database.
+        /// </summary>
+        /// <param name="queryTypes">
+        /// The query types.
+        /// </param>
+        /// <typeparam name="T">
+        /// Type of the entities to fetch.
+        /// </typeparam>
+        /// <returns>
+        /// The entities fetched.
+        /// </returns>
+        public IEnumerable<T> Fetch<T>(IEnumerable<Type> queryTypes) where T : class
+        {
+            return this.Fetch<T>(queryTypes, Behaviors.Default);
         }
 
         /// <summary>
@@ -294,9 +325,26 @@ namespace Hypertable.Persistence
         /// <returns>
         /// The entities fetched.
         /// </returns>
-        public IEnumerable<T> Fetch<T>(IEnumerable<Type> queryTypes, Behaviors behaviors = Behaviors.Default) where T : class
+        public IEnumerable<T> Fetch<T>(IEnumerable<Type> queryTypes, Behaviors behaviors) where T : class
         {
             return OfType<T>(this.Fetch(typeof(T), queryTypes, this.CheckBehaviors(behaviors)));
+        }
+
+        /// <summary>
+        /// Fetches all entities using the given  scan specification from the database.
+        /// </summary>
+        /// <param name="scanSpec">
+        /// The scan specification.
+        /// </param>
+        /// <typeparam name="T">
+        /// Type of the entities to fetch.
+        /// </typeparam>
+        /// <returns>
+        /// The entities fetched.
+        /// </returns>
+        public IEnumerable<T> Fetch<T>(ScanSpec scanSpec) where T : class
+        {
+            return this.Fetch<T>(scanSpec, Behaviors.Default);
         }
 
         /// <summary>
@@ -314,9 +362,23 @@ namespace Hypertable.Persistence
         /// <returns>
         /// The entities fetched.
         /// </returns>
-        public IEnumerable<T> Fetch<T>(ScanSpec scanSpec, Behaviors behaviors = Behaviors.Default) where T : class
+        public IEnumerable<T> Fetch<T>(ScanSpec scanSpec, Behaviors behaviors) where T : class
         {
             return OfType<T>(this.Fetch(typeof(T), scanSpec, this.CheckBehaviors(behaviors)));
+        }
+
+        /// <summary>
+        /// Fetches all entities of the entity type specified from the database.
+        /// </summary>
+        /// <param name="entityType">
+        /// The entity type.
+        /// </param>
+        /// <returns>
+        /// The entities fetched.
+        /// </returns>
+        public IEnumerable Fetch(Type entityType)
+        {
+            return this.Fetch(entityType, Behaviors.Default);
         }
 
         /// <summary>
@@ -331,9 +393,26 @@ namespace Hypertable.Persistence
         /// <returns>
         /// The entities fetched.
         /// </returns>
-        public IEnumerable Fetch(Type entityType, Behaviors behaviors = Behaviors.Default)
+        public IEnumerable Fetch(Type entityType, Behaviors behaviors)
         {
             return this.entityContext.Fetch(entityType, this.CheckBehaviors(behaviors));
+        }
+
+        /// <summary>
+        /// Fetches all entities of the types specified from the database.
+        /// </summary>
+        /// <param name="entityType">
+        /// The entity type.
+        /// </param>
+        /// <param name="queryTypes">
+        /// The query types.
+        /// </param>
+        /// <returns>
+        /// The entities fetched.
+        /// </returns>
+        public IEnumerable Fetch(Type entityType, IEnumerable<Type> queryTypes)
+        {
+            return this.Fetch(entityType, queryTypes, Behaviors.Default);
         }
 
         /// <summary>
@@ -351,9 +430,26 @@ namespace Hypertable.Persistence
         /// <returns>
         /// The entities fetched.
         /// </returns>
-        public IEnumerable Fetch(Type entityType, IEnumerable<Type> queryTypes, Behaviors behaviors = Behaviors.Default)
+        public IEnumerable Fetch(Type entityType, IEnumerable<Type> queryTypes, Behaviors behaviors)
         {
             return this.entityContext.Fetch(entityType, queryTypes, this.CheckBehaviors(behaviors));
+        }
+
+        /// <summary>
+        /// Fetches all entities using the given scan specification from the database.
+        /// </summary>
+        /// <param name="entityType">
+        /// The entity type.
+        /// </param>
+        /// <param name="scanSpec">
+        /// The scan specification.
+        /// </param>
+        /// <returns>
+        /// The entities fetched.
+        /// </returns>
+        public IEnumerable Fetch(Type entityType, ScanSpec scanSpec)
+        {
+            return this.Fetch(entityType, scanSpec, Behaviors.Default);
         }
 
         /// <summary>
@@ -371,10 +467,27 @@ namespace Hypertable.Persistence
         /// <returns>
         /// The entities fetched.
         /// </returns>
-        public IEnumerable Fetch(Type entityType, ScanSpec scanSpec, Behaviors behaviors = Behaviors.Default)
+        public IEnumerable Fetch(Type entityType, ScanSpec scanSpec, Behaviors behaviors)
         {
             this.ThrowIfDisposed();
             return this.entityContext.Fetch(entityType, scanSpec, this.CheckBehaviors(behaviors));
+        }
+
+        /// <summary>
+        /// Find an entity in the database using the key provider specified.
+        /// </summary>
+        /// <param name="keyProvider">
+        /// The key provider.
+        /// </param>
+        /// <typeparam name="T">
+        /// Type of the entity to find.
+        /// </typeparam>
+        /// <returns>
+        /// The found entity instance or null if the entity does not exist.
+        /// </returns>
+        public T Find<T>(object keyProvider) where T : class
+        {
+            return this.Find<T>(keyProvider, Behaviors.Default);
         }
 
         /// <summary>
@@ -392,9 +505,26 @@ namespace Hypertable.Persistence
         /// <returns>
         /// The found entity instance or null if the entity does not exist.
         /// </returns>
-        public T Find<T>(object keyProvider, Behaviors behaviors = Behaviors.Default) where T : class
+        public T Find<T>(object keyProvider, Behaviors behaviors) where T : class
         {
             return (T)this.Find(typeof(T), keyProvider, this.CheckBehaviors(behaviors));
+        }
+
+        /// <summary>
+        /// Find an entity in the database using the key provider specified.
+        /// </summary>
+        /// <param name="entityType">
+        /// The entity type.
+        /// </param>
+        /// <param name="keyProvider">
+        /// The key provider.
+        /// </param>
+        /// <returns>
+        /// The found entity instance or null if the entity does not exist.
+        /// </returns>
+        public object Find(Type entityType, object keyProvider)
+        {
+            return this.Find(entityType, keyProvider, Behaviors.Default);
         }
 
         /// <summary>
@@ -412,10 +542,27 @@ namespace Hypertable.Persistence
         /// <returns>
         /// The found entity instance or null if the entity does not exist.
         /// </returns>
-        public object Find(Type entityType, object keyProvider, Behaviors behaviors = Behaviors.Default)
+        public object Find(Type entityType, object keyProvider, Behaviors behaviors)
         {
             this.ThrowIfDisposed();
             return this.entityContext.Find(entityType, keyProvider, this.CheckBehaviors(behaviors));
+        }
+
+        /// <summary>
+        /// Find the entities in the database using the key providers specified.
+        /// </summary>
+        /// <param name="keyProviders">
+        /// The key providers.
+        /// </param>
+        /// <typeparam name="T">
+        /// Type of the entities to find.
+        /// </typeparam>
+        /// <returns>
+        /// The entities found.
+        /// </returns>
+        public IEnumerable<T> FindMany<T>(IEnumerable keyProviders) where T : class
+        {
+            return this.FindMany<T>(keyProviders, Behaviors.Default);
         }
 
         /// <summary>
@@ -433,9 +580,26 @@ namespace Hypertable.Persistence
         /// <returns>
         /// The entities found.
         /// </returns>
-        public IEnumerable<T> FindMany<T>(IEnumerable keyProviders, Behaviors behaviors = Behaviors.Default) where T : class
+        public IEnumerable<T> FindMany<T>(IEnumerable keyProviders, Behaviors behaviors) where T : class
         {
             return OfType<T>(this.FindMany(typeof(T), keyProviders, this.CheckBehaviors(behaviors)));
+        }
+        
+        /// <summary>
+        /// Find the entities in the database using the key providers specified.
+        /// </summary>
+        /// <param name="entityType">
+        /// The entity type.
+        /// </param>
+        /// <param name="keyProviders">
+        /// The key providers.
+        /// </param>
+        /// <returns>
+        /// The entities found.
+        /// </returns>
+        public IEnumerable FindMany(Type entityType, IEnumerable keyProviders)
+        {
+            return this.FindMany(entityType, keyProviders, Behaviors.Default);
         }
 
         /// <summary>
@@ -453,7 +617,7 @@ namespace Hypertable.Persistence
         /// <returns>
         /// The entities found.
         /// </returns>
-        public IEnumerable FindMany(Type entityType, IEnumerable keyProviders, Behaviors behaviors = Behaviors.Default)
+        public IEnumerable FindMany(Type entityType, IEnumerable keyProviders, Behaviors behaviors)
         {
             this.ThrowIfDisposed();
             return this.entityContext.FindMany(entityType, keyProviders, this.CheckBehaviors(behaviors));
@@ -601,6 +765,23 @@ namespace Hypertable.Persistence
         /// <param name="entity">
         /// The entity to store.
         /// </param>
+        /// <typeparam name="T">
+        /// The entity type.
+        /// </typeparam>
+        /// <returns>
+        /// The entity.
+        /// </returns>
+        public T Persist<T>(T entity) where T : class
+        {
+            return this.Persist<T>(entity, Behaviors.Default);
+        }
+
+        /// <summary>
+        /// Stores an entity instance to the database.
+        /// </summary>
+        /// <param name="entity">
+        /// The entity to store.
+        /// </param>
         /// <param name="behaviors">
         /// The behaviors.
         /// </param>
@@ -610,7 +791,7 @@ namespace Hypertable.Persistence
         /// <returns>
         /// The entity.
         /// </returns>
-        public T Persist<T>(T entity, Behaviors behaviors = Behaviors.Default) where T : class
+        public T Persist<T>(T entity, Behaviors behaviors) where T : class
         {
             this.ThrowIfDisposed();
             this.entityContext.Persist(entity, this.CheckBehaviors(behaviors));

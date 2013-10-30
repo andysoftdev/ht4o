@@ -497,6 +497,11 @@ namespace Hypertable.Persistence.Scanner.TableScan
         /// </returns>
         protected override bool GetOrAdd(EntityScanTarget entityScanTarget, out EntityScanTarget entityScanTargetExisting)
         {
+            if (entityScanTarget == null)
+            {
+                throw new ArgumentNullException("entityScanTarget");
+            }
+
             var d = string.IsNullOrEmpty(entityScanTarget.Key.ColumnFamily) ? this.unqualifiedKeys : this.keys;
 
             lock (this.keys)

@@ -834,6 +834,11 @@ namespace Hypertable.Persistence.Serialization
         /// </param>
         public static void WriteUri(BinaryWriter binaryWriter, Uri value, bool writeTag)
         {
+            if (value == null)
+            {
+                throw new ArgumentNullException("value");
+            }
+
             if (writeTag)
             {
                 WriteTag(binaryWriter, Tags.Uri);

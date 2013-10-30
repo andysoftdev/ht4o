@@ -346,20 +346,6 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets a database key from the value specified.
-        /// </summary>
-        /// <param name="value">
-        /// The value.
-        /// </param>
-        /// <returns>
-        /// A valid database key.
-        /// </returns>
-        private Key GetKeyFromValue(object value)
-        {
-            return this.VerifyKey(this.keyBinding.KeyFromValue(value), true);
-        }
-
-        /// <summary>
         /// Validates the specified database key.
         /// </summary>
         /// <param name="key">

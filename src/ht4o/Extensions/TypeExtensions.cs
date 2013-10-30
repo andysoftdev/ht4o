@@ -36,15 +36,6 @@ namespace Hypertable.Persistence.Extensions
     /// </summary>
     internal static class TypeExtensions
     {
-        #region Static Fields
-
-        /// <summary>
-        /// The unqualified full type name cache.
-        /// </summary>
-        private static readonly ConcurrentDictionary<Type, string> ShortQualifiedNameCache = new ConcurrentDictionary<Type, string>();
-
-        #endregion
-
         #region Methods
 
         /// <summary>
@@ -265,7 +256,7 @@ namespace Hypertable.Persistence.Extensions
         /// The generic type definition.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the type is a nullable type, otherwise <c>false</c>.
+        /// <c>true</c> if the type is the generic type definition specified, otherwise <c>false</c>.
         /// </returns>
         internal static bool IsGenericTypeDefinition(this Type type, Type genericTypeDefinition)
         {
@@ -315,7 +306,7 @@ namespace Hypertable.Persistence.Extensions
         }
 
         /// <summary>
-        /// Gets a value indicating whether the member infos have the same metadata token.
+        /// Gets a value indicating whether the member info have the same metadata token.
         /// </summary>
         /// <param name="x">
         /// The first member info.
@@ -324,7 +315,7 @@ namespace Hypertable.Persistence.Extensions
         /// The second member info.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the member infos have the same metadata token, otherwise <c>false</c>.
+        /// <c>true</c> if the member info have the same metadata token, otherwise <c>false</c>.
         /// </returns>
         private static bool SameMetadataToken(MemberInfo x, MemberInfo y)
         {

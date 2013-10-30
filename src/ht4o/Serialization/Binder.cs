@@ -127,6 +127,11 @@ namespace Hypertable.Persistence.Serialization
         /// </param>
         public override void BindToName(Type serializedType, out string assemblyName, out string typeName)
         {
+            if (serializedType == null)
+            {
+                throw new ArgumentNullException("serializedType");
+            }
+
             assemblyName = serializedType.Assembly.FullName;
             typeName = serializedType.FullName ?? serializedType.Name;
 

@@ -731,7 +731,7 @@ namespace Hypertable.Persistence.Serialization
                 }
             }
 
-            throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid destination type {0}, IList, IList<T>, ISet<T> or Array expected", destinationType));
+            throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid destination type {0}, expecting IList, IList<T>, ISet<T> or Array", destinationType));
         }
 
         /// <summary>
@@ -865,7 +865,7 @@ namespace Hypertable.Persistence.Serialization
                 }
             }
 
-            throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid destination type {0}, IList, IList<T>, ISet<T> or Array expected", destinationType));
+            throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid destination type {0}, expecting IList, IList<T>, ISet<T> or Array", destinationType));
         }
 
         /// <summary>
@@ -921,7 +921,7 @@ namespace Hypertable.Persistence.Serialization
                 }
             }
 
-            throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid destination type {0}, IList<>, IList, ISet<> or Array expected", destinationType));
+            throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid destination type {0}, expecting  IList<>, IList, ISet<> or Array", destinationType));
         }
 
         /// <summary>
@@ -999,7 +999,7 @@ namespace Hypertable.Persistence.Serialization
                 return obj;
             }
 
-            throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid destination type {0}, IDictionary or IDictionary<,> expected", destinationType));
+            throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid destination type {0}, expecting IDictionary or IDictionary<,>", destinationType));
         }
 
         /// <summary>
@@ -1074,7 +1074,7 @@ namespace Hypertable.Persistence.Serialization
                 }
             }
 
-            throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid destination type {0}, IList, IList<T>, ISet<T> or Array expected", destinationType));
+            throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid destination type {0}, expecting IList, IList<T>, ISet<T> or Array", destinationType));
         }
 
         /// <summary>
@@ -1388,26 +1388,7 @@ namespace Hypertable.Persistence.Serialization
                 return ci.Invoke(new[] { items[0].Value, items[1].Value });
             }
 
-            throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid destination type {0}, Tuple<,[,]>, or KeyValuePair<,> expected", destinationType));
-
-            /*
-            var genericArguments = new[] { this.ReadType(), this.ReadType() };
-            var type = typeof(KeyValuePair<,>).MakeGenericType(genericArguments[0], genericArguments[1]);
-
-            if( destinationType.IsGenericTypeDefinition(typeof(KeyValuePair<,>)) ) {
-                if( !destinationType.IsAssignableFrom(type) ) {
-                    type = destinationType;
-                }
-            }
-
-            var ci = type.GetConstructor(genericArguments);
-            return
-                ci.Invoke(
-                    new[]
-                        {
-                            this.Deserialize(genericArguments[0], Decoder.ReadTag(this.binaryReader)), 
-                            this.Deserialize(genericArguments[1], Decoder.ReadTag(this.binaryReader))
-                        });*/
+            throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid destination type {0}, expecting Tuple<,[,]>, or KeyValuePair<,>", destinationType));
         }
 
         /// <summary>

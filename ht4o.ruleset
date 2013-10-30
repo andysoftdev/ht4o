@@ -2,8 +2,15 @@
 <RuleSet Name="ht4o Rules" ToolsVersion="10.0">
   <IncludeAll Action="Warning" />
   <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
+    <Rule Id="CA1004" Action="None" />
+    <Rule Id="CA1006" Action="None" />
+    <Rule Id="CA1020" Action="None" />
+    <Rule Id="CA1702" Action="None" />
     <Rule Id="CA1704" Action="None" />
     <Rule Id="CA1707" Action="None" />
     <Rule Id="CA1709" Action="None" />
+    <Rule Id="CA1720" Action="None" />
+    <Rule Id="CA1726" Action="None" />
+    <Rule Id="CA1810" Action="None" />
   </Rules>
 </RuleSet>

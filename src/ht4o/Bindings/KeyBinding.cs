@@ -63,10 +63,21 @@ namespace Hypertable.Persistence.Bindings
         /// <param name="propertyLambda">
         /// The property lambda.
         /// </param>
+        public KeyBinding(Expression<Func<T, string>> propertyLambda)
+            : this(propertyLambda, false)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KeyBinding{T}"/> class.
+        /// </summary>
+        /// <param name="propertyLambda">
+        /// The property lambda.
+        /// </param>
         /// <param name="generateKey">
         /// Indicating whether this key binding should generate new keys or not.
         /// </param>
-        public KeyBinding(Expression<Func<T, string>> propertyLambda, bool generateKey = false)
+        public KeyBinding(Expression<Func<T, string>> propertyLambda, bool generateKey)
             : base(typeof(T))
         {
             FromExpression(propertyLambda, out this.get, out this.set);
@@ -82,14 +93,48 @@ namespace Hypertable.Persistence.Bindings
         /// <param name="columnBinding">
         /// The column binding.
         /// </param>
+        public KeyBinding(Expression<Func<T, string>> propertyLambda, IColumnBinding columnBinding)
+            : this(propertyLambda, columnBinding, false)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KeyBinding{T}"/> class.
+        /// </summary>
+        /// <param name="propertyLambda">
+        /// The property lambda.
+        /// </param>
+        /// <param name="columnBinding">
+        /// The column binding.
+        /// </param>
         /// <param name="generateKey">
         /// Indicating whether this key binding should generate new keys or not.
         /// </param>
-        public KeyBinding(Expression<Func<T, string>> propertyLambda, IColumnBinding columnBinding, bool generateKey = false)
+        public KeyBinding(Expression<Func<T, string>> propertyLambda, IColumnBinding columnBinding, bool generateKey)
             : base(typeof(T), columnBinding)
         {
             FromExpression(propertyLambda, out this.get, out this.set);
             this.generateKey = generateKey;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KeyBinding{T}"/> class.
+        /// </summary>
+        /// <param name="get">
+        /// The getter function.
+        /// </param>
+        /// <param name="set">
+        /// The setter method.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="get"/> is null.
+        /// </exception>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="set"/> is null.
+        /// </exception>
+        public KeyBinding(Func<T, string> get, Action<T, string> set)
+            : this(get, set, false)
+        {
         }
 
         /// <summary>
@@ -110,7 +155,7 @@ namespace Hypertable.Persistence.Bindings
         /// <exception cref="ArgumentNullException">
         /// If <paramref name="set"/> is null.
         /// </exception>
-        public KeyBinding(Func<T, string> get, Action<T, string> set, bool generateKey = false)
+        public KeyBinding(Func<T, string> get, Action<T, string> set, bool generateKey)
             : base(typeof(T))
         {
             if (get == null)
@@ -141,6 +186,29 @@ namespace Hypertable.Persistence.Bindings
         /// <param name="columnBinding">
         /// The column binding.
         /// </param>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="get"/> is null.
+        /// </exception>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="set"/> is null.
+        /// </exception>
+        public KeyBinding(Func<T, string> get, Action<T, string> set, IColumnBinding columnBinding)
+            : this(get, set, columnBinding, false)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KeyBinding{T}"/> class.
+        /// </summary>
+        /// <param name="get">
+        /// The getter function.
+        /// </param>
+        /// <param name="set">
+        /// The setter method.
+        /// </param>
+        /// <param name="columnBinding">
+        /// The column binding.
+        /// </param>
         /// <param name="generateKey">
         /// Indicating whether this key binding should generate new keys or not.
         /// </param>
@@ -150,7 +218,7 @@ namespace Hypertable.Persistence.Bindings
         /// <exception cref="ArgumentNullException">
         /// If <paramref name="set"/> is null.
         /// </exception>
-        public KeyBinding(Func<T, string> get, Action<T, string> set, IColumnBinding columnBinding, bool generateKey = false)
+        public KeyBinding(Func<T, string> get, Action<T, string> set, IColumnBinding columnBinding, bool generateKey)
             : base(typeof(T), columnBinding)
         {
             if (get == null)
