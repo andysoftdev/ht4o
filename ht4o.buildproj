@@ -5,14 +5,16 @@
 	<PropertyGroup>
 		<Version>0.9.7.12</Version>
 		<Ht4nVersion Condition="'$(Ht4nVersion)' == ''">0.9.7.12</Ht4nVersion>
-		<FxVersion Condition="'$(FxVersion)' == ''">4.0</FxVersion>
-		<VcVersion Condition="'$(VcVersion)' == ''">10.0</VcVersion>
 
-		<Master_x86>dist\ht4o-$(Version)-x86-fx$(FxVersion)-vc$(VcVersion).zip</Master_x86>
-		<Master_x64>dist\ht4o-$(Version)-x64-fx$(FxVersion)-vc$(VcVersion).zip</Master_x64>
-		<Master_AnyCPU>dist\ht4o-$(Version)-serialization-fx$(FxVersion)-vc$(VcVersion).zip</Master_AnyCPU>
+		<FxVersion Condition="'$(VisualStudioVersion)' == '10.0'">4.0</FxVersion>
+		<FxVersion Condition="'$(VisualStudioVersion)' == '11.0'">4.5</FxVersion>
+		<FxVersion Condition="'$(VisualStudioVersion)' == '12.0'">4.5</FxVersion>
 
-		<Master_ApiDoc>dist\ht4o-$(Version)-api-doc.zip</Master_ApiDoc>
+		<Master_x86>dist\$(VisualStudioVersion)\ht4o-$(Version)-x86-fx$(FxVersion)-vc$(VisualStudioVersion).zip</Master_x86>
+		<Master_x64>dist\$(VisualStudioVersion)\ht4o-$(Version)-x64-fx$(FxVersion)-vc$(VisualStudioVersion).zip</Master_x64>
+		<Master_AnyCPU>dist\$(VisualStudioVersion)\ht4o-$(Version)-serialization-fx$(FxVersion)-vc$(VisualStudioVersion).zip</Master_AnyCPU>
+
+		<Master_ApiDoc>dist\$(VisualStudioVersion)\ht4o-$(Version)-api-doc.zip</Master_ApiDoc>
 	</PropertyGroup>
 
 	<!-- Check for MSBuildCommunityTasks -->
@@ -40,6 +42,20 @@
 		<Is64Bit>False</Is64Bit>
 		<Is64Bit
 			Condition="'$(MachineProcessorArchitecture)' == 'AMD64'">true</Is64Bit>
+	</PropertyGroup>
+
+	<!-- Platform toolset -->
+	<PropertyGroup>
+		<PlatformToolset Condition="'$(VisualStudioVersion)' == '10.0'">v100</PlatformToolset>
+		<PlatformToolset Condition="'$(VisualStudioVersion)' == '11.0'">v110</PlatformToolset>
+		<PlatformToolset Condition="'$(VisualStudioVersion)' == '12.0'">v120</PlatformToolset>
+	</PropertyGroup>
+
+	<!-- Platform toolset -->
+	<PropertyGroup>
+		<TargetFrameworkVersion Condition="'$(VisualStudioVersion)' == '10.0'">v4.0</TargetFrameworkVersion>
+		<TargetFrameworkVersion Condition="'$(VisualStudioVersion)' == '11.0'">v4.5</TargetFrameworkVersion>
+		<TargetFrameworkVersion Condition="'$(VisualStudioVersion)' == '12.0'">v4.5</TargetFrameworkVersion>
 	</PropertyGroup>
 
 	<!-- Check for mstest64 -->
@@ -87,7 +103,10 @@
 		<StartServers>
 			<![CDATA[
 			public static void ScriptMain() {
-				ProcessStartInfo psi = new ProcessStartInfo(@"..\ht4w\dist\Win32\release\hypertable.service.exe", @"--stop-all-services --kill-servers --start-servers");
+				string filename = @"..\ht4w\dist\$(VisualStudioVersion)\Win32\release\hypertable.service.exe";
+				if( !File.Exists(filename) )
+					filename = @"..\ht4w\dist\10.0\Win32\release\hypertable.service.exe";
+				ProcessStartInfo psi = new ProcessStartInfo(filename, @"--stop-all-services --kill-servers --start-servers");
 				psi.WindowStyle = ProcessWindowStyle.Hidden;
 				Process p = Process.Start(psi);
 				p.WaitForExit();
@@ -98,7 +117,10 @@
 		<StopServers>
 			<![CDATA[
 			public static void ScriptMain() {
-				ProcessStartInfo psi = new ProcessStartInfo(@"..\ht4w\dist\Win32\release\hypertable.service.exe", @"--stop-all-services --kill-servers");
+				string filename = @"..\ht4w\dist\$(VisualStudioVersion)\Win32\release\hypertable.service.exe";
+				if( !File.Exists(filename) )
+					filename = @"..\ht4w\dist\10.0\Win32\release\hypertable.service.exe";
+				ProcessStartInfo psi = new ProcessStartInfo(filename, @"--stop-all-services --kill-servers");
 				psi.WindowStyle = ProcessWindowStyle.Hidden;
 				Process p = Process.Start(psi);
 				p.WaitForExit();
@@ -113,7 +135,7 @@
 
 	<!-- Build, tests, make documentation, make master -->
 	<Target Name="Make"
-		DependsOnTargets="CleanMaster;Build;ExecTests;MakeDoc;MakeMaster;MakeNuGetPackage">
+		DependsOnTargets="CleanMaster;Build;ExecTests;MakeDoc;MakeMaster">
 	</Target>
 
 	<!-- Build -->
@@ -121,7 +143,7 @@
 		<MSBuild
 			Projects="ht4o.sln"
 			Targets="Build"
-			Properties="Configuration=%(MakeConfiguration.Configuration);Platform=%(MakeConfiguration.Platform)"
+			Properties="Configuration=%(MakeConfiguration.Configuration);Platform=%(MakeConfiguration.Platform);PlatformToolset=$(PlatformToolset);TargetFrameworkVersion=$(TargetFrameworkVersion)"
 			ContinueOnError="false" />
 	</Target>
 
@@ -130,7 +152,7 @@
 			Condition="$(HasSandcastle) == true">
 		<Error
 			Text="ht4o.xml does not exist."
-			Condition="!Exists('dist\Win32\Debug\ht4o.xml')" />
+			Condition="!Exists('dist\$(VisualStudioVersion)\Win32\Debug\ht4o.xml')" />
 		<MSBuild
 			Projects="ht4o.shfbproj"
 			Targets="Build"
@@ -146,15 +168,15 @@
 			Condition="$(HasMSBuildCommunityTasks) == true" >
 
 		<ItemGroup>
-			<MasterFiles_x86 Include="dist\Win32\Release\ht4o.dll;dist\Win32\Release\ht4o.xml;dist\Win32\Release\ht4o.pdb;dist\Win32\Release\ht4n.dll" />
+			<MasterFiles_x86 Include="dist\$(VisualStudioVersion)\Win32\Release\ht4o.dll;dist\$(VisualStudioVersion)\Win32\Release\ht4o.xml;dist\$(VisualStudioVersion)\Win32\Release\ht4o.pdb;dist\$(VisualStudioVersion)\Win32\Release\ht4n.dll" />
 		</ItemGroup>
 
 		<ItemGroup>
-			<MasterFiles_x64 Include="dist\x64\Release\ht4o.dll;dist\x64\Release\ht4o.xml;dist\x64\Release\ht4o.pdb;dist\x64\Release\ht4n.dll" />
+			<MasterFiles_x64 Include="dist\$(VisualStudioVersion)\x64\Release\ht4o.dll;dist\$(VisualStudioVersion)\x64\Release\ht4o.xml;dist\$(VisualStudioVersion)\x64\Release\ht4o.pdb;dist\$(VisualStudioVersion)\x64\Release\ht4n.dll" />
 		</ItemGroup>
 
 		<ItemGroup>
-			<MasterFiles_AnyCPU Include="dist\AnyCPU\Release\ht4o.Serialization.dll;dist\AnyCPU\Release\ht4o.Serialization.xml;dist\AnyCPU\Release\ht4o.Serialization.pdb" />
+			<MasterFiles_AnyCPU Include="dist\$(VisualStudioVersion)\AnyCPU\Release\ht4o.Serialization.dll;dist\$(VisualStudioVersion)\AnyCPU\Release\ht4o.Serialization.xml;dist\$(VisualStudioVersion)\AnyCPU\Release\ht4o.Serialization.pdb" />
 		</ItemGroup>
 
 		<ItemGroup>
@@ -312,45 +334,45 @@
 
 		<!-- Hyper tests -->
 		<XmlPoke
-			XmlInputPath="dist\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll.config"
+			XmlInputPath="dist\$(VisualStudioVersion)\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll.config"
 			Query="/configuration/appSettings/add[@key='ConnectionString']/@value"
 			Value="--Provider=Hyper --Uri=$(ProviderUri)" />
 
 		<Exec
 			Condition="'%(MakeConfiguration.Platform)' == 'Win32'"
-			Command="mstest /testsettings:src\ht4o.Test\x86.testsettings /testcontainer:dist\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll" />
+			Command="mstest /testsettings:src\ht4o.Test\x86.testsettings /testcontainer:dist\$(VisualStudioVersion)\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll" />
 
 		<Exec
 			Condition="'%(MakeConfiguration.Platform)' == 'x64' AND $(HasMSTest64) == true"
-			Command="mstest64 /testsettings:src\ht4o.Test\x64.testsettings /testcontainer:dist\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll" />
+			Command="mstest64 /testsettings:src\ht4o.Test\x64.testsettings /testcontainer:dist\$(VisualStudioVersion)\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll" />
 
 		<!-- Thrift tests -->
 		<XmlPoke
-			XmlInputPath="dist\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll.config"
+			XmlInputPath="dist\$(VisualStudioVersion)\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll.config"
 			Query="/configuration/appSettings/add[@key='ConnectionString']/@value"
 			Value="--Provider=Thrift --Uri=$(ProviderUri)" />
 
 		<Exec
 			Condition="'%(MakeConfiguration.Platform)' == 'Win32'"
-			Command="mstest /testsettings:src\ht4o.Test\x86.testsettings /testcontainer:dist\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll" />
+			Command="mstest /testsettings:src\ht4o.Test\x86.testsettings /testcontainer:dist\$(VisualStudioVersion)\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll" />
 
 		<Exec
 			Condition="'%(MakeConfiguration.Platform)' == 'x64' AND $(HasMSTest64) == true"
-			Command="mstest64 /testsettings:src\ht4o.Test\x64.testsettings /testcontainer:dist\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll" />
+			Command="mstest64 /testsettings:src\ht4o.Test\x64.testsettings /testcontainer:dist\$(VisualStudioVersion)\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll" />
 
 		<!-- SQLite tests -->
 		<XmlPoke
-			XmlInputPath="dist\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll.config"
+			XmlInputPath="dist\$(VisualStudioVersion)\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll.config"
 			Query="/configuration/appSettings/add[@key='ConnectionString']/@value"
 			Value="--Provider=SQLite --Uri=file://test.db" />
 
 		<Exec
 			Condition="'%(MakeConfiguration.Platform)' == 'Win32'"
-			Command="mstest /testsettings:src\ht4o.Test\x86.testsettings /testcontainer:dist\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll" />
+			Command="mstest /testsettings:src\ht4o.Test\x86.testsettings /testcontainer:dist\$(VisualStudioVersion)\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll" />
 
 		<Exec
 			Condition="'%(MakeConfiguration.Platform)' == 'x64' AND $(HasMSTest64) == true"
-			Command="mstest64 /testsettings:src\ht4o.Test\x64.testsettings /testcontainer:dist\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll" />
+			Command="mstest64 /testsettings:src\ht4o.Test\x64.testsettings /testcontainer:dist\$(VisualStudioVersion)\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll" />
 
 		<Exec
 			Command="if exist TestResults rd /S /Q TestResults" />
@@ -363,7 +385,7 @@
 		<MSBuild
 			Projects="ht4o.sln"
 			Targets="Clean"
-			Properties="Configuration=%(MakeConfiguration.Configuration);Platform=%(MakeConfiguration.Platform)"
+			Properties="Configuration=%(MakeConfiguration.Configuration);Platform=%(MakeConfiguration.Platform);PlatformToolset=$(PlatformToolset);TargetFrameworkVersion=$(TargetFrameworkVersion)"
 			ContinueOnError="false" />
 
 		<Exec
@@ -385,6 +407,8 @@
 			Files="$(Master_x86)" />
 		<Delete
 			Files="$(Master_x64)" />
+		<Delete
+			Files="$(Master_AnyCPU)" />
 		<Delete
 			Files="$(Master_ApiDoc)" />
 	</Target>

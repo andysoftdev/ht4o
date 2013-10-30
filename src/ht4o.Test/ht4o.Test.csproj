@@ -8,14 +8,14 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Hypertable.Persistence.Test</RootNamespace>
     <AssemblyName>ht4o.Test</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion Condition=" '$(TargetFrameworkVersion)' == ''">v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\dist\Win32\$(Configuration)\tests</OutputPath>
-    <IntermediateOutputPath>..\..\build\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
+    <OutputPath>..\..\dist\$(VisualStudioVersion)\Win32\$(Configuration)\tests</OutputPath>
+    <IntermediateOutputPath>..\..\build\$(VisualStudioVersion)\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
@@ -23,12 +23,12 @@
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
-    <Ht4n>..\..\..\ht4n\dist\Win32\Debug\ht4n.dll</Ht4n>
+    <Ht4n>..\..\..\ht4n\dist\$(VisualStudioVersion)\Win32\Debug\ht4n.dll</Ht4n>
     <NoWarn>1587</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>..\..\dist\Win32\$(Configuration)\tests</OutputPath>
-    <IntermediateOutputPath>..\..\build\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
+    <OutputPath>..\..\dist\$(VisualStudioVersion)\Win32\$(Configuration)\tests</OutputPath>
+    <IntermediateOutputPath>..\..\build\$(VisualStudioVersion)\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -37,13 +37,13 @@
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
-    <Ht4n>..\..\..\ht4n\dist\Win32\Release\ht4n.dll</Ht4n>
+    <Ht4n>..\..\..\ht4n\dist\$(VisualStudioVersion)\Win32\Release\ht4n.dll</Ht4n>
     <NoWarn>1587</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\dist\$(Platform)\$(Configuration)\tests</OutputPath>
-    <IntermediateOutputPath>..\..\build\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
+    <OutputPath>..\..\dist\$(VisualStudioVersion)\$(Platform)\$(Configuration)\tests</OutputPath>
+    <IntermediateOutputPath>..\..\build\$(VisualStudioVersion)\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
     <DefineConstants>TRACE;DEBUG;X64</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
@@ -51,12 +51,12 @@
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
-    <Ht4n>..\..\..\ht4n\dist\x64\Debug\ht4n.dll</Ht4n>
+    <Ht4n>..\..\..\ht4n\dist\$(VisualStudioVersion)\x64\Debug\ht4n.dll</Ht4n>
     <NoWarn>1587</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>..\..\dist\$(Platform)\$(Configuration)\tests</OutputPath>
-    <IntermediateOutputPath>..\..\build\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
+    <OutputPath>..\..\dist\$(VisualStudioVersion)\$(Platform)\$(Configuration)\tests</OutputPath>
+    <IntermediateOutputPath>..\..\build\$(VisualStudioVersion)\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
     <DefineConstants>TRACE;X64</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -65,7 +65,7 @@
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
-    <Ht4n>..\..\..\ht4n\dist\x64\Release\ht4n.dll</Ht4n>
+    <Ht4n>..\..\..\ht4n\dist\$(VisualStudioVersion)\x64\Release\ht4n.dll</Ht4n>
     <NoWarn>1587</NoWarn>
   </PropertyGroup>
   <ItemGroup>

@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
+ <PropertyGroup>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{492EC4F9-6694-48FE-99BF-E773D0B664DD}</ProjectGuid>
@@ -8,13 +8,13 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Hypertable.Persistence</RootNamespace>
     <AssemblyName>ht4o</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion Condition=" '$(TargetFrameworkVersion)' == ''">v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\dist\Win32\$(Configuration)</OutputPath>
-    <IntermediateOutputPath>..\..\build\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
+    <OutputPath>..\..\dist\$(VisualStudioVersion)\Win32\$(Configuration)</OutputPath>
+    <IntermediateOutputPath>..\..\build\$(VisualStudioVersion)\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
@@ -25,13 +25,13 @@
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>..\..\ht4o.ruleset</CodeAnalysisRuleSet>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
-    <DocumentationFile>..\..\dist\Win32\Debug\ht4o.xml</DocumentationFile>
-    <Ht4n>..\..\..\ht4n\dist\Win32\Debug\ht4n.dll</Ht4n>
+    <DocumentationFile>..\..\dist\$(VisualStudioVersion)\Win32\Debug\ht4o.xml</DocumentationFile>
+    <Ht4n>..\..\..\ht4n\dist\$(VisualStudioVersion)\Win32\Debug\ht4n.dll</Ht4n>
     <NoWarn>1587</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>..\..\dist\Win32\$(Configuration)</OutputPath>
-    <IntermediateOutputPath>..\..\build\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
+    <OutputPath>..\..\dist\$(VisualStudioVersion)\Win32\$(Configuration)</OutputPath>
+    <IntermediateOutputPath>..\..\build\$(VisualStudioVersion)\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -42,14 +42,14 @@
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
     <CodeAnalysisRuleSet>ht4o.ruleset</CodeAnalysisRuleSet>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
-    <DocumentationFile>..\..\dist\Win32\Release\ht4o.xml</DocumentationFile>
-    <Ht4n>..\..\..\ht4n\dist\Win32\Release\ht4n.dll</Ht4n>
+    <DocumentationFile>..\..\dist\$(VisualStudioVersion)\Win32\Release\ht4o.xml</DocumentationFile>
+    <Ht4n>..\..\..\ht4n\dist\$(VisualStudioVersion)\Win32\Release\ht4n.dll</Ht4n>
     <NoWarn>1587</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\dist\$(Platform)\$(Configuration)</OutputPath>
-    <IntermediateOutputPath>..\..\build\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
+    <OutputPath>..\..\dist\$(VisualStudioVersion)\$(Platform)\$(Configuration)</OutputPath>
+    <IntermediateOutputPath>..\..\build\$(VisualStudioVersion)\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
     <DefineConstants>TRACE;DEBUG;X64</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
@@ -60,13 +60,13 @@
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>ht4o.ruleset</CodeAnalysisRuleSet>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
-    <DocumentationFile>..\..\dist\x64\Debug\ht4o.xml</DocumentationFile>
-    <Ht4n>..\..\..\ht4n\dist\x64\Debug\ht4n.dll</Ht4n>
+    <DocumentationFile>..\..\dist\$(VisualStudioVersion)\x64\Debug\ht4o.xml</DocumentationFile>
+    <Ht4n>..\..\..\ht4n\dist\$(VisualStudioVersion)\x64\Debug\ht4n.dll</Ht4n>
     <NoWarn>1587</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>..\..\dist\$(Platform)\$(Configuration)</OutputPath>
-    <IntermediateOutputPath>..\..\build\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
+    <OutputPath>..\..\dist\$(VisualStudioVersion)\$(Platform)\$(Configuration)</OutputPath>
+    <IntermediateOutputPath>..\..\build\$(VisualStudioVersion)\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
     <DefineConstants>TRACE;X64</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -76,8 +76,8 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisRuleSet>ht4o.ruleset</CodeAnalysisRuleSet>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
-    <DocumentationFile>..\..\dist\x64\Release\ht4o.xml</DocumentationFile>
-    <Ht4n>..\..\..\ht4n\dist\x64\Release\ht4n.dll</Ht4n>
+    <DocumentationFile>..\..\dist\$(VisualStudioVersion)\x64\Release\ht4o.xml</DocumentationFile>
+    <Ht4n>..\..\..\ht4n\dist\$(VisualStudioVersion)\x64\Release\ht4n.dll</Ht4n>
     <NoWarn>1587</NoWarn>
   </PropertyGroup>
   <ItemGroup>
