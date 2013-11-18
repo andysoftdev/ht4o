@@ -686,6 +686,10 @@ namespace Hypertable.Persistence.Serialization
                 throw new ArgumentNullException("destinationType");
             }
 
+            if (destinationType == typeof(object)) {
+                destinationType = typeof(object[]);
+            }
+
             var rank = Decoder.ReadCount(this.binaryReader);
             var lengths = new int[rank];
             for (var dimension = 0; dimension < rank; ++dimension)
@@ -693,7 +697,7 @@ namespace Hypertable.Persistence.Serialization
                 lengths[dimension] = Decoder.ReadCount(this.binaryReader);
             }
 
-            if (destinationType.IsArray || destinationType == typeof(object))
+            if (destinationType.IsArray)
             {
                 var elementType = destinationType.IsArray ? destinationType.GetElementType() : Serializer.TypeFromTag(tag);
                 var array = Array.CreateInstance(elementType, lengths);
@@ -827,6 +831,10 @@ namespace Hypertable.Persistence.Serialization
                 throw new ArgumentNullException("destinationType");
             }
 
+            if (destinationType == typeof(object)) {
+                destinationType = typeof(object[]);
+            }
+
             var count = Decoder.ReadCount(this.binaryReader);
             if (destinationType.IsArray)
             {
@@ -884,7 +892,11 @@ namespace Hypertable.Persistence.Serialization
                 throw new ArgumentNullException("destinationType");
             }
 
-           var tag = Decoder.ReadTag(this.binaryReader);
+            if (destinationType == typeof(object)) {
+                destinationType = typeof(object[]);
+            }
+
+            var tag = Decoder.ReadTag(this.binaryReader);
             var count = Decoder.ReadCount(this.binaryReader);
             if (destinationType.IsArray)
             {
@@ -978,6 +990,11 @@ namespace Hypertable.Persistence.Serialization
                 throw new ArgumentNullException("destinationType");
             }
 
+            if (destinationType == typeof(object))
+            {
+                destinationType = typeof(Dictionary<object, object>);
+            }
+
             var inspector = InspectorForDictionary(destinationType);
             var obj = inspector.CreateInstance() as IDictionary;
             if (obj != null)
@@ -1039,6 +1056,10 @@ namespace Hypertable.Persistence.Serialization
             if (destinationType == null)
             {
                 throw new ArgumentNullException("destinationType");
+            }
+
+            if (destinationType == typeof(object)) {
+                destinationType = typeof(object[]);
             }
 
             if (destinationType.IsArray)
