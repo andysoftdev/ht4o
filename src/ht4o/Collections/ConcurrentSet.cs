@@ -21,6 +21,7 @@
 namespace Hypertable.Persistence.Collections
 {
     using System;
+    using System.Collections;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
 
@@ -30,7 +31,7 @@ namespace Hypertable.Persistence.Collections
     /// <typeparam name="T">
     /// The element type.
     /// </typeparam>
-    internal sealed class ConcurrentSet<T>
+    internal sealed class ConcurrentSet<T> : ISet<T>
         where T : IEquatable<T>
     {
         #region Fields
@@ -65,6 +66,38 @@ namespace Hypertable.Persistence.Collections
 
         #endregion
 
+        #region Public Properties
+
+        /// <summary>
+        /// Gets the number of elements contained in the set.
+        /// </summary>
+        /// <returns>
+        /// The number of elements contained in the set.
+        /// </returns>
+        public int Count
+        {
+            get
+            {
+                return this.dictionary.Count;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the set is read-only.
+        /// </summary>
+        /// <returns>
+        /// true if the set is read-only; otherwise, false.
+        /// </returns>
+        public bool IsReadOnly
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        #endregion
+
         #region Public Methods and Operators
 
         /// <summary>
@@ -82,6 +115,14 @@ namespace Hypertable.Persistence.Collections
         }
 
         /// <summary>
+        /// Removes all items from the set>.
+        /// </summary>
+        public void Clear()
+        {
+            this.dictionary.Clear();
+        }
+
+        /// <summary>
         /// Determines whether an element is in the set.
         /// </summary>
         /// <param name="item">
@@ -93,6 +134,18 @@ namespace Hypertable.Persistence.Collections
         public bool Contains(T item)
         {
             return this.dictionary.ContainsKey(item);
+        }
+
+        /// <summary>
+        /// Returns an enumerator that iterates through the collection.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can be used to iterate through the collection.
+        /// </returns>
+        /// <filterpriority>1</filterpriority>
+        public IEnumerator<T> GetEnumerator()
+        {
+            return this.dictionary.Keys.GetEnumerator();
         }
 
         /// <summary>
@@ -108,6 +161,75 @@ namespace Hypertable.Persistence.Collections
         {
             object value;
             return this.dictionary.TryRemove(item, out value);
+        }
+
+        #endregion
+
+        #region Explicit Interface Methods
+
+        void ICollection<T>.Add(T item)
+        {
+            this.Add(item);
+        }
+
+        void ICollection<T>.CopyTo(T[] array, int arrayIndex)
+        {
+            this.dictionary.Keys.CopyTo(array, arrayIndex);
+        }
+
+        void ISet<T>.ExceptWith(IEnumerable<T> other)
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this.GetEnumerator();
+        }
+
+        void ISet<T>.IntersectWith(IEnumerable<T> other)
+        {
+            throw new NotImplementedException();
+        }
+
+        bool ISet<T>.IsProperSubsetOf(IEnumerable<T> other)
+        {
+            throw new NotImplementedException();
+        }
+
+        bool ISet<T>.IsProperSupersetOf(IEnumerable<T> other)
+        {
+            throw new NotImplementedException();
+        }
+
+        bool ISet<T>.IsSubsetOf(IEnumerable<T> other)
+        {
+            throw new NotImplementedException();
+        }
+
+        bool ISet<T>.IsSupersetOf(IEnumerable<T> other)
+        {
+            throw new NotImplementedException();
+        }
+
+        bool ISet<T>.Overlaps(IEnumerable<T> other)
+        {
+            throw new NotImplementedException();
+        }
+
+        bool ISet<T>.SetEquals(IEnumerable<T> other)
+        {
+            throw new NotImplementedException();
+        }
+
+        void ISet<T>.SymmetricExceptWith(IEnumerable<T> other)
+        {
+            throw new NotImplementedException();
+        }
+
+        void ISet<T>.UnionWith(IEnumerable<T> other)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion
