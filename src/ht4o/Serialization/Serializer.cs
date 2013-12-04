@@ -700,27 +700,35 @@ namespace Hypertable.Persistence.Serialization
         /// <returns>
         /// <c>true</c> if the collection is typed collection, otherwise <c>false</c>.
         /// </returns>
-        private static bool HasCollectionType(Type serializeType, Type type)
+        private static CollectionFlags GetCollectionFlags(Type serializeType, Type type)
         {
-            if (serializeType.IsInterface || serializeType.IsAbstract)
+            var flags = CollectionFlags.None;
+
+            if (serializeType == typeof(object) || serializeType.IsInterface || serializeType.IsAbstract)
             {
-                if (serializeType.IsGenericType)
+                if (type.IsGenericType)
                 {
                     var baseType = type.GetGenericTypeDefinition();
                     if (baseType != typeof(List<>) && baseType != typeof(HashSet<>))
                     {
-                        // skip defaults
-                        return true;
+                        flags |= CollectionFlags.Typed;
+                    }
+                    else if (!typeof(IList).IsAssignableFrom(type))
+                    {
+                        var setType = typeof(ISet<>).MakeGenericType(type.GetGenericArguments());
+                        if (setType.IsAssignableFrom(type))
+                        {
+                            flags |= CollectionFlags.Set;
+                        }
                     }
                 }
                 else if (type != typeof(ArrayList))
                 {
-                    // skip default
-                    return true;
+                    flags |= CollectionFlags.Typed;
                 }
             }
 
-            return false;
+            return flags;
         }
 
         /// <summary>
@@ -735,9 +743,9 @@ namespace Hypertable.Persistence.Serialization
         /// <returns>
         /// <c>true</c> if the dictionary is typed dictionary, otherwise <c>false</c>.
         /// </returns>
-        private static bool HasDictionaryType(Type serializeType, Type type)
+        private static DictionaryFlags GetDictionaryFlags(Type serializeType, Type type)
         {
-            if (serializeType.IsInterface || serializeType.IsAbstract)
+            if (serializeType == typeof(object) || serializeType.IsInterface || serializeType.IsAbstract)
             {
                 if (serializeType.IsGenericType)
                 {
@@ -745,12 +753,12 @@ namespace Hypertable.Persistence.Serialization
                     if (baseType != typeof(Dictionary<,>))
                     {
                         // skip defaults
-                        return true;
+                        return DictionaryFlags.Typed;
                     }
                 }
             }
 
-            return false;
+            return DictionaryFlags.None;
         }
 
         /// <summary>
@@ -940,7 +948,7 @@ namespace Hypertable.Persistence.Serialization
 
             Encoder.WriteTag(this.binaryWriter, Tags.Dictionary);
 
-            var flags = HasDictionaryType(serializeType, type) ? DictionaryFlags.Typed : DictionaryFlags.None;
+            var flags = GetDictionaryFlags(serializeType, type);
 
             EncoderInfo keyEncoderInfo;
             EncoderInfo valueEncoderInfo;
@@ -961,17 +969,17 @@ namespace Hypertable.Persistence.Serialization
                     }
 
                     Encoder.WriteByte(this.binaryWriter, (byte)flags, false);
-                    if ((flags & DictionaryFlags.Typed) > 0)
+                    if (flags.HasFlag(DictionaryFlags.Typed))
                     {
                         this.WriteType(type);
                     }
 
-                    if ((flags & DictionaryFlags.KeyTagged) > 0)
+                    if (flags.HasFlag(DictionaryFlags.KeyTagged))
                     {
                         Encoder.WriteTag(this.binaryWriter, keyEncoderInfo.Tag);
                     }
 
-                    if ((flags & DictionaryFlags.ValueTagged) > 0)
+                    if (flags.HasFlag(DictionaryFlags.ValueTagged))
                     {
                         Encoder.WriteTag(this.binaryWriter, valueEncoderInfo.Tag);
                     }
@@ -1048,12 +1056,12 @@ namespace Hypertable.Persistence.Serialization
                 else
                 {
                     Encoder.WriteByte(this.binaryWriter, (byte)flags, false);
-                    if ((flags & DictionaryFlags.Typed) > 0)
+                    if (flags.HasFlag(DictionaryFlags.Typed))
                     {
                         this.WriteType(type);
                     }
 
-                    if ((flags & DictionaryFlags.KeyTagged) > 0)
+                    if (flags.HasFlag(DictionaryFlags.KeyTagged))
                     {
                         Encoder.WriteTag(this.binaryWriter, keyEncoderInfo.Tag);
                     }
@@ -1112,12 +1120,12 @@ namespace Hypertable.Persistence.Serialization
                 }
 
                 Encoder.WriteByte(this.binaryWriter, (byte)flags, false);
-                if ((flags & DictionaryFlags.Typed) > 0)
+                if (flags.HasFlag(DictionaryFlags.Typed))
                 {
                     this.WriteType(type);
                 }
 
-                if ((flags & DictionaryFlags.ValueTagged) > 0)
+                if (flags.HasFlag(DictionaryFlags.ValueTagged))
                 {
                     Encoder.WriteTag(this.binaryWriter, valueEncoderInfo.Tag);
                 }
@@ -1168,7 +1176,7 @@ namespace Hypertable.Persistence.Serialization
             else
             {
                 Encoder.WriteByte(this.binaryWriter, (byte)flags, false);
-                if ((flags & DictionaryFlags.Typed) > 0)
+                if (flags.HasFlag(DictionaryFlags.Typed))
                 {
                     this.WriteType(type);
                 }
@@ -1210,7 +1218,7 @@ namespace Hypertable.Persistence.Serialization
             {
                 Encoder.WriteTag(this.binaryWriter, Tags.Collection);
 
-                var flags = HasCollectionType(serializeType, type) ? CollectionFlags.Typed : CollectionFlags.None;
+                var flags = GetCollectionFlags(serializeType, type);
                 EncoderInfo encoderInfo;
                 if (this.TryGetEncoder(elementType, out encoderInfo))
                 {
@@ -1222,12 +1230,12 @@ namespace Hypertable.Persistence.Serialization
 
                     Encoder.WriteByte(this.binaryWriter, (byte)flags, false);
 
-                    if ((flags & CollectionFlags.Typed) > 0)
+                    if (flags.HasFlag(CollectionFlags.Typed))
                     {
                         this.WriteType(type);
                     }
 
-                    if ((flags & CollectionFlags.Tagged) > 0)
+                    if (flags.HasFlag(CollectionFlags.Tagged))
                     {
                         Encoder.WriteTag(this.binaryWriter, encoderInfo.Tag);
                     }
@@ -1278,7 +1286,7 @@ namespace Hypertable.Persistence.Serialization
                 }
 
                 Encoder.WriteByte(this.binaryWriter, (byte)flags, false);
-                if ((flags & CollectionFlags.Typed) > 0)
+                if (flags.HasFlag(CollectionFlags.Typed))
                 {
                     this.WriteType(type);
                 }

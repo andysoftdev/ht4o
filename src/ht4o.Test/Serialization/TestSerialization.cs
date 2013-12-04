@@ -1636,6 +1636,16 @@ namespace Hypertable.Persistence.Test.Serialization
                 Assert.IsNotNull(dr);
                 Assert.IsTrue(Equatable.AreEqual((object)dv, dr));
             }
+
+            {
+                var dv = new Dictionary<string, string>();
+                var b = Serializer.ToByteArray(dv);
+                Assert.IsNotNull(b);
+                var dr = Deserializer.FromByteArray<object>(b);
+                Assert.IsNotNull(dr);
+                Assert.IsInstanceOfType(dr, typeof(Dictionary<string, string>));
+                Assert.IsTrue(Equatable.AreEqual(dv, dr));
+            }
         }
 
         /// <summary>
@@ -1954,6 +1964,26 @@ namespace Hypertable.Persistence.Test.Serialization
                 var isvgr = Deserializer.FromByteArray<ISet<byte>>(b);
                 Assert.IsNotNull(isvgr);
                 Assert.IsTrue(isvgr.GetType() == typeof(SortedSet<byte>));
+            }
+
+            {
+                IList<byte> lv = new List<byte>(new byte[] { 1, 2, 3 });
+                var b = Serializer.ToByteArray(lv);
+                Assert.IsNotNull(b);
+                var olv = Deserializer.FromByteArray<object>(b);
+                Assert.IsNotNull(olv);
+                Assert.IsInstanceOfType(olv, typeof(List<byte>));
+                Assert.IsTrue(Equatable.AreEqual(lv, olv));
+            }
+
+            {
+                ISet<byte> lv = new HashSet<byte>(new byte[] { 1, 2, 3 });
+                var b = Serializer.ToByteArray(lv);
+                Assert.IsNotNull(b);
+                var olv = Deserializer.FromByteArray<object>(b);
+                Assert.IsNotNull(olv);
+                Assert.IsInstanceOfType(olv, typeof(HashSet<byte>));
+                Assert.IsTrue(Equatable.AreEqual(lv, olv));
             }
         }
 

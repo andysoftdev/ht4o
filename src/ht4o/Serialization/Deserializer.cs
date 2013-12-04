@@ -343,13 +343,13 @@ namespace Hypertable.Persistence.Serialization
             Inspector inspector, 
             IDictionary dictionary)
         {
-            if ((flags & DictionaryFlags.KeyTagged) == 0)
+            if (!flags.HasFlag(DictionaryFlags.KeyTagged))
             {
                 keyTag = Decoder.ReadTag(this.binaryReader);
             }
 
             var key = this.Deserialize(keyType, keyTag);
-            if ((flags & DictionaryFlags.ValueTagged) == 0)
+            if (!flags.HasFlag(DictionaryFlags.ValueTagged))
             {
                 valueTag = Decoder.ReadTag(this.binaryReader);
             }
@@ -618,13 +618,13 @@ namespace Hypertable.Persistence.Serialization
                     case Tags.Collection:
                         {
                             var flags = (CollectionFlags)Decoder.ReadByte(this.binaryReader);
-                            value = (flags & CollectionFlags.Typed) > 0
-                                        ? ((flags & CollectionFlags.Tagged) > 0
-                                               ? this.ReadCollectionTypedTagged(destinationType)
-                                               : this.ReadCollectionTyped(destinationType))
-                                        : ((flags & CollectionFlags.Tagged) > 0
-                                               ? this.ReadCollectionTagged(destinationType)
-                                               : this.ReadCollection(destinationType));
+                            value = flags.HasFlag(CollectionFlags.Typed)
+                                        ? (flags.HasFlag(CollectionFlags.Tagged)
+                                               ? this.ReadCollectionTypedTagged(destinationType, flags)
+                                               : this.ReadCollectionTyped(destinationType, flags))
+                                        : (flags.HasFlag(CollectionFlags.Tagged)
+                                               ? this.ReadCollectionTagged(destinationType, flags)
+                                               : this.ReadCollection(destinationType, flags));
                             break;
                         }
 
@@ -635,7 +635,7 @@ namespace Hypertable.Persistence.Serialization
                     case Tags.Dictionary:
                         {
                             var flags = (DictionaryFlags)Decoder.ReadByte(this.binaryReader);
-                            value = (flags & DictionaryFlags.Typed) > 0
+                            value = flags.HasFlag(DictionaryFlags.Typed)
                                         ? this.ReadDictionaryTyped(destinationType, flags)
                                         : this.ReadDictionary(destinationType, flags);
                             break;
@@ -686,10 +686,6 @@ namespace Hypertable.Persistence.Serialization
                 throw new ArgumentNullException("destinationType");
             }
 
-            if (destinationType == typeof(object)) {
-                destinationType = typeof(object[]);
-            }
-
             var rank = Decoder.ReadCount(this.binaryReader);
             var lengths = new int[rank];
             for (var dimension = 0; dimension < rank; ++dimension)
@@ -697,7 +693,7 @@ namespace Hypertable.Persistence.Serialization
                 lengths[dimension] = Decoder.ReadCount(this.binaryReader);
             }
 
-            if (destinationType.IsArray)
+            if (destinationType.IsArray || destinationType == typeof(object))
             {
                 var elementType = destinationType.IsArray ? destinationType.GetElementType() : Serializer.TypeFromTag(tag);
                 var array = Array.CreateInstance(elementType, lengths);
@@ -821,18 +817,17 @@ namespace Hypertable.Persistence.Serialization
         /// <param name="destinationType">
         /// The destination type.
         /// </param>
+        /// <param name="flags">
+        /// The collection flags.
+        /// </param>
         /// <returns>
         /// The collection read.
         /// </returns>
-        protected object ReadCollection(Type destinationType)
+        protected object ReadCollection(Type destinationType, CollectionFlags flags)
         {
             if (destinationType == null)
             {
                 throw new ArgumentNullException("destinationType");
-            }
-
-            if (destinationType == typeof(object)) {
-                destinationType = typeof(object[]);
             }
 
             var count = Decoder.ReadCount(this.binaryReader);
@@ -848,6 +843,13 @@ namespace Hypertable.Persistence.Serialization
                 }
 
                 return array;
+            }
+
+            if (destinationType == typeof(object))
+            {
+                destinationType = flags.HasFlag(CollectionFlags.Set) ? 
+                    typeof(HashSet<>).MakeGenericType(typeof(object)) :
+                    typeof(List<>).MakeGenericType(typeof(object));
             }
 
             var inspector = InspectorForEnumerable(destinationType);
@@ -882,18 +884,17 @@ namespace Hypertable.Persistence.Serialization
         /// <param name="destinationType">
         /// The destination type.
         /// </param>
+        /// <param name="flags">
+        /// The collection flags.
+        /// </param>
         /// <returns>
         /// The tagged collection read.
         /// </returns>
-        protected object ReadCollectionTagged(Type destinationType)
+        protected object ReadCollectionTagged(Type destinationType, CollectionFlags flags)
         {
             if (destinationType == null)
             {
                 throw new ArgumentNullException("destinationType");
-            }
-
-            if (destinationType == typeof(object)) {
-                destinationType = typeof(object[]);
             }
 
             var tag = Decoder.ReadTag(this.binaryReader);
@@ -909,6 +910,13 @@ namespace Hypertable.Persistence.Serialization
                 }
 
                 return array;
+            }
+
+            if (destinationType == typeof(object))
+            {
+                destinationType = flags.HasFlag(CollectionFlags.Set) ? 
+                    typeof(HashSet<>).MakeGenericType(Serializer.TypeFromTag(tag)) :
+                    typeof(List<>).MakeGenericType(Serializer.TypeFromTag(tag));
             }
 
             var inspector = InspectorForEnumerable(destinationType);
@@ -942,13 +950,23 @@ namespace Hypertable.Persistence.Serialization
         /// <param name="destinationType">
         /// The destination type.
         /// </param>
+        /// <param name="flags">
+        /// The collection flags.
+        /// </param>
         /// <returns>
         /// The typed collection read.
         /// </returns>
-        protected object ReadCollectionTyped(Type destinationType)
+        protected object ReadCollectionTyped(Type destinationType, CollectionFlags flags)
         {
             var type = this.ReadType();
-            return this.ReadCollection(destinationType);
+            return this.ReadCollection(
+                destinationType == typeof(object) ||
+                destinationType.IsInterface ||
+                destinationType.IsAbstract ||
+                !typeof(IEnumerable).IsAssignableFrom(destinationType)
+                    ? type
+                    : destinationType,
+                flags);
         }
 
         /// <summary>
@@ -957,10 +975,13 @@ namespace Hypertable.Persistence.Serialization
         /// <param name="destinationType">
         /// The destination type.
         /// </param>
+        /// <param name="flags">
+        /// The collection flags.
+        /// </param>
         /// <returns>
         /// The typed and tagged collection read.
         /// </returns>
-        protected object ReadCollectionTypedTagged(Type destinationType)
+        protected object ReadCollectionTypedTagged(Type destinationType, CollectionFlags flags)
         {
             if (destinationType == null)
             {
@@ -968,7 +989,14 @@ namespace Hypertable.Persistence.Serialization
             }
 
             var type = this.ReadType();
-            return this.ReadCollectionTagged(destinationType.IsInterface || destinationType.IsAbstract || !typeof(IEnumerable).IsAssignableFrom(destinationType) ? type : destinationType);
+            return this.ReadCollectionTagged(
+                destinationType == typeof(object) || 
+                destinationType.IsInterface || 
+                destinationType.IsAbstract || 
+                !typeof(IEnumerable).IsAssignableFrom(destinationType)
+                    ? type
+                    : destinationType,
+                flags);
         }
 
         /// <summary>
@@ -990,9 +1018,15 @@ namespace Hypertable.Persistence.Serialization
                 throw new ArgumentNullException("destinationType");
             }
 
+            var tagKey = flags.HasFlag(DictionaryFlags.KeyTagged) ? Decoder.ReadTag(this.binaryReader) : Tags.Null;
+            var keyType = Serializer.TypeFromTag(tagKey);
+
+            var tagValue = flags.HasFlag(DictionaryFlags.ValueTagged) ? Decoder.ReadTag(this.binaryReader) : Tags.Null;
+            var valueType = Serializer.TypeFromTag(tagValue);
+
             if (destinationType == typeof(object))
             {
-                destinationType = typeof(Dictionary<object, object>);
+                destinationType = typeof(Dictionary<,>).MakeGenericType(keyType, valueType);
             }
 
             var inspector = InspectorForDictionary(destinationType);
@@ -1001,11 +1035,12 @@ namespace Hypertable.Persistence.Serialization
             {
                 this.objectRefs.Add(obj);
 
-                var tagKey = (flags & DictionaryFlags.KeyTagged) > 0 ? Decoder.ReadTag(this.binaryReader) : Tags.Null;
-                var keyType = destinationType.IsGenericType ? destinationType.GetGenericArguments()[0] : Serializer.TypeFromTag(tagKey);
-
-                var tagValue = (flags & DictionaryFlags.ValueTagged) > 0 ? Decoder.ReadTag(this.binaryReader) : Tags.Null;
-                var valueType = destinationType.IsGenericType ? destinationType.GetGenericArguments()[1] : Serializer.TypeFromTag(tagValue);
+                if (destinationType.IsGenericType)
+                {
+                    var genericArguments = destinationType.GetGenericArguments();
+                    keyType = genericArguments[0];
+                    valueType = genericArguments[1];
+                }
 
                 var count = Decoder.ReadCount(this.binaryReader);
                 for (var n = 0; n < count; ++n)
@@ -1039,7 +1074,14 @@ namespace Hypertable.Persistence.Serialization
             }
 
             var type = this.ReadType();
-            return this.ReadDictionary(destinationType.IsInterface || destinationType.IsAbstract || !typeof(IDictionary).IsAssignableFrom(destinationType) ? type : destinationType, flags);
+            return this.ReadDictionary(
+                destinationType == typeof(object) ||
+                destinationType.IsInterface || 
+                destinationType.IsAbstract || 
+                !typeof(IDictionary).IsAssignableFrom(destinationType)
+                    ? type
+                    : destinationType,
+                flags);
         }
 
         /// <summary>

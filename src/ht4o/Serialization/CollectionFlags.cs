@@ -34,13 +34,18 @@ namespace Hypertable.Persistence.Serialization
         None = 0, 
 
         /// <summary>
-        /// The typed.
+        /// For a types collection.
         /// </summary>
         Typed = 1, 
 
         /// <summary>
-        /// The tagged.
+        /// For a tagged collection.
         /// </summary>
-        Tagged = 1 << 1
+        Tagged = 1 << 1,
+
+        /// <summary>
+        /// For a set.
+        /// </summary>
+        Set = 1 << 2
     }
 }
