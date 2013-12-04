@@ -21,6 +21,7 @@
 namespace Hypertable.Persistence
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
@@ -58,6 +59,21 @@ namespace Hypertable.Persistence
         /// </summary>
         private readonly ConcurrentTypeDictionary<BindingSpec<ITableBinding>> tableBindings = new ConcurrentTypeDictionary<BindingSpec<ITableBinding>>();
 
+        /// <summary>
+        /// The registered column bindings.
+        /// </summary>
+        private Lazy<IDictionary<Type, IColumnBinding>> registeredColumnBindings;
+
+        /// <summary>
+        /// The registered column names.
+        /// </summary>
+        private Lazy<IDictionary<string, ISet<string>>> registeredColumnNames;
+
+        /// <summary>
+        /// The registered table bindings.
+        /// </summary>
+        private Lazy<IDictionary<Type, ITableBinding>> registeredTableBindings;
+
         #endregion
 
         #region Constructors and Destructors
@@ -70,6 +86,8 @@ namespace Hypertable.Persistence
             this.DefaultColumnFamily = "e";
             this.IdPropertyName = new Regex("^([Ii]d$)|(<Id>.*)", RegexOptions.Compiled);
             this.TimestampPropertyName = new Regex("^([Ll]astModified$)|(<LastModified>.*)", RegexOptions.Compiled);
+
+            this.Refresh();
         }
 
         /// <summary>
@@ -100,6 +118,8 @@ namespace Hypertable.Persistence
             this.columnBindings = new ConcurrentTypeDictionary<BindingSpec<IColumnBinding>>(bindingContext.columnBindings);
             this.keyBindings = new ConcurrentTypeDictionary<IKeyBinding>(bindingContext.keyBindings);
             this.tableBindings = new ConcurrentTypeDictionary<BindingSpec<ITableBinding>>(bindingContext.tableBindings);
+
+            this.Refresh();
         }
 
         #endregion
@@ -183,8 +203,10 @@ namespace Hypertable.Persistence
         /// <returns>
         /// <c>true</c> if the binding context contains a column binding for the specified type; otherwise, <c>false</c>.
         /// </returns>
-        public bool ContainsColumnBinding(Type type) {
-            if( type == null ) {
+        public bool ContainsColumnBinding(Type type)
+        {
+            if (type == null)
+            {
                 throw new ArgumentNullException("type");
             }
 
@@ -261,6 +283,8 @@ namespace Hypertable.Persistence
 
             lock (this.syncRoot)
             {
+                this.Refresh();
+
                 BindingSpec<IColumnBinding> existingColumnBinding;
                 if (this.columnBindings.TryGetValue(type, out existingColumnBinding))
                 {
@@ -304,6 +328,8 @@ namespace Hypertable.Persistence
 
             lock (this.syncRoot)
             {
+                this.Refresh();
+
                 IKeyBinding existingKeyBinding;
                 if (this.keyBindings.TryGetValue(type, out existingKeyBinding))
                 {
@@ -346,6 +372,8 @@ namespace Hypertable.Persistence
 
             lock (this.syncRoot)
             {
+                this.Refresh();
+
                 BindingSpec<ITableBinding> existingTableBinding;
                 if (this.tableBindings.TryGetValue(type, out existingTableBinding))
                 {
@@ -721,12 +749,12 @@ namespace Hypertable.Persistence
         protected virtual IEnumerable<ITableBinding> DistinctTableBindingsForType(Type type)
         {
             var types = this.RegisteredColumnBindings().Where(kv => type.IsAssignableFrom(kv.Key)).Select(kv => kv.Key).ToArray();
-            var registeredTableBindings = this.RegisteredTableBindings();
+            var bindings = this.RegisteredTableBindings();
             var distinctTableBindings = new HashSet<ITableBinding>(new TableBindingComparer());
             foreach (var t in types)
             {
                 ITableBinding tb;
-                if (registeredTableBindings.TryGetValue(t, out tb))
+                if (bindings.TryGetValue(t, out tb))
                 {
                     distinctTableBindings.Add(tb);
                 }
@@ -743,7 +771,18 @@ namespace Hypertable.Persistence
         /// </returns>
         protected IDictionary<Type, IColumnBinding> RegisteredColumnBindings()
         {
-            return this.columnBindings.ToDictionary(kv => kv.Key, kv => kv.Value.Binding);
+            return this.registeredColumnBindings.Value.ToDictionary(kv => kv.Key, kv => kv.Value);
+        }
+
+        /// <summary>
+        /// Gets all the registered column names.
+        /// </summary>
+        /// <returns>
+        /// All the registered column names, structured by column family and column qualifier.
+        /// </returns>
+        protected IDictionary<string, ISet<string>> RegisteredColumnNames()
+        {
+            return this.registeredColumnNames.Value.ToDictionary(kv => kv.Key, kv => kv.Value);
         }
 
         /// <summary>
@@ -754,7 +793,7 @@ namespace Hypertable.Persistence
         /// </returns>
         protected IDictionary<Type, ITableBinding> RegisteredTableBindings()
         {
-            return this.tableBindings.ToDictionary(kv => kv.Key, kv => kv.Value.Binding);
+            return this.registeredTableBindings.Value.ToDictionary(kv => kv.Key, kv => kv.Value);
         }
 
         /// <summary>
@@ -942,6 +981,61 @@ namespace Hypertable.Persistence
             }
 
             return tableBinding.Binding;
+        }
+
+        /// <summary>
+        /// Refresh all lazy initializations.
+        /// </summary>
+        private void Refresh()
+        {
+            if (this.registeredColumnBindings == null || this.registeredColumnBindings.IsValueCreated)
+            {
+                this.registeredColumnBindings = new Lazy<IDictionary<Type, IColumnBinding>>(
+                    () =>
+                        {
+                            var bindings = new ConcurrentTypeDictionary<IColumnBinding>();
+                            foreach (var kv in this.columnBindings)
+                            {
+                                bindings.TryAdd(kv.Key, kv.Value.Binding);
+                            }
+
+                            return bindings;
+                        });
+            }
+
+            if (this.registeredColumnNames == null || this.registeredColumnNames.IsValueCreated)
+            {
+                this.registeredColumnNames = new Lazy<IDictionary<string, ISet<string>>>(
+                    () => 
+                        {
+                            var columnNames = new ConcurrentDictionary<string, ISet<string>>();
+                            foreach (var binding in this.RegisteredColumnBindings().Values)
+                            {
+                                var columnQualifiers = columnNames.GetOrAdd(binding.ColumnFamily, _ => new ConcurrentSet<string>());
+                                if (binding.ColumnQualifier != null)
+                                {
+                                    columnQualifiers.Add(binding.ColumnQualifier);
+                                }
+                            }
+
+                            return columnNames;
+                        });
+            }
+
+            if (this.registeredTableBindings == null || this.registeredTableBindings.IsValueCreated)
+            {
+                this.registeredTableBindings = new Lazy<IDictionary<Type, ITableBinding>>(
+                    () => 
+                        {
+                            var bindings = new ConcurrentTypeDictionary<ITableBinding>();
+                            foreach (var kv in this.tableBindings)
+                            {
+                                bindings.TryAdd(kv.Key, kv.Value.Binding);
+                            }
+
+                            return bindings;
+                        });
+            }
         }
 
         #endregion
