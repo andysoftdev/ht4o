@@ -23,7 +23,9 @@ namespace Hypertable.Persistence
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Globalization;
+    using System.Linq;
 
     using Hypertable;
     using Hypertable.Persistence.Scanner;
@@ -609,6 +611,27 @@ namespace Hypertable.Persistence
 
                 entityReference.EstablishColumnSets(() => this.ColumnNames(entityReference));
                 columnNames.AddRange(entityReference.ColumnSet);
+            }
+
+            if (columnNames.Count > 5)
+            {
+                var registeredColumnNames = this.RegisteredColumnNames();
+
+                foreach (var columnName in columnNames.ToList())
+                {
+                    var split = columnName.Split(':');
+                    if (split.Length > 1)
+                    {
+                        ISet<string> columnQualifiers;
+                        if (registeredColumnNames.TryGetValue(split[0], out columnQualifiers))
+                        {
+                            if (columnQualifiers.Remove(split[1]) && columnQualifiers.Count == 0)
+                            {
+                                columnNames.Add(split[0]);
+                            }
+                        }
+                    }
+                }
             }
 
             var scanSpec = new ScanSpec { MaxVersions = 1 };

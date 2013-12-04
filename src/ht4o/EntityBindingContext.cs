@@ -26,6 +26,7 @@ namespace Hypertable.Persistence
     using System.Text;
 
     using Hypertable;
+    using Hypertable.Persistence.Bindings;
     using Hypertable.Persistence.Collections;
     using Hypertable.Persistence.Reflection;
 
@@ -78,11 +79,41 @@ namespace Hypertable.Persistence
         /// </returns>
         internal IEnumerable<string> ColumnNames(EntityReference entityReference)
         {
-            return this.DistinctColumnBindingsForType(entityReference.EntityType).Select(ColumnName);
+            var distinctColumnBindings = this.DistinctColumnBindingsForType(entityReference.EntityType).ToList();
+            if (distinctColumnBindings.Count <= 1)
+            {
+                return distinctColumnBindings.Select(ColumnName);
+            }
 
-            /*TODO REMOVE ??return entityReference.ColumnBinding != null
-                       ? new[] { ColumnName(entityReference.ColumnBinding) }
-                       : this.DistinctColumnBindingsForType(entityReference.EntityType).Select(ColumnName);*/
+            var columnBindingComparer = new ColumnBindingComparer();
+            var columnFamilyBindings = new Dictionary<string, HashSet<IColumnBinding>>();
+
+            foreach (var binding in distinctColumnBindings)
+            {
+                HashSet<IColumnBinding> columnBindings;
+                if (!columnFamilyBindings.TryGetValue(binding.ColumnFamily, out columnBindings))
+                {
+                    columnFamilyBindings.Add(binding.ColumnFamily, columnBindings = new HashSet<IColumnBinding>(columnBindingComparer));
+                }
+
+                columnBindings.Add(binding);
+            }
+
+            var registeredColumnNames = this.RegisteredColumnNames();
+
+            foreach (var binding in distinctColumnBindings.Where(b => b.ColumnQualifier != null))
+            {
+                ISet<string> columnQualifiers;
+                if (registeredColumnNames.TryGetValue(binding.ColumnFamily, out columnQualifiers))
+                {
+                    if (columnQualifiers.Remove(binding.ColumnQualifier) && columnQualifiers.Count == 0)
+                    {
+                        columnFamilyBindings[binding.ColumnFamily] = new HashSet<IColumnBinding> { new ColumnBinding(binding.ColumnFamily) };
+                    }
+                }
+            }
+
+            return columnFamilyBindings.Values.SelectMany(s => s).Select(ColumnName);
         }
 
         /// <summary>
@@ -242,18 +273,7 @@ namespace Hypertable.Persistence
         /// </returns>
         private static string ColumnName(IColumnBinding columnBinding)
         {
-            if (columnBinding.ColumnQualifier == null)
-            {
-                return columnBinding.ColumnFamily;
-            }
-
-            var columnFamily = columnBinding.ColumnFamily;
-            var columnQualifier = columnBinding.ColumnQualifier;
-            var sb = new StringBuilder(columnFamily.Length + columnQualifier.Length + 1);
-            sb.Append(columnFamily);
-            sb.Append(":");
-            sb.Append(columnQualifier);
-            return sb.ToString();
+            return columnBinding.ColumnQualifier == null ? columnBinding.ColumnFamily : columnBinding.ColumnFamily + ":" + columnBinding.ColumnQualifier;
         }
 
         /// <summary>
