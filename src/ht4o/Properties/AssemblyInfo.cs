@@ -1,5 +1,5 @@
 ﻿/** -*- C# -*-
- * Copyright (C) 2010-2013 Thalmann Software & Consulting, http://www.softdev.ch
+ * Copyright (C) 2010-2014 Thalmann Software & Consulting, http://www.softdev.ch
  *
  * This file is part of ht4o.
  *
@@ -33,7 +33,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyProduct("ht4o")]
 [assembly: AssemblyDescription("Hypertable for Objects")]
 [assembly: AssemblyCompany("ht4o.softdev.ch")]
-[assembly: AssemblyCopyright("Copyright © 2010-2013")]
+[assembly: AssemblyCopyright("Copyright © 2010-2014")]
 [assembly: AssemblyVersion("0.9.7.14")]
 [assembly: AssemblyFileVersion("0.9.7.14")]
 [assembly: CLSCompliant(true)]
