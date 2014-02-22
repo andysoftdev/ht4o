@@ -210,7 +210,7 @@ namespace Hypertable.Persistence.Extensions
                 return true;
             }
 
-            return type.GetInterfaces().SingleOrDefault(ifc => SameMetadataToken(ifc, typeInterface)) != null;
+            return type.GetInterfaces().Any(ifc => SameMetadataToken(ifc, typeInterface));
         }
 
         /// <summary>
