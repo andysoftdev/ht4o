@@ -21,7 +21,6 @@
 namespace Hypertable.Persistence.Scanner
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Globalization;
@@ -198,6 +197,8 @@ namespace Hypertable.Persistence.Scanner
 
             tablesToFetch = tablesToFetch.Where(kv => kv.Value.IsEmpty.IsNullOrFalse()).ToList();
 
+            var reviewScanSpec = this.entityContext.Configuration.ReviewScanSpec;
+
             ////TODO compare async vs sync on multi-core
             if (this.useAsyncTableScanner)
             {
@@ -246,9 +247,16 @@ namespace Hypertable.Persistence.Scanner
                         }
 
                         var scanSpec = tableItem.Value.CreateScanSpec();
+
+                        if (reviewScanSpec != null)
+                        {
+                            reviewScanSpec(table, scanSpec);
+                        }
+
                         //// TODO add more infos + time, other places???
                         Logging.TraceEvent(
                             TraceEventType.Verbose, () => string.Format(CultureInfo.InvariantCulture, @"Begin scan {0} on table {1}", scanSpec, table.Name));
+
                         table.BeginScan(asynResult, scanSpec, tableItem);
                     }
 
@@ -279,8 +287,15 @@ namespace Hypertable.Persistence.Scanner
                     }
 
                     var scanSpec = tableItem.Value.CreateScanSpec();
+
+                    if (reviewScanSpec != null)
+                    {
+                        reviewScanSpec(table, scanSpec);
+                    }
+
                     //// TODO add/remove more infos + time, other places???
-                    Logging.TraceEvent(TraceEventType.Verbose, () => string.Format(CultureInfo.InvariantCulture, @"Scan {0} on table {1}", scanSpec, table.Name));
+                    Logging.TraceEvent(
+                        TraceEventType.Verbose, () => string.Format(CultureInfo.InvariantCulture, @"Scan {0} on table {1}", scanSpec, table.Name));
 
                     using (var scanner = table.CreateScanner(scanSpec))
                     {

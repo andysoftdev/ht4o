@@ -76,6 +76,7 @@ namespace Hypertable.Persistence
             this.Binding = new BindingContext(configuration.Binding);
             this.mutatorSpec = new MutatorSpec(configuration.MutatorSpec);
             this.UseAsyncTableScanner = configuration.UseAsyncTableScanner;
+            this.ReviewScanSpec = configuration.ReviewScanSpec;
         }
 
         /// <summary>
@@ -109,6 +110,7 @@ namespace Hypertable.Persistence
             this.Binding = bindingContext;
             this.mutatorSpec = new MutatorSpec(configuration.MutatorSpec);
             this.UseAsyncTableScanner = configuration.UseAsyncTableScanner;
+            this.ReviewScanSpec = configuration.ReviewScanSpec;
         }
 
         #endregion
@@ -149,6 +151,17 @@ namespace Hypertable.Persistence
                 this.mutatorSpec = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the review scan spec action, if set the action is called before any scan.
+        /// </summary>
+        /// <value>
+        /// The scanner callback.
+        /// </value>
+        /// <remarks>
+        /// Allows scan spec updates right before a table scan starts.
+        /// </remarks>
+        public Action<ITable, ScanSpec> ReviewScanSpec { get; set; }
 
         /// <summary>
         /// Gets or sets the root namespace.
