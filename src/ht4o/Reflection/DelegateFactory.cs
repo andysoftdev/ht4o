@@ -21,6 +21,8 @@
 namespace Hypertable.Persistence.Reflection
 {
     using System;
+    using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq.Expressions;
     using System.Reflection;
     using System.Reflection.Emit;
@@ -30,6 +32,488 @@ namespace Hypertable.Persistence.Reflection
     /// </summary>
     internal static class DelegateFactory
     {
+        #region Public Methods and Operators
+
+        /// <summary>
+        /// Create an action for the method info specified.
+        /// </summary>
+        /// <param name="methodInfo">
+        /// The method info. 
+        /// </param>
+        /// <returns>
+        /// The action created or null. 
+        /// </returns>
+        public static Action<object, object> CreateAction(MethodInfo methodInfo)
+        {
+            if (methodInfo == null || methodInfo.GetParameters().Length != 1 || methodInfo.ReturnType != typeof(void) || methodInfo.DeclaringType == null)
+            {
+                return null;
+            }
+
+            var instanceType = methodInfo.DeclaringType;
+            var argumentType = methodInfo.GetParameters()[0].ParameterType;
+
+            var instance = Expression.Parameter(typeof(object));
+            var argument = Expression.Parameter(typeof(object));
+            var createExpression =
+                Expression.Lambda<Action<object, object>>(
+                    Expression.Call(ConvertOrUnbox(instance, instanceType), methodInfo, ConvertOrUnbox(argument, argumentType)), instance, argument);
+
+            return createExpression.Compile();
+        }
+
+        /// <summary>
+        /// Returns an IL-compiled function that creates instances of <paramref name="instanceType"/> using its parameter-less constructor.
+        /// </summary>
+        /// <param name="instanceType">
+        /// Type of the instance. 
+        /// </param>
+        /// <returns>
+        /// The function 
+        /// </returns>
+        public static Func<object> CreateConstructor(Type instanceType)
+        {
+            if (instanceType == null)
+            {
+                throw new ArgumentNullException("instanceType");
+            }
+
+            if (instanceType.IsValueType)
+            {
+                var defaultExpression = Expression.Lambda<Func<object>>(Expression.Convert(Expression.Default(instanceType), typeof(object)));
+                return defaultExpression.Compile();
+            }
+
+            var ctor = instanceType.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
+
+            if (ctor == null)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "{0} has no appropriate parameterless-constructor", instanceType.Name));
+            }
+
+            var factoryExpression = Expression.Lambda<Func<object>>(Expression.New(ctor));
+            return factoryExpression.Compile();
+        }
+
+        /// <summary>
+        /// Returns an IL-compiled function that creates instances of <paramref name="instanceType"/> using its constructor with type <paramref name="firstArgumentType"/>.
+        /// </summary>
+        /// <param name="instanceType">
+        /// Type of the instance. 
+        /// </param>
+        /// <param name="firstArgumentType">
+        /// Type of the first argument. 
+        /// </param>
+        /// <returns>
+        /// The function 
+        /// </returns>
+        public static Func<object, object> CreateConstructor(Type instanceType, Type firstArgumentType)
+        {
+            if (instanceType == null)
+            {
+                throw new ArgumentNullException("instanceType");
+            }
+
+            if (firstArgumentType == null)
+            {
+                throw new ArgumentNullException("firstArgumentType");
+            }
+
+            var ctor = instanceType.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new[] { firstArgumentType }, null);
+
+            if (ctor == null)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "{0} has no appropriate constructor", instanceType.Name));
+            }
+
+            var firstArgument = Expression.Parameter(typeof(object));
+            var factoryExpression =
+                Expression.Lambda<Func<object, object>>(
+                    Expression.Convert(Expression.New(ctor, Expression.Convert(firstArgument, firstArgumentType)), typeof(object)), firstArgument);
+            return factoryExpression.Compile();
+        }
+
+        /// <summary>
+        /// Returns an IL-compiled function that creates instances of <paramref name="instanceType"/> using its constructor with types <paramref name="firstArgumentType"/> and <paramref name="secondArgumentType"/>.
+        /// </summary>
+        /// <param name="instanceType">
+        /// Type of the instance. 
+        /// </param>
+        /// <param name="firstArgumentType">
+        /// Type of the first argument. 
+        /// </param>
+        /// <param name="secondArgumentType">
+        /// Type of the second argument. 
+        /// </param>
+        /// <returns>
+        /// The function 
+        /// </returns>
+        public static Func<object, object, object> CreateConstructor(Type instanceType, Type firstArgumentType, Type secondArgumentType)
+        {
+            if (instanceType == null)
+            {
+                throw new ArgumentNullException("instanceType");
+            }
+
+            if (firstArgumentType == null)
+            {
+                throw new ArgumentNullException("firstArgumentType");
+            }
+
+            if (secondArgumentType == null)
+            {
+                throw new ArgumentNullException("secondArgumentType");
+            }
+
+            var ctor = instanceType.GetConstructor(
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new[] { firstArgumentType, secondArgumentType }, null);
+
+            if (ctor == null)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "{0} has no appropriate constructor", instanceType.Name));
+            }
+
+            var firstArgument = Expression.Parameter(typeof(object));
+            var secondArgument = Expression.Parameter(typeof(object));
+            var factoryExpression =
+                Expression.Lambda<Func<object, object, object>>(
+                    Expression.Convert(
+                        Expression.New(ctor, Expression.Convert(firstArgument, firstArgumentType), Expression.Convert(secondArgument, secondArgumentType)), typeof(object)), 
+                    firstArgument, 
+                    secondArgument);
+            return factoryExpression.Compile();
+        }
+
+        /// <summary>
+        /// Returns an IL-compiled function that creates instances of <paramref name="instanceType"/> using its constructor with types <paramref name="firstArgumentType"/> , <paramref name="secondArgumentType"/> and <paramref name="thirdArgumentType"/>.
+        /// </summary>
+        /// <param name="instanceType">
+        /// Type of the instance. 
+        /// </param>
+        /// <param name="firstArgumentType">
+        /// Type of the first argument. 
+        /// </param>
+        /// <param name="secondArgumentType">
+        /// Type of the second argument. 
+        /// </param>
+        /// <param name="thirdArgumentType">
+        /// Type of the third argument. 
+        /// </param>
+        /// <returns>
+        /// The function 
+        /// </returns>
+        public static Func<object, object, object, object> CreateConstructor(Type instanceType, Type firstArgumentType, Type secondArgumentType, Type thirdArgumentType)
+        {
+            if (instanceType == null)
+            {
+                throw new ArgumentNullException("instanceType");
+            }
+
+            if (firstArgumentType == null)
+            {
+                throw new ArgumentNullException("firstArgumentType");
+            }
+
+            if (secondArgumentType == null)
+            {
+                throw new ArgumentNullException("secondArgumentType");
+            }
+
+            if (thirdArgumentType == null)
+            {
+                throw new ArgumentNullException("thirdArgumentType");
+            }
+
+            var ctor = instanceType.GetConstructor(
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new[] { firstArgumentType, secondArgumentType, thirdArgumentType }, null);
+
+            if (ctor == null)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "{0} has no appropriate constructor", instanceType.Name));
+            }
+
+            var firstArgument = Expression.Parameter(typeof(object));
+            var secondArgument = Expression.Parameter(typeof(object));
+            var thirdArgument = Expression.Parameter(typeof(object));
+            var factoryExpression =
+                Expression.Lambda<Func<object, object, object, object>>(
+                    Expression.Convert(
+                        Expression.New(
+                            ctor, 
+                            Expression.Convert(firstArgument, firstArgumentType), 
+                            Expression.Convert(secondArgument, secondArgumentType), 
+                            Expression.Convert(thirdArgument, thirdArgumentType)), 
+                        typeof(object)), 
+                    firstArgument, 
+                    secondArgument, 
+                    thirdArgument);
+            return factoryExpression.Compile();
+        }
+
+        /// <summary>
+        /// Returns an IL-compiled function that creates instances of <paramref name="instanceType"/> using its constructor with types <paramref name="argumentTypes"/>.
+        /// </summary>
+        /// <param name="instanceType">
+        /// Type of the instance. 
+        /// </param>
+        /// <param name="argumentTypes">
+        /// Types of the arguments. 
+        /// </param>
+        /// <returns>
+        /// The function 
+        /// </returns>
+        public static Func<object[], object> CreateConstructor(Type instanceType, Type[] argumentTypes)
+        {
+            if (instanceType == null)
+            {
+                throw new ArgumentNullException("instanceType");
+            }
+
+            if (argumentTypes == null)
+            {
+                throw new ArgumentNullException("argumentTypes");
+            }
+
+            var ctor = instanceType.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, argumentTypes, null);
+
+            if (ctor == null)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "{0} has no appropriate constructor", instanceType.Name));
+            }
+
+            var firstArgument = Expression.Parameter(typeof(object[]));
+            var argumentExpressions = new List<Expression>();
+            for (var i = 0; i < argumentTypes.Length; ++i)
+            {
+                var argumentType = argumentTypes[i];
+                argumentExpressions.Add(Expression.Convert(Expression.ArrayIndex(firstArgument, Expression.Constant(i)), argumentType));
+            }
+
+            var factoryExpression = Expression.Lambda<Func<object[], object>>(Expression.Convert(Expression.New(ctor, argumentExpressions), typeof(object)), firstArgument);
+            return factoryExpression.Compile();
+        }
+
+        /// <summary>
+        /// Creates a function for the method info specified.
+        /// </summary>
+        /// <param name="methodInfo">
+        /// The method info. 
+        /// </param>
+        /// <returns>
+        /// The function created or null. 
+        /// </returns>
+        public static Func<object, object, object> CreateFunc(MethodInfo methodInfo)
+        {
+            if (methodInfo == null || methodInfo.GetParameters().Length != 1 || methodInfo.ReturnType == typeof(void) || methodInfo.DeclaringType == null)
+            {
+                return null;
+            }
+
+            var instanceType = methodInfo.DeclaringType;
+            var argumentType = methodInfo.GetParameters()[0].ParameterType;
+
+            var instance = Expression.Parameter(typeof(object));
+            var argument = Expression.Parameter(typeof(object));
+            var createExpression =
+                Expression.Lambda<Func<object, object, object>>(
+                    Expression.Convert(Expression.Call(ConvertOrUnbox(instance, instanceType), methodInfo, ConvertOrUnbox(argument, argumentType)), typeof(object)), 
+                    instance, 
+                    argument);
+
+            return createExpression.Compile();
+        }
+
+        /// <summary>
+        /// Creates a getter function for the property info specified.
+        /// </summary>
+        /// <param name="propertyInfo">
+        /// The property info. 
+        /// </param>
+        /// <returns>
+        /// The getter function created or null. 
+        /// </returns>
+        public static Func<object, object> CreateGetter(PropertyInfo propertyInfo)
+        {
+            if (propertyInfo == null || propertyInfo.DeclaringType == null)
+            {
+                return null;
+            }
+
+            var instanceType = propertyInfo.DeclaringType;
+
+            var instance = Expression.Parameter(typeof(object));
+            var createExpression =
+                Expression.Lambda<Func<object, object>>(Expression.Convert(Expression.Property(ConvertOrUnbox(instance, instanceType), propertyInfo), typeof(object)), instance);
+
+            return createExpression.Compile();
+        }
+
+        /// <summary>
+        /// Creates a getter function for the field info specified.
+        /// </summary>
+        /// <param name="fieldInfo">
+        /// The field info. 
+        /// </param>
+        /// <returns>
+        /// The getter function created or null. 
+        /// </returns>
+        public static Func<object, object> CreateGetter(FieldInfo fieldInfo)
+        {
+            if (fieldInfo == null || fieldInfo.DeclaringType == null)
+            {
+                return null;
+            }
+
+            var instanceType = fieldInfo.DeclaringType;
+
+            var instance = Expression.Parameter(typeof(object));
+            var createExpression = Expression.Lambda<Func<object, object>>(
+                Expression.Convert(Expression.Field(ConvertOrUnbox(instance, instanceType), fieldInfo), typeof(object)), instance);
+
+            return createExpression.Compile();
+        }
+
+        /// <summary>
+        /// Creates an indexer function for the indexer property specified.
+        /// </summary>
+        /// <param name="propertyInfo">
+        /// The property info. 
+        /// </param>
+        /// <returns>
+        /// The indexer function created or null. 
+        /// </returns>
+        public static Func<object, int, object> CreateIndexerGetter(PropertyInfo propertyInfo)
+        {
+            if (propertyInfo == null || propertyInfo.DeclaringType == null)
+            {
+                return null;
+            }
+
+            var instanceType = propertyInfo.DeclaringType;
+
+            var instance = Expression.Parameter(typeof(object));
+            var index = Expression.Parameter(typeof(int));
+            var createExpression =
+                Expression.Lambda<Func<object, int, object>>(
+                    Expression.Convert(Expression.MakeIndex(ConvertOrUnbox(instance, instanceType), propertyInfo, new[] { index }), typeof(object)), instance, index);
+
+            return createExpression.Compile();
+        }
+
+        /// <summary>
+        /// Creates an indexer action for the indexer property specified.
+        /// </summary>
+        /// <param name="propertyInfo">
+        /// The property info. 
+        /// </param>
+        /// <returns>
+        /// The indexer action created or null. 
+        /// </returns>
+        public static Action<object, int, object> CreateIndexerSetter(PropertyInfo propertyInfo)
+        {
+            if (propertyInfo == null || propertyInfo.DeclaringType == null)
+            {
+                return null;
+            }
+
+            var instanceType = propertyInfo.DeclaringType;
+            var elementType = propertyInfo.PropertyType;
+
+            var instance = Expression.Parameter(typeof(object));
+            var index = Expression.Parameter(typeof(int));
+            var newValue = Expression.Parameter(typeof(object));
+            var createExpression =
+                Expression.Lambda<Action<object, int, object>>(
+                    Expression.Assign(Expression.MakeIndex(ConvertOrUnbox(instance, instanceType), propertyInfo, new[] { index }), ConvertOrUnbox(newValue, elementType)), 
+                    instance, 
+                    index, 
+                    newValue);
+
+            return createExpression.Compile();
+        }
+
+        /// <summary>
+        /// Creates a getter action for the property info specified.
+        /// </summary>
+        /// <param name="propertyInfo">
+        /// The property info. 
+        /// </param>
+        /// <returns>
+        /// The getter action created or null. 
+        /// </returns>
+        public static Action<object, object> CreateSetter(PropertyInfo propertyInfo)
+        {
+            if (propertyInfo == null || propertyInfo.DeclaringType == null)
+            {
+                return null;
+            }
+
+            var instanceType = propertyInfo.DeclaringType;
+            var propertyType = propertyInfo.PropertyType;
+
+            var instance = Expression.Parameter(typeof(object));
+            var newValue = Expression.Parameter(typeof(object));
+            var createExpression =
+                Expression.Lambda<Action<object, object>>(
+                    Expression.Assign(Expression.Property(ConvertOrUnbox(instance, instanceType), propertyInfo), ConvertOrUnbox(newValue, propertyType)), instance, newValue);
+
+            return createExpression.Compile();
+        }
+
+        /// <summary>
+        /// Creates a getter action for the field info specified.
+        /// </summary>
+        /// <param name="fieldInfo">
+        /// The field info. 
+        /// </param>
+        /// <returns>
+        /// The getter action created or null. 
+        /// </returns>
+        public static Action<object, object> CreateSetter(FieldInfo fieldInfo)
+        {
+            if (fieldInfo == null || fieldInfo.DeclaringType == null)
+            {
+                return null;
+            }
+
+            if (fieldInfo.IsInitOnly)
+            {
+                var method = new DynamicMethod("Setter" + fieldInfo.Name, typeof(void), new[] { typeof(object), typeof(object) }, fieldInfo.Module, true);
+
+                var generator = method.GetILGenerator();
+
+                generator.Emit(OpCodes.Ldarg_0);
+                if (fieldInfo.DeclaringType.IsValueType)
+                {
+                    generator.Emit(OpCodes.Unbox, fieldInfo.DeclaringType);
+                }
+
+                generator.Emit(OpCodes.Ldarg_1);
+                if (fieldInfo.FieldType.IsValueType)
+                {
+                    generator.Emit(OpCodes.Unbox_Any, fieldInfo.FieldType);
+                }
+
+                generator.Emit(OpCodes.Stfld, fieldInfo);
+                generator.Emit(OpCodes.Ret);
+
+                return (Action<object, object>)method.CreateDelegate(typeof(Action<object, object>));
+            }
+
+            var instanceType = fieldInfo.DeclaringType;
+            var propertyType = fieldInfo.FieldType;
+
+            var instance = Expression.Parameter(typeof(object));
+            var newValue = Expression.Parameter(typeof(object));
+            var createExpression =
+                Expression.Lambda<Action<object, object>>(
+                    Expression.Assign(Expression.Field(ConvertOrUnbox(instance, instanceType), fieldInfo), ConvertOrUnbox(newValue, propertyType)), instance, newValue);
+
+            return createExpression.Compile();
+        }
+
+        #endregion
+
         #region Methods
 
         /// <summary>
@@ -68,406 +552,20 @@ namespace Hypertable.Persistence.Reflection
         }
 
         /// <summary>
-        /// Create an action for the method info specified.
+        /// Creates an convert or unbox expression depending on the instance type.
         /// </summary>
-        /// <param name="methodInfo">
-        /// The method info.
+        /// <param name="instance">
+        /// The instance expression.
+        /// </param>
+        /// <param name="instanceType">
+        /// The instance type.
         /// </param>
         /// <returns>
-        /// The action created or null.
+        /// The created unary expression.
         /// </returns>
-        internal static Action<object, object> CreateAction(MethodInfo methodInfo)
+        private static UnaryExpression ConvertOrUnbox(Expression instance, Type instanceType)
         {
-            if (methodInfo == null || methodInfo.GetParameters().Length != 1 || methodInfo.ReturnType != typeof(void))
-            {
-                return null;
-            }
-
-            var genericHelper = typeof(DelegateFactory).GetMethod("CreateDelegateAction", BindingFlags.Static | BindingFlags.NonPublic);
-            var constructedHelper = genericHelper.MakeGenericMethod(methodInfo.DeclaringType, methodInfo.GetParameters()[0].ParameterType);
-            return (Action<object, object>)constructedHelper.Invoke(null, new object[] { methodInfo });
-        }
-
-        /// <summary>
-        /// Creates a function for the method info specified.
-        /// </summary>
-        /// <param name="methodInfo">
-        /// The method info.
-        /// </param>
-        /// <returns>
-        /// The function created or null.
-        /// </returns>
-        internal static Func<object, object, object> CreateFunc(MethodInfo methodInfo)
-        {
-            if (methodInfo == null || methodInfo.GetParameters().Length != 1 || methodInfo.ReturnType == typeof(void))
-            {
-                return null;
-            }
-
-            var genericHelper = typeof(DelegateFactory).GetMethod("CreateDelegateFunc", BindingFlags.Static | BindingFlags.NonPublic);
-            var constructedHelper = genericHelper.MakeGenericMethod(methodInfo.DeclaringType, methodInfo.GetParameters()[0].ParameterType, methodInfo.ReturnType);
-            return (Func<object, object, object>)constructedHelper.Invoke(null, new object[] { methodInfo });
-        }
-
-        /// <summary>
-        /// Creates a getter function for the property info specified.
-        /// </summary>
-        /// <param name="propertyInfo">
-        /// The property info.
-        /// </param>
-        /// <returns>
-        /// The getter function created or null.
-        /// </returns>
-        internal static Func<object, object> CreateGetterFunc(PropertyInfo propertyInfo)
-        {
-            if (propertyInfo == null || propertyInfo.DeclaringType == null)
-            {
-                return null;
-            }
-
-            if (!propertyInfo.DeclaringType.IsValueType)
-            {
-                var genericHelper = typeof(DelegateFactory).GetMethod("CreateDelegateGetterFunc", BindingFlags.Static | BindingFlags.NonPublic);
-                var constructedHelper = genericHelper.MakeGenericMethod(propertyInfo.DeclaringType, propertyInfo.PropertyType);
-                return (Func<object, object>)constructedHelper.Invoke(null, new object[] { propertyInfo });
-            }
-
-            var method = new DynamicMethod("Getter" + propertyInfo.Name, typeof(object), new[] { typeof(object) }, propertyInfo.Module, true);
-            var generator = method.GetILGenerator();
-
-            generator.Emit(OpCodes.Ldarg_0);
-            if (propertyInfo.DeclaringType.IsValueType)
-            {
-                generator.Emit(OpCodes.Unbox, propertyInfo.DeclaringType);
-            }
-
-            generator.EmitCall(OpCodes.Callvirt, propertyInfo.GetGetMethod(true), null);
-            if (propertyInfo.PropertyType.IsValueType)
-            {
-                generator.Emit(OpCodes.Box, propertyInfo.PropertyType);
-            }
-
-            generator.Emit(OpCodes.Ret);
-
-            return (Func<object, object>)method.CreateDelegate(typeof(Func<object, object>));
-        }
-
-        /// <summary>
-        /// Creates a getter function for the field info specified.
-        /// </summary>
-        /// <param name="fieldInfo">
-        /// The field info.
-        /// </param>
-        /// <returns>
-        /// The getter function created or null.
-        /// </returns>
-        internal static Func<object, object> CreateGetterFunc(FieldInfo fieldInfo)
-        {
-            if (fieldInfo == null || fieldInfo.DeclaringType == null)
-            {
-                return null;
-            }
-
-            var method = new DynamicMethod("Getter" + fieldInfo.Name, typeof(object), new[] { typeof(object) }, fieldInfo.Module, true);
-            var generator = method.GetILGenerator();
-
-            generator.Emit(OpCodes.Ldarg_0);
-            if (fieldInfo.DeclaringType.IsValueType)
-            {
-                generator.Emit(OpCodes.Unbox, fieldInfo.DeclaringType);
-            }
-
-            generator.Emit(OpCodes.Ldfld, fieldInfo);
-            if (fieldInfo.FieldType.IsValueType)
-            {
-                generator.Emit(OpCodes.Box, fieldInfo.FieldType);
-            }
-
-            generator.Emit(OpCodes.Ret);
-
-            return (Func<object, object>)method.CreateDelegate(typeof(Func<object, object>));
-        }
-
-        /// <summary>
-        /// Creates an indexer action for the indexer property specified.
-        /// </summary>
-        /// <param name="propertyInfo">
-        /// The property info.
-        /// </param>
-        /// <returns>
-        /// The indexer action created or null.
-        /// </returns>
-        internal static Action<object, int, object> CreateIndexerAction(PropertyInfo propertyInfo)
-        {
-            if (propertyInfo == null)
-            {
-                return null;
-            }
-
-            var genericHelper = typeof(DelegateFactory).GetMethod("CreateDelegateIndexerAction", BindingFlags.Static | BindingFlags.NonPublic);
-            var constructedHelper = genericHelper.MakeGenericMethod(propertyInfo.DeclaringType, propertyInfo.PropertyType);
-            return (Action<object, int, object>)constructedHelper.Invoke(null, new object[] { propertyInfo });
-        }
-
-        /// <summary>
-        /// Creates an indexer function for the indexer property specified.
-        /// </summary>
-        /// <param name="propertyInfo">
-        /// The property info.
-        /// </param>
-        /// <returns>
-        /// The indexer function created or null.
-        /// </returns>
-        internal static Func<object, int, object> CreateIndexerFunc(PropertyInfo propertyInfo)
-        {
-            if (propertyInfo == null)
-            {
-                return null;
-            }
-
-            var genericHelper = typeof(DelegateFactory).GetMethod("CreateDelegatIndexerFunc", BindingFlags.Static | BindingFlags.NonPublic);
-            var constructedHelper = genericHelper.MakeGenericMethod(propertyInfo.DeclaringType, propertyInfo.PropertyType);
-            return (Func<object, int, object>)constructedHelper.Invoke(null, new object[] { propertyInfo });
-        }
-
-        /// <summary>
-        /// Creates a getter action for the property info specified.
-        /// </summary>
-        /// <param name="propertyInfo">
-        /// The property info.
-        /// </param>
-        /// <returns>
-        /// The getter action created or null.
-        /// </returns>
-        internal static Action<object, object> CreateSetterAction(PropertyInfo propertyInfo)
-        {
-            if (propertyInfo == null || propertyInfo.DeclaringType == null)
-            {
-                return null;
-            }
-
-            if (!propertyInfo.DeclaringType.IsValueType)
-            {
-                var genericHelper = typeof(DelegateFactory).GetMethod("CreateDelegateSetterAction", BindingFlags.Static | BindingFlags.NonPublic);
-                var constructedHelper = genericHelper.MakeGenericMethod(propertyInfo.DeclaringType, propertyInfo.PropertyType);
-                return (Action<object, object>)constructedHelper.Invoke(null, new object[] { propertyInfo });
-            }
-
-            var method = new DynamicMethod("Setter" + propertyInfo.Name, typeof(void), new[] { typeof(object), typeof(object) }, propertyInfo.Module, true);
-            var generator = method.GetILGenerator();
-
-            generator.Emit(OpCodes.Ldarg_0);
-            generator.Emit(OpCodes.Unbox, propertyInfo.DeclaringType);
-            generator.Emit(OpCodes.Ldarg_1);
-            if (propertyInfo.PropertyType.IsValueType)
-            {
-                generator.Emit(OpCodes.Unbox_Any, propertyInfo.PropertyType);
-            }
-
-            generator.Emit(OpCodes.Callvirt, propertyInfo.GetSetMethod(true));
-            generator.Emit(OpCodes.Ret);
-
-            return (Action<object, object>)method.CreateDelegate(typeof(Action<object, object>));
-        }
-
-        /// <summary>
-        /// Creates a getter action for the field info specified.
-        /// </summary>
-        /// <param name="fieldInfo">
-        /// The field info.
-        /// </param>
-        /// <returns>
-        /// The getter action created or null.
-        /// </returns>
-        internal static Action<object, object> CreateSetterAction(FieldInfo fieldInfo)
-        {
-            if (fieldInfo == null || fieldInfo.DeclaringType == null)
-            {
-                return null;
-            }
-
-            var method = new DynamicMethod("Setter" + fieldInfo.Name, typeof(void), new[] { typeof(object), typeof(object) }, fieldInfo.Module, true);
-            var generator = method.GetILGenerator();
-
-            generator.Emit(OpCodes.Ldarg_0);
-            if (fieldInfo.DeclaringType.IsValueType)
-            {
-                generator.Emit(OpCodes.Unbox, fieldInfo.DeclaringType);
-            }
-
-            generator.Emit(OpCodes.Ldarg_1);
-            if (fieldInfo.FieldType.IsValueType)
-            {
-                generator.Emit(OpCodes.Unbox_Any, fieldInfo.FieldType);
-            }
-
-            generator.Emit(OpCodes.Stfld, fieldInfo);
-            generator.Emit(OpCodes.Ret);
-
-            return (Action<object, object>)method.CreateDelegate(typeof(Action<object, object>));
-        }
-
-        /// <summary>
-        /// Creates a delegate action for the method info specified.
-        /// </summary>
-        /// <param name="methodInfo">
-        /// The method info.
-        /// </param>
-        /// <typeparam name="TTarget">
-        /// The target type.
-        /// </typeparam>
-        /// <typeparam name="TParam">
-        /// The parameter type.
-        /// </typeparam>
-        /// <returns>
-        /// The created action.
-        /// </returns>
-        private static Action<object, object> CreateDelegateAction<TTarget, TParam>(MethodInfo methodInfo) where TTarget : class
-        {
-            if (methodInfo == null)
-            {
-                return null;
-            }
-
-            var func = (Action<TTarget, TParam>)Delegate.CreateDelegate(typeof(Action<TTarget, TParam>), methodInfo);
-            return (target, param) => func((TTarget)target, (TParam)param);
-        }
-
-        /// <summary>
-        /// Creates a delegate function for the method info specified.
-        /// </summary>
-        /// <param name="methodInfo">
-        /// The method info.
-        /// </param>
-        /// <typeparam name="TTarget">
-        /// The target type.
-        /// </typeparam>
-        /// <typeparam name="TParam">
-        /// The parameter type.
-        /// </typeparam>
-        /// <typeparam name="TResult">
-        /// The result type.
-        /// </typeparam>
-        /// <returns>
-        /// The created function.
-        /// </returns>
-        private static Func<object, object, object> CreateDelegateFunc<TTarget, TParam, TResult>(MethodInfo methodInfo) where TTarget : class
-        {
-            if (methodInfo == null)
-            {
-                return null;
-            }
-
-            var func = (Func<TTarget, TParam, TResult>)Delegate.CreateDelegate(typeof(Func<TTarget, TParam, TResult>), methodInfo);
-            return (target, param) => func((TTarget)target, (TParam)param);
-        }
-
-        /// <summary>
-        /// Creates a delegate getter function for the property info specified.
-        /// </summary>
-        /// <param name="propertyInfo">
-        /// The property info.
-        /// </param>
-        /// <typeparam name="TTarget">
-        /// The target type.
-        /// </typeparam>
-        /// <typeparam name="TParam">
-        /// The parameter type.
-        /// </typeparam>
-        /// <returns>
-        /// The created getter function.
-        /// </returns>
-        private static Func<object, object> CreateDelegateGetterFunc<TTarget, TParam>(PropertyInfo propertyInfo) where TTarget : class
-        {
-            var m = propertyInfo.GetGetMethod(true);
-            if (m == null)
-            {
-                return null;
-            }
-
-            var func = (Func<TTarget, TParam>)Delegate.CreateDelegate(typeof(Func<TTarget, TParam>), m);
-            return target => func((TTarget)target);
-        }
-
-        /// <summary>
-        /// Creates a delegate indexer action for the indexer property info specified.
-        /// </summary>
-        /// <param name="propertyInfo">
-        /// The property info.
-        /// </param>
-        /// <typeparam name="TTarget">
-        /// The target type.
-        /// </typeparam>
-        /// <typeparam name="TParam">
-        /// The parameter type.
-        /// </typeparam>
-        /// <returns>
-        /// The created indexer action.
-        /// </returns>
-        private static Action<object, int, object> CreateDelegateIndexerAction<TTarget, TParam>(PropertyInfo propertyInfo) where TTarget : class
-        {
-            var m = propertyInfo.GetSetMethod(true);
-            if (m == null)
-            {
-                return null;
-            }
-
-            var func = (Action<TTarget, int, TParam>)Delegate.CreateDelegate(typeof(Action<TTarget, int, TParam>), m);
-            return (target, index, param) => func((TTarget)target, index, (TParam)param);
-        }
-
-        /// <summary>
-        /// Creates a delegate indexer function for the indexer property info specified.
-        /// </summary>
-        /// <param name="propertyInfo">
-        /// The property info.
-        /// </param>
-        /// <typeparam name="TTarget">
-        /// The target type.
-        /// </typeparam>
-        /// <typeparam name="TParam">
-        /// The parameter type.
-        /// </typeparam>
-        /// <returns>
-        /// The created indexer function.
-        /// </returns>
-        private static Func<object, int, object> CreateDelegateIndexerFunc<TTarget, TParam>(PropertyInfo propertyInfo) where TTarget : class
-        {
-            var m = propertyInfo.GetGetMethod(true);
-            if (m == null)
-            {
-                return null;
-            }
-
-            var func = (Func<TTarget, int, TParam>)Delegate.CreateDelegate(typeof(Func<TTarget, int, TParam>), m);
-            return (target, index) => func((TTarget)target, index);
-        }
-
-        /// <summary>
-        /// Creates a delegate setter action for the property info specified.
-        /// </summary>
-        /// <param name="propertyInfo">
-        /// The property info.
-        /// </param>
-        /// <typeparam name="TTarget">
-        /// The target type.
-        /// </typeparam>
-        /// <typeparam name="TParam">
-        /// The parameter type.
-        /// </typeparam>
-        /// <returns>
-        /// The created setter action.
-        /// </returns>
-        private static Action<object, object> CreateDelegateSetterAction<TTarget, TParam>(PropertyInfo propertyInfo) where TTarget : class
-        {
-            var m = propertyInfo.GetSetMethod(true);
-            if (m == null)
-            {
-                return null;
-            }
-
-            var func = (Action<TTarget, TParam>)Delegate.CreateDelegate(typeof(Action<TTarget, TParam>), m);
-            return (target, param) => func((TTarget)target, (TParam)param);
+            return instanceType.IsValueType ? Expression.Unbox(instance, instanceType) : Expression.Convert(instance, instanceType);
         }
 
         #endregion

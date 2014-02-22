@@ -186,7 +186,7 @@ namespace Hypertable.Persistence.Reflection
         private static Action<object, object> CreateCapacityMethod(Type type)
         {
             return
-                DelegateFactory.CreateSetterAction(
+                DelegateFactory.CreateSetter(
                     type.GetProperty("Capacity", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy));
         }
 
@@ -201,7 +201,7 @@ namespace Hypertable.Persistence.Reflection
         /// </returns>
         private static Func<object, object> CreateCountMethod(Type type)
         {
-            return DelegateFactory.CreateGetterFunc(type.GetProperty("Count", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy));
+            return DelegateFactory.CreateGetter(type.GetProperty("Count", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy));
         }
 
         /// <summary>
@@ -216,7 +216,7 @@ namespace Hypertable.Persistence.Reflection
         private static Action<object, int, object> CreateIndexerMethod(Type type)
         {
             return
-                DelegateFactory.CreateIndexerAction(type.GetProperty("Item", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy));
+                DelegateFactory.CreateIndexerSetter(type.GetProperty("Item", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy));
         }
 
         /// <summary>

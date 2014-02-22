@@ -84,8 +84,8 @@ namespace Hypertable.Persistence.Reflection
 
             try
             {
-                this.Getter = DelegateFactory.CreateGetterFunc(propertyInfo);
-                this.Setter = DelegateFactory.CreateSetterAction(propertyInfo);
+                this.Getter = DelegateFactory.CreateGetter(propertyInfo);
+                this.Setter = DelegateFactory.CreateSetter(propertyInfo);
             }
             catch (Exception exception)
             {
@@ -150,8 +150,8 @@ namespace Hypertable.Persistence.Reflection
 
             try
             {
-                this.Getter = DelegateFactory.CreateGetterFunc(fieldInfo);
-                this.Setter = DelegateFactory.CreateSetterAction(fieldInfo);
+                this.Getter = DelegateFactory.CreateGetter(fieldInfo);
+                this.Setter = DelegateFactory.CreateSetter(fieldInfo);
             }
             catch (Exception exception)
             {

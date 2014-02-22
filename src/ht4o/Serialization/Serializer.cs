@@ -1322,9 +1322,9 @@ namespace Hypertable.Persistence.Serialization
         {
             var typeargs = keyValuePair.GetType().GetGenericArguments();
             var propertyInfoKey = type.GetProperty(@"Key");
-            var keyGetter = DelegateFactory.CreateGetterFunc(propertyInfoKey);
+            var keyGetter = DelegateFactory.CreateGetter(propertyInfoKey);
             var propertyInfoValue = type.GetProperty(@"Value");
-            var valueGetter = DelegateFactory.CreateGetterFunc(propertyInfoValue);
+            var valueGetter = DelegateFactory.CreateGetter(propertyInfoValue);
             var write = typeof(Serializer).GetMethod(@"Write", BindingFlags.Static | BindingFlags.NonPublic, null, new[] { typeof(Serializer), typeof(Type), typeof(object), typeof(Func<object, object>) }, null);
             var writeType = typeof(Serializer).GetMethod(@"WriteType", BindingFlags.Static | BindingFlags.NonPublic, null, new[] { typeof(Serializer), typeof(Type) }, null);
 
@@ -1402,7 +1402,7 @@ namespace Hypertable.Persistence.Serialization
             for (var i = 0; i < typeargs.Length; ++i)
             {
                 var propertyInfoItem = type.GetProperty(@"Item" + (i + 1).ToString(CultureInfo.InvariantCulture));
-                var itemGetter = DelegateFactory.CreateGetterFunc(propertyInfoItem);
+                var itemGetter = DelegateFactory.CreateGetter(propertyInfoItem);
                 expressions.Add(Expression.Call(null, writeType, serializerParameter, Expression.Constant(typeargs[i])));
                 expressions.Add(Expression.Call(null, write, serializerParameter, Expression.Constant(typeargs[i]), tupleParameter, Expression.Constant(itemGetter)));
             }
