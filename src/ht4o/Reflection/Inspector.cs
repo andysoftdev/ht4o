@@ -48,14 +48,14 @@ namespace Hypertable.Persistence.Reflection
         #region Fields
 
         /// <summary>
+        /// Indicating whether the inspected type has a default constructor.
+        /// </summary>
+        private readonly Func<object> constructor;
+
+        /// <summary>
         /// The enumerable.
         /// </summary>
         private readonly InspectedEnumerable enumerable;
-
-        /// <summary>
-        /// Indicating whether the inspected type has a default constructor.
-        /// </summary>
-        private readonly bool hasDefaultconstructor;
 
         /// <summary>
         /// Indicating whether the inspected type has a serialization handlers.
@@ -88,7 +88,7 @@ namespace Hypertable.Persistence.Reflection
 
             if (!typeof(Enumerable).IsAssignableFrom(type))
             {
-                this.hasDefaultconstructor = type.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[0], null) != null;
+                this.constructor = DelegateFactory.CreateConstructor(type);
 
                 ////TODO control isSerializable/ISerializable by settings fields or props?
                 this.inspectedProperties = type.HasAttribute<SerializableAttribute>() ? InspectFields(type) : InspectProperties(type);
@@ -306,7 +306,7 @@ namespace Hypertable.Persistence.Reflection
         {
             if (!this.InspectedType.IsInterface && !this.InspectedType.IsAbstract)
             {
-                return this.hasDefaultconstructor ? Activator.CreateInstance(this.InspectedType, true) : FormatterServices.GetUninitializedObject(this.InspectedType);
+                return this.constructor != null ? this.constructor() : FormatterServices.GetUninitializedObject(this.InspectedType);
             }
 
             return null;
