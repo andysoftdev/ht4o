@@ -78,6 +78,11 @@ namespace Hypertable.Persistence.Reflection
                 throw new ArgumentNullException("instanceType");
             }
 
+            if (instanceType.IsAbstract || instanceType.IsInterface)
+            {
+                return null;
+            }
+
             if (instanceType.IsValueType)
             {
                 var defaultExpression = Expression.Lambda<Func<object>>(Expression.Convert(Expression.Default(instanceType), typeof(object)));
