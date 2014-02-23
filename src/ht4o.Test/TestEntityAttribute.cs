@@ -20,6 +20,7 @@
  */
 namespace Hypertable.Persistence.Test
 {
+    using System.Collections.Generic;
     using System.Linq;
 
     using Hypertable;
@@ -309,122 +310,321 @@ namespace Hypertable.Persistence.Test
         /// The persist behaviors.
         /// </summary>
         [TestMethod]
-        public void PersistBehaviors()
-        {
-            var ea1 = new EntityA();
-            TestBase.TestSerialization(ea1);
-
-            var eb1 = new EntityB();
-            TestBase.TestSerialization(eb1);
-
-            var eb2 = new EntityB { A = ea1 };
-            TestBase.TestSerialization(eb2);
-
-            using (var em = Emf.CreateEntityManager())
+        public void PersistBehaviors() {
             {
-                em.Persist(ea1);
-                em.Persist(eb1);
-                em.Persist(eb2);
-            }
+                var ea1 = new EntityA();
+                TestBase.TestSerialization(ea1);
 
-            using (var em = Emf.CreateEntityManager())
-            {
-                Assert.AreEqual(1, em.Fetch<EntityA>().Count());
-                Assert.AreEqual(2, em.Fetch<EntityB>().Count());
+                var eb1 = new EntityB();
+                TestBase.TestSerialization(eb1);
 
-                var _ea1 = em.Find<EntityA>(ea1.RowKey);
-                Assert.AreEqual(ea1, _ea1);
+                var eb2 = new EntityB { A = ea1 };
+                TestBase.TestSerialization(eb2);
 
-                var _eb1 = em.Find<EntityB>(eb1.Key);
-                Assert.AreEqual(eb1, _eb1);
+                using (var em = Emf.CreateEntityManager())
+                {
+                    em.Persist(ea1);
+                    em.Persist(eb1);
+                    em.Persist(eb2);
+                }
 
-                var _eb2 = em.Find<EntityB>(eb2.Key);
-                Assert.AreEqual(eb2, _eb2);
+                using (var em = Emf.CreateEntityManager())
+                {
+                    Assert.AreEqual(1, em.Fetch<EntityA>().Count());
+                    Assert.AreEqual(2, em.Fetch<EntityB>().Count());
 
-                var _ea2 = em.Find<EntityA>(eb2.A.RowKey);
-                Assert.AreEqual(ea1, _ea2);
+                    var _ea1 = em.Find<EntityA>(ea1.RowKey);
+                    Assert.AreEqual(ea1, _ea1);
+
+                    var _eb1 = em.Find<EntityB>(eb1.Key);
+                    Assert.AreEqual(eb1, _eb1);
+
+                    var _eb2 = em.Find<EntityB>(eb2.Key);
+                    Assert.AreEqual(eb2, _eb2);
+
+                    var _ea2 = em.Find<EntityA>(eb2.A.RowKey);
+                    Assert.AreEqual(ea1, _ea2);
+                }
+
+                TestBase.ClearNamespace();
+
+                using (var em = Emf.CreateEntityManager())
+                {
+                    em.Persist(ea1);
+                }
+
+                using (var em = Emf.CreateEntityManager())
+                {
+                    em.Persist(eb1);
+                    em.Persist(eb2);
+                }
+
+                using (var em = Emf.CreateEntityManager())
+                {
+                    Assert.AreEqual(2, em.Fetch<EntityA>().Count());
+                    Assert.AreEqual(2, em.Fetch<EntityB>().Count());
+
+                    var _ea1 = em.Find<EntityA>(ea1.RowKey);
+                    Assert.AreEqual(ea1, _ea1);
+
+                    var _eb1 = em.Find<EntityB>(eb1.Key);
+                    Assert.AreEqual(eb1, _eb1);
+
+                    var _eb2 = em.Find<EntityB>(eb2.Key);
+                    Assert.AreEqual(eb2, _eb2);
+
+                    var _ea2 = em.Find<EntityA>(eb2.A.RowKey);
+                    Assert.AreEqual(eb2.A, _ea2);
+                }
+
+                TestBase.ClearNamespace();
+
+                using (var em = Emf.CreateEntityManager())
+                {
+                    var ida = new HashSet<string>();
+                    var idb = new HashSet<string>();
+
+                    em.Persist(ea1, Behaviors.CreateLazy);
+                    ida.Add(ea1.RowKey);
+
+                    em.Persist(eb1, Behaviors.CreateLazy);
+                    idb.Add(eb1.Key.Row);
+
+                    em.Persist(eb2, Behaviors.CreateLazy);
+                    idb.Add(eb2.Key.Row);
+                    ida.Add(eb2.A.RowKey);
+
+                    em.Persist(ea1, Behaviors.CreateLazy);
+                    ida.Add(ea1.RowKey);
+
+                    em.Persist(eb1, Behaviors.CreateLazy);
+                    idb.Add(eb1.Key.Row);
+
+                    em.Persist(eb2, Behaviors.CreateLazy);
+                    idb.Add(eb2.Key.Row);
+                    ida.Add(eb2.A.RowKey);
+
+                    Assert.AreEqual(1, ida.Count);
+                    Assert.AreEqual(2, idb.Count);
+
+                    em.Flush();
+
+                    Assert.AreEqual(1, em.Fetch<EntityA>().Count());
+                    Assert.AreEqual(2, em.Fetch<EntityB>().Count());
+                }
+
+                TestBase.ClearNamespace();
+
+                using (var em = Emf.CreateEntityManager())
+                {
+                    var ida = new HashSet<string>();
+                    var idb = new HashSet<string>();
+
+                    em.Persist(ea1, Behaviors.CreateAlways);
+                    ida.Add(ea1.RowKey);
+
+                    em.Persist(eb1, Behaviors.CreateAlways);
+                    idb.Add(eb1.Key.Row);
+
+                    em.Persist(eb2, Behaviors.CreateAlways);
+                    idb.Add(eb2.Key.Row);
+                    ida.Add(eb2.A.RowKey);
+
+                    em.Persist(ea1, Behaviors.CreateAlways);
+                    ida.Add(ea1.RowKey);
+
+                    em.Persist(eb1, Behaviors.CreateAlways);
+                    idb.Add(eb1.Key.Row);
+
+                    em.Persist(eb2, Behaviors.CreateAlways);
+                    idb.Add(eb2.Key.Row);
+                    ida.Add(eb2.A.RowKey);
+
+                    Assert.AreEqual(4, ida.Count);
+                    Assert.AreEqual(4, idb.Count);
+
+                    em.Flush();
+
+                    Assert.AreEqual(4, em.Fetch<EntityA>().Count());
+                    Assert.AreEqual(4, em.Fetch<EntityB>().Count());
+                }
+
+                TestBase.ClearNamespace();
+
+                using (var em = Emf.CreateEntityManager())
+                {
+                    var ida = new HashSet<string>();
+                    var idb = new HashSet<string>();
+
+                    em.Persist(ea1, Behaviors.CreateNew);
+                    ida.Add(ea1.RowKey);
+
+                    em.Persist(eb1, Behaviors.CreateNew);
+                    idb.Add(eb1.Key.Row);
+
+                    em.Persist(eb2, Behaviors.CreateNew);
+                    idb.Add(eb2.Key.Row);
+                    ida.Add(eb2.A.RowKey);
+
+                    em.Persist(ea1, Behaviors.CreateNew);
+                    ida.Add(ea1.RowKey);
+
+                    em.Persist(eb1, Behaviors.CreateNew);
+                    idb.Add(eb1.Key.Row);
+
+                    em.Persist(eb2, Behaviors.CreateNew);
+                    idb.Add(eb2.Key.Row);
+                    ida.Add(eb2.A.RowKey);
+
+                    Assert.AreEqual(1, ida.Count);
+                    Assert.AreEqual(2, idb.Count);
+
+                    em.Flush();
+
+                    Assert.AreEqual(1, em.Fetch<EntityA>().Count());
+                    Assert.AreEqual(2, em.Fetch<EntityB>().Count());
+                }
             }
 
             TestBase.ClearNamespace();
 
-            using (var em = Emf.CreateEntityManager())
             {
-                em.Persist(ea1);
-            }
+                var ea1 = new EntityA();
+                TestBase.TestSerialization(ea1);
 
-            using (var em = Emf.CreateEntityManager())
-            {
-                em.Persist(eb1);
-                em.Persist(eb2);
-            }
+                var eb1 = new EntityB();
+                TestBase.TestSerialization(eb1);
 
-            using (var em = Emf.CreateEntityManager())
-            {
-                Assert.AreEqual(2, em.Fetch<EntityA>().Count());
-                Assert.AreEqual(2, em.Fetch<EntityB>().Count());
+                var eb2 = new EntityB { A = ea1 };
+                TestBase.TestSerialization(eb2);
 
-                var _ea1 = em.Find<EntityA>(ea1.RowKey);
-                Assert.AreEqual(ea1, _ea1);
+                using (var em = Emf.CreateEntityManager())
+                {
+                    var ida = new HashSet<string>();
+                    var idb = new HashSet<string>();
 
-                var _eb1 = em.Find<EntityB>(eb1.Key);
-                Assert.AreEqual(eb1, _eb1);
+                    em.Persist(ea1, Behaviors.CreateLazy);
+                    ida.Add(ea1.RowKey);
 
-                var _eb2 = em.Find<EntityB>(eb2.Key);
-                Assert.AreEqual(eb2, _eb2);
+                    em.Persist(eb1, Behaviors.CreateLazy);
+                    idb.Add(eb1.Key.Row);
 
-                var _ea2 = em.Find<EntityA>(eb2.A.RowKey);
-                Assert.AreEqual(eb2.A, _ea2);
-            }
+                    em.Persist(eb2, Behaviors.CreateLazy);
+                    idb.Add(eb2.Key.Row);
+                    ida.Add(eb2.A.RowKey);
 
-            TestBase.ClearNamespace();
+                    em.Persist(ea1, Behaviors.CreateLazy);
+                    ida.Add(ea1.RowKey);
 
-            using (var em = Emf.CreateEntityManager())
-            {
-                em.Persist(ea1, Behaviors.CreateLazy);
-                em.Persist(eb1, Behaviors.CreateLazy);
-                em.Persist(eb2, Behaviors.CreateLazy);
-                em.Persist(ea1, Behaviors.CreateLazy);
-                em.Persist(eb1, Behaviors.CreateLazy);
-                em.Persist(eb2, Behaviors.CreateLazy);
+                    em.Persist(eb1, Behaviors.CreateLazy);
+                    idb.Add(eb1.Key.Row);
 
-                em.Flush();
+                    em.Persist(eb2, Behaviors.CreateLazy);
+                    idb.Add(eb2.Key.Row);
+                    ida.Add(eb2.A.RowKey);
 
-                Assert.AreEqual(1, em.Fetch<EntityA>().Count());
-                Assert.AreEqual(2, em.Fetch<EntityB>().Count());
-            }
+                    Assert.AreEqual(1, ida.Count);
+                    Assert.AreEqual(2, idb.Count);
 
-            TestBase.ClearNamespace();
+                    em.Flush();
 
-            using (var em = Emf.CreateEntityManager())
-            {
-                em.Persist(ea1, Behaviors.CreateAlways);
-                em.Persist(eb1, Behaviors.CreateAlways);
-                em.Persist(eb2, Behaviors.CreateAlways);
-                em.Persist(ea1, Behaviors.CreateAlways);
-                em.Persist(eb1, Behaviors.CreateAlways);
-                em.Persist(eb2, Behaviors.CreateAlways);
-
-                em.Flush();
-
-                Assert.AreEqual(4, em.Fetch<EntityA>().Count());
-                Assert.AreEqual(4, em.Fetch<EntityB>().Count());
+                    Assert.AreEqual(1, em.Fetch<EntityA>().Count());
+                    Assert.AreEqual(2, em.Fetch<EntityB>().Count());
+                }
             }
 
             TestBase.ClearNamespace();
 
-            using (var em = Emf.CreateEntityManager())
             {
-                em.Persist(ea1, Behaviors.CreateNew);
-                em.Persist(eb1, Behaviors.CreateNew);
-                em.Persist(eb2, Behaviors.CreateNew);
-                em.Persist(ea1, Behaviors.CreateNew);
-                em.Persist(eb1, Behaviors.CreateNew);
-                em.Persist(eb2, Behaviors.CreateNew);
+                var ea1 = new EntityA();
+                TestBase.TestSerialization(ea1);
 
-                em.Flush();
+                var eb1 = new EntityB();
+                TestBase.TestSerialization(eb1);
 
-                Assert.AreEqual(1, em.Fetch<EntityA>().Count());
-                Assert.AreEqual(2, em.Fetch<EntityB>().Count());
+                var eb2 = new EntityB { A = ea1 };
+                TestBase.TestSerialization(eb2);
+
+                using (var em = Emf.CreateEntityManager())
+                {
+                    var ida = new HashSet<string>();
+                    var idb = new HashSet<string>();
+
+                    em.Persist(ea1, Behaviors.CreateAlways);
+                    ida.Add(ea1.RowKey);
+
+                    em.Persist(eb1, Behaviors.CreateAlways);
+                    idb.Add(eb1.Key.Row);
+
+                    em.Persist(eb2, Behaviors.CreateAlways);
+                    idb.Add(eb2.Key.Row);
+                    ida.Add(eb2.A.RowKey);
+
+                    em.Persist(ea1, Behaviors.CreateAlways);
+                    ida.Add(ea1.RowKey);
+
+                    em.Persist(eb1, Behaviors.CreateAlways);
+                    idb.Add(eb1.Key.Row);
+
+                    em.Persist(eb2, Behaviors.CreateAlways);
+                    idb.Add(eb2.Key.Row);
+                    ida.Add(eb2.A.RowKey);
+
+                    Assert.AreEqual(4, ida.Count);
+                    Assert.AreEqual(4, idb.Count);
+
+                    em.Flush();
+
+                    Assert.AreEqual(4, em.Fetch<EntityA>().Count());
+                    Assert.AreEqual(4, em.Fetch<EntityB>().Count());
+                }
+            }
+
+            TestBase.ClearNamespace();
+
+            {
+                var ea1 = new EntityA();
+                TestBase.TestSerialization(ea1);
+
+                var eb1 = new EntityB();
+                TestBase.TestSerialization(eb1);
+
+                var eb2 = new EntityB { A = ea1 };
+                TestBase.TestSerialization(eb2);
+
+                using (var em = Emf.CreateEntityManager())
+                {
+                    var ida = new HashSet<string>();
+                    var idb = new HashSet<string>();
+
+                    em.Persist(ea1, Behaviors.CreateNew);
+                    ida.Add(ea1.RowKey);
+
+                    em.Persist(eb1, Behaviors.CreateNew);
+                    idb.Add(eb1.Key.Row);
+
+                    em.Persist(eb2, Behaviors.CreateNew);
+                    idb.Add(eb2.Key.Row);
+                    ida.Add(eb2.A.RowKey);
+
+                    em.Persist(ea1, Behaviors.CreateNew);
+                    ida.Add(ea1.RowKey);
+
+                    em.Persist(eb1, Behaviors.CreateNew);
+                    idb.Add(eb1.Key.Row);
+
+                    em.Persist(eb2, Behaviors.CreateNew);
+                    idb.Add(eb2.Key.Row);
+                    ida.Add(eb2.A.RowKey);
+
+                    Assert.AreEqual(1, ida.Count);
+                    Assert.AreEqual(2, idb.Count);
+
+                    em.Flush();
+
+                    Assert.AreEqual(1, em.Fetch<EntityA>().Count());
+                    Assert.AreEqual(2, em.Fetch<EntityB>().Count());
+                }
             }
         }
 
