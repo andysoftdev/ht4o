@@ -146,6 +146,8 @@ namespace Hypertable.Persistence.Test
                     Delete(table);
                 }
             }
+
+            System.Threading.Thread.Sleep(10);
         }
 
         /// <summary>
