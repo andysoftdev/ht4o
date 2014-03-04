@@ -78,13 +78,16 @@ namespace Hypertable.Persistence
                 throw new ArgumentNullException("tableBinding");
             }
 
-            var hashCode = 17 + tableBinding.TableName.GetHashCode();
-            if (tableBinding.Namespace != null)
+            unchecked
             {
-                hashCode = (29 * hashCode) + tableBinding.Namespace.GetHashCode();
-            }
+                var hashCode = 17 + tableBinding.TableName.GetHashCode();
+                if (tableBinding.Namespace != null)
+                {
+                    hashCode = (29 * hashCode) + tableBinding.Namespace.GetHashCode();
+                }
 
-            return hashCode;
+                return hashCode;
+            }
         }
 
         #endregion

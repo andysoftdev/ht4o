@@ -94,14 +94,17 @@ namespace Hypertable.Persistence.Scanner
             this.tableName = tableName;
             this.key = key;
 
-            this.hashCode = 17;
-            if (this.key != null)
+            unchecked
             {
-                this.hashCode = (29 * this.hashCode) + KeyComparer.GetHashCode(this.key);
-            }
+                this.hashCode = 17;
+                if (this.key != null)
+                {
+                    this.hashCode = (29 * this.hashCode) + KeyComparer.GetHashCode(this.key);
+                }
 
-            this.hashCode = (29 * this.hashCode) + this.tableName.GetHashCode();
-            this.hashCode = (29 * this.hashCode) + (this.ns ?? string.Empty).GetHashCode();
+                this.hashCode = (31 * this.hashCode) + this.tableName.GetHashCode();
+                this.hashCode = (37 * this.hashCode) + (this.ns ?? string.Empty).GetHashCode();
+            }
         }
 
         /// <summary>
@@ -280,6 +283,23 @@ namespace Hypertable.Persistence.Scanner
         /// </returns>
         public override int GetHashCode()
         {
+            unchecked
+            {
+                var hc = 17;
+                if (this.key != null)
+                {
+                    hc = (29 * hc) + KeyComparer.GetHashCode(this.key);
+                }
+
+                hc = (31 * hc) + this.tableName.GetHashCode();
+                hc = (37 * hc) + (this.ns ?? string.Empty).GetHashCode();
+
+                if (hc != this.hashCode)
+                {
+                    throw new Exception("BAD");
+                }
+            }
+
             return this.hashCode;
         }
 

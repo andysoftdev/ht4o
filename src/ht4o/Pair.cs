@@ -108,7 +108,10 @@ namespace Hypertable.Persistence
         /// </returns>
         public override int GetHashCode()
         {
-            return (this.First != null ? 29 * this.First.GetHashCode() : 17) + 29 * (this.Second != null ? this.Second.GetHashCode() : 17);
+            unchecked
+            {
+                return (this.First != null ? 29 * this.First.GetHashCode() : 17) + 29 * (this.Second != null ? this.Second.GetHashCode() : 17);
+            }
         }
 
         #endregion

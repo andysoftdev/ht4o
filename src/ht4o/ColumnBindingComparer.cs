@@ -78,13 +78,16 @@ namespace Hypertable.Persistence
                 throw new ArgumentNullException("obj");
             }
 
-            var hashCode = 17 + obj.ColumnFamily.GetHashCode();
-            if (obj.ColumnQualifier != null)
+            unchecked
             {
-                hashCode = (29 * hashCode) + obj.ColumnQualifier.GetHashCode();
-            }
+                var hashCode = 17 + obj.ColumnFamily.GetHashCode();
+                if (obj.ColumnQualifier != null)
+                {
+                    hashCode = (29 * hashCode) + obj.ColumnQualifier.GetHashCode();
+                }
 
-            return hashCode;
+                return hashCode;
+            }
         }
 
         #endregion
