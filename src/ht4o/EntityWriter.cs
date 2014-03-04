@@ -241,7 +241,7 @@ namespace Hypertable.Persistence
 
                 var dontCache = this.behaviors.DoNotCache();
                 var bypassEntitySpecsFetched = this.newEntity || this.behaviors.IsCreateNew() || this.behaviors.BypassReadCache();
-                var entitySpec = !dontCache || !bypassEntitySpecsFetched ? new EntitySpec(this.entityReference, this.key) : null;
+                var entitySpec = !dontCache || !bypassEntitySpecsFetched ? new EntitySpec(this.entityReference, new Key(this.key)) : null;
 
                 if (dontCache || this.entitySpecsWritten.Add(entitySpec) || this.behaviors.BypassWriteCache())
                 {
@@ -299,7 +299,7 @@ namespace Hypertable.Persistence
                         this.key = er.GetKeyFromEntity(e, out this.newEntity);
                         if (!this.newEntity)
                         {
-                            var entitySpec = new EntitySpec(this.entityReference, this.key);
+                            var entitySpec = new EntitySpec(this.entityReference, new Key(this.key));
 
                             ////TODO needs to check if the entity has been modified (write,write again)
                             if (!this.entitySpecsWritten.Contains(entitySpec))
