@@ -283,23 +283,6 @@ namespace Hypertable.Persistence.Scanner
         /// </returns>
         public override int GetHashCode()
         {
-            unchecked
-            {
-                var hc = 17;
-                if (this.key != null)
-                {
-                    hc = (29 * hc) + KeyComparer.GetHashCode(this.key);
-                }
-
-                hc = (31 * hc) + this.tableName.GetHashCode();
-                hc = (37 * hc) + (this.ns ?? string.Empty).GetHashCode();
-
-                if (hc != this.hashCode)
-                {
-                    throw new Exception("BAD");
-                }
-            }
-
             return this.hashCode;
         }
 
