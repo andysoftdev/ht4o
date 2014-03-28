@@ -20,14 +20,8 @@ for %%p in (%*) do (
 if exist %lib% rmdir /S /Q %lib%
 mkdir %lib%
 
-mkdir %lib%\net40
-set bin=%~dp0..\dist\10.0\AnyCPU\%configuration%
-if not exist %bin%\ht4o.Serialization.dll goto :missing_ht4o_serialization
-xcopy /Q %bin%\ht4o.Serialization.dll %lib%\net40\ > nul
-
-
 mkdir %lib%\net45
-set bin=%~dp0..\dist\11.0\AnyCPU\%configuration%
+set bin=%~dp0..\dist\12.0\AnyCPU\%configuration%
 if not exist %bin%\ht4o.Serialization.dll goto :missing_ht4o_serialization
 xcopy /Q %bin%\ht4o.Serialization.dll %lib%\net45\ > nul
 

@@ -37,13 +37,8 @@ for %%p in (%*) do (
 if exist %lib% rmdir /S /Q %lib%
 mkdir %lib%
 
-mkdir %lib%\net40
-set bin=%~dp0..\dist\10.0\%platform%\%configuration%
-if not exist %bin%\ht4o.dll goto :missing_ht4o
-xcopy /Q %bin%\ht4o.dll %lib%\net40\ > nul
-
 mkdir %lib%\net45
-set bin=%~dp0..\dist\11.0\%platform%\%configuration%
+set bin=%~dp0..\dist\12.0\%platform%\%configuration%
 if not exist %bin%\ht4o.dll goto :missing_ht4o
 xcopy /Q %bin%\ht4o.dll %lib%\net45\ > nul
 
