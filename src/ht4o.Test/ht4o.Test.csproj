@@ -8,9 +8,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Hypertable.Persistence.Test</RootNamespace>
     <AssemblyName>ht4o.Test</AssemblyName>
-    <TargetFrameworkVersion Condition=" '$(TargetFrameworkVersion)' == ''">v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion Condition=" '$(TargetFrameworkVersion)' == ''">v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -25,6 +26,7 @@
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
     <Ht4n>..\..\..\ht4n\dist\$(VisualStudioVersion)\Win32\Debug\ht4n.dll</Ht4n>
     <NoWarn>1587</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>..\..\dist\$(VisualStudioVersion)\Win32\$(Configuration)\tests</OutputPath>
@@ -39,6 +41,7 @@
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
     <Ht4n>..\..\..\ht4n\dist\$(VisualStudioVersion)\Win32\Release\ht4n.dll</Ht4n>
     <NoWarn>1587</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -53,6 +56,7 @@
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
     <Ht4n>..\..\..\ht4n\dist\$(VisualStudioVersion)\x64\Debug\ht4n.dll</Ht4n>
     <NoWarn>1587</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>..\..\dist\$(VisualStudioVersion)\$(Platform)\$(Configuration)\tests</OutputPath>
@@ -67,6 +71,7 @@
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
     <Ht4n>..\..\..\ht4n\dist\$(VisualStudioVersion)\x64\Release\ht4n.dll</Ht4n>
     <NoWarn>1587</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ht4n, Culture=neutral, PublicKeyToken=09a4dd7a5db0efca, processorArchitecture=x86">

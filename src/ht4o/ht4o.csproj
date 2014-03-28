@@ -8,8 +8,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Hypertable.Persistence</RootNamespace>
     <AssemblyName>ht4o</AssemblyName>
-    <TargetFrameworkVersion Condition=" '$(TargetFrameworkVersion)' == ''">v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion Condition=" '$(TargetFrameworkVersion)' == ''">v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -28,6 +29,7 @@
     <DocumentationFile>..\..\dist\$(VisualStudioVersion)\Win32\Debug\ht4o.xml</DocumentationFile>
     <Ht4n>..\..\..\ht4n\dist\$(VisualStudioVersion)\Win32\Debug\ht4n.dll</Ht4n>
     <NoWarn>1587</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>..\..\dist\$(VisualStudioVersion)\Win32\$(Configuration)</OutputPath>
@@ -45,6 +47,7 @@
     <DocumentationFile>..\..\dist\$(VisualStudioVersion)\Win32\Release\ht4o.xml</DocumentationFile>
     <Ht4n>..\..\..\ht4n\dist\$(VisualStudioVersion)\Win32\Release\ht4n.dll</Ht4n>
     <NoWarn>1587</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -63,6 +66,7 @@
     <DocumentationFile>..\..\dist\$(VisualStudioVersion)\x64\Debug\ht4o.xml</DocumentationFile>
     <Ht4n>..\..\..\ht4n\dist\$(VisualStudioVersion)\x64\Debug\ht4n.dll</Ht4n>
     <NoWarn>1587</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>..\..\dist\$(VisualStudioVersion)\$(Platform)\$(Configuration)</OutputPath>
@@ -79,6 +83,7 @@
     <DocumentationFile>..\..\dist\$(VisualStudioVersion)\x64\Release\ht4o.xml</DocumentationFile>
     <Ht4n>..\..\..\ht4n\dist\$(VisualStudioVersion)\x64\Release\ht4n.dll</Ht4n>
     <NoWarn>1587</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ht4n, Culture=neutral, PublicKeyToken=09a4dd7a5db0efca, processorArchitecture=x86">
