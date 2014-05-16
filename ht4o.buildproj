@@ -374,6 +374,20 @@
 			Condition="'%(MakeConfiguration.Platform)' == 'x64' AND $(HasMSTest64) == true"
 			Command="mstest64 /testsettings:src\ht4o.Test\x64.testsettings /testcontainer:dist\$(VisualStudioVersion)\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll" />
 
+		<!-- Odbc tests -->
+		<XmlPoke
+			XmlInputPath="dist\$(VisualStudioVersion)\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll.config"
+			Query="/configuration/appSettings/add[@key='ConnectionString']/@value"
+			Value="--Provider=Odbc --Ht4n.Odbc.ConnectionString=&quot;Driver={SQL Server Native Client 11.0}%3BServer=.\SQLEXPRESS%3BDatabase=testdb%3BTrusted_Connection=yes&quot;" />
+
+		<Exec
+			Condition="'%(MakeConfiguration.Platform)' == 'Win32'"
+			Command="mstest /testsettings:src\ht4o.Test\x86.testsettings /testcontainer:dist\$(VisualStudioVersion)\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll" />
+
+		<Exec
+			Condition="'%(MakeConfiguration.Platform)' == 'x64' AND $(HasMSTest64) == true"
+			Command="mstest64 /testsettings:src\ht4o.Test\x64.testsettings /testcontainer:dist\$(VisualStudioVersion)\%(MakeConfiguration.Platform)\%(MakeConfiguration.Configuration)\tests\ht4o.Test.dll" />
+
 		<Exec
 			Command="if exist TestResults rd /S /Q TestResults" />
 

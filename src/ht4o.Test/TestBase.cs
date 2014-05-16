@@ -69,9 +69,75 @@ namespace Hypertable.Persistence.Test
         }
 
         /// <summary>
+        /// Returns true if the current provider is the hamsterdb provider.
+        /// </summary>
+        protected static bool IsHamster
+        {
+            get
+            {
+                return Equals("Hamster", ProviderName);
+            }
+        }
+
+        /// <summary>
+        /// Returns true if the current provider is the hypertable native provider.
+        /// </summary>
+        protected static bool IsHyper
+        {
+            get
+            {
+                return Equals("Hyper", ProviderName);
+            }
+        }
+
+        /// <summary>
+        /// Returns true if the current provider is the hypertable thrift provider.
+        /// </summary>
+        protected static bool IsThrift
+        {
+            get
+            {
+                return Equals("Thrift", ProviderName);
+            }
+        }
+
+        /// <summary>
+        /// Returns true if the current provider is the sqlite provider.
+        /// </summary>
+        protected static bool IsSQlite
+        {
+            get
+            {
+                return Equals("SQlite", ProviderName);
+            }
+        }
+
+        /// <summary>
+        /// Returns true if the current provider is the odbc provider.
+        /// </summary>
+        protected static bool IsOdbc
+        {
+            get
+            {
+                return Equals("Odbc", ProviderName);
+            }
+        }
+
+        /// <summary>
         /// Gets the namespace name.
         /// </summary>
         protected static string NsName { get; private set; }
+
+        /// <summary>
+        /// Returns the current provider name.
+        /// </summary>
+        protected static string ProviderName
+        {
+            get
+            {
+                return (string)Emf.Client.Context.Properties["Ht4n.Provider"];
+            }
+        }
 
         #endregion
 
