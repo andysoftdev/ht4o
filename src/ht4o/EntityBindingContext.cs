@@ -49,13 +49,6 @@ namespace Hypertable.Persistence
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityBindingContext"/> class.
         /// </summary>
-        internal EntityBindingContext()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EntityBindingContext"/> class.
-        /// </summary>
         /// <param name="bindingContext">
         /// The binding context.
         /// </param>
