@@ -696,9 +696,18 @@ namespace Hypertable.Persistence.Serialization
             if (destinationType.IsArray || destinationType == typeof(object))
             {
                 var elementType = destinationType.IsArray ? destinationType.GetElementType() : Serializer.TypeFromTag(tag);
+                var hasElementTag = Serializer.HasElementTag(tag, elementType);
+
+                if (rank == 1 && typeof(byte) == elementType && tag == Tags.Byte && !hasElementTag)
+                {
+                    var bytes = this.binaryReader.ReadBytes(lengths[0]);
+                    this.objectRefs.Add(bytes);
+                    return bytes;
+                }
+
                 var array = Array.CreateInstance(elementType, lengths);
                 this.objectRefs.Add(array);
-                this.ReadArrayElementsInRank(array, 0, new int[rank], elementType, tag, Serializer.HasElementTag(tag, elementType));
+                this.ReadArrayElementsInRank(array, 0, new int[rank], elementType, tag, hasElementTag);
                 return array;
             }
 
