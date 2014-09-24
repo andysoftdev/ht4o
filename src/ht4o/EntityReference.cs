@@ -118,6 +118,28 @@ namespace Hypertable.Persistence
             this.keyBinding = keyBinding;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityReference"/> class.
+        /// </summary>
+        /// <param name="entityReference">
+        /// The entity reference.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="entityReference"/> is null.
+        /// </exception>
+        internal EntityReference(EntityReference entityReference)
+        {
+            if (entityReference == null)
+            {
+                throw new ArgumentNullException("entityReference");
+            }
+
+            this.entityType = entityReference.entityType;
+            this.tableBinding = entityReference.tableBinding;
+            this.columnBinding = entityReference.columnBinding;
+            this.keyBinding = entityReference.keyBinding;
+        }
+
         #endregion
 
         #region Properties

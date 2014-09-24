@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence
 {
     using System;
@@ -60,6 +61,11 @@ namespace Hypertable.Persistence
         private readonly ConcurrentTypeDictionary<BindingSpec<ITableBinding>> tableBindings = new ConcurrentTypeDictionary<BindingSpec<ITableBinding>>();
 
         /// <summary>
+        /// The preliminary entity references.
+        /// </summary>
+        private ConcurrentTypeDictionary<EntityReference> preliminaryEntityReferences;
+
+        /// <summary>
         /// The registered column bindings.
         /// </summary>
         private Lazy<IDictionary<Type, IColumnBinding>> registeredColumnBindings;
@@ -74,6 +80,22 @@ namespace Hypertable.Persistence
         /// </summary>
         private Lazy<IDictionary<Type, ITableBinding>> registeredTableBindings;
 
+        private string defaultColumnFamily;
+
+        private Regex idPropertyName;
+
+        private bool strictExplicitColumnBinding;
+
+        private bool strictExplicitKeyBinding;
+
+        private bool strictExplicitTableBinding;
+
+        private bool strictStaticColumnBinding;
+
+        private bool strictStaticTableBinding;
+
+        private Regex timestampPropertyName;
+
         #endregion
 
         #region Constructors and Destructors
@@ -83,6 +105,8 @@ namespace Hypertable.Persistence
         /// </summary>
         public BindingContext()
         {
+            this.preliminaryEntityReferences = new ConcurrentTypeDictionary<EntityReference>();
+
             this.DefaultColumnFamily = "e";
             this.IdPropertyName = new Regex("^([Ii]d$)|(<Id>.*)", RegexOptions.Compiled);
             this.TimestampPropertyName = new Regex("^([Ll]astModified$)|(<LastModified>.*)", RegexOptions.Compiled);
@@ -106,9 +130,12 @@ namespace Hypertable.Persistence
                 throw new ArgumentNullException("bindingContext");
             }
 
+            this.preliminaryEntityReferences = bindingContext.preliminaryEntityReferences;
+
             this.DefaultColumnFamily = bindingContext.DefaultColumnFamily;
             this.IdPropertyName = bindingContext.IdPropertyName != null ? new Regex(bindingContext.IdPropertyName.ToString(), RegexOptions.Compiled) : null;
             this.TimestampPropertyName = bindingContext.TimestampPropertyName != null ? new Regex(bindingContext.TimestampPropertyName.ToString(), RegexOptions.Compiled) : null;
+
             this.StrictExplicitColumnBinding = bindingContext.StrictExplicitColumnBinding;
             this.StrictExplicitTableBinding = bindingContext.StrictExplicitTableBinding;
             this.StrictExplicitKeyBinding = bindingContext.StrictExplicitKeyBinding;
@@ -132,7 +159,18 @@ namespace Hypertable.Persistence
         /// <value>
         /// The default column family.
         /// </value>
-        public string DefaultColumnFamily { get; set; }
+        public string DefaultColumnFamily
+        {
+            get
+            {
+                return this.defaultColumnFamily;
+            }
+            set
+            {
+                this.defaultColumnFamily = value;
+                this.Refresh();
+            }
+        }
 
         /// <summary>
         /// Gets or sets identifier property name regular expression.
@@ -140,7 +178,18 @@ namespace Hypertable.Persistence
         /// <value>
         /// The identifier property name.
         /// </value>
-        public Regex IdPropertyName { get; set; }
+        public Regex IdPropertyName
+        {
+            get
+            {
+                return this.idPropertyName;
+            }
+            set
+            {
+                this.idPropertyName = value;
+                this.Refresh();
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether strict explicit column binding has been enabled.
@@ -148,7 +197,18 @@ namespace Hypertable.Persistence
         /// <value>
         /// The strict explicit column binding.
         /// </value>
-        public bool StrictExplicitColumnBinding { get; set; }
+        public bool StrictExplicitColumnBinding
+        {
+            get
+            {
+                return this.strictExplicitColumnBinding;
+            }
+            set
+            {
+                this.strictExplicitColumnBinding = value;
+                this.Refresh();
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether strict explicit key binding has been enabled.
@@ -156,7 +216,18 @@ namespace Hypertable.Persistence
         /// <value>
         /// The strict explicit key binding.
         /// </value>
-        public bool StrictExplicitKeyBinding { get; set; }
+        public bool StrictExplicitKeyBinding
+        {
+            get
+            {
+                return this.strictExplicitKeyBinding;
+            }
+            set
+            {
+                this.strictExplicitKeyBinding = value;
+                this.Refresh();
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether strict explicit table binding has been enabled.
@@ -164,7 +235,18 @@ namespace Hypertable.Persistence
         /// <value>
         /// The strict explicit table binding.
         /// </value>
-        public bool StrictExplicitTableBinding { get; set; }
+        public bool StrictExplicitTableBinding
+        {
+            get
+            {
+                return this.strictExplicitTableBinding;
+            }
+            set
+            {
+                this.strictExplicitTableBinding = value;
+                this.Refresh();
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether strict static column binding has been enabled.
@@ -172,7 +254,18 @@ namespace Hypertable.Persistence
         /// <value>
         /// The strict static column binding.
         /// </value>
-        public bool StrictStaticColumnBinding { get; set; }
+        public bool StrictStaticColumnBinding
+        {
+            get
+            {
+                return this.strictStaticColumnBinding;
+            }
+            set
+            {
+                this.strictStaticColumnBinding = value;
+                this.Refresh();
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether strict static table binding has been enabled.
@@ -180,7 +273,18 @@ namespace Hypertable.Persistence
         /// <value>
         /// The strict static table binding.
         /// </value>
-        public bool StrictStaticTableBinding { get; set; }
+        public bool StrictStaticTableBinding
+        {
+            get
+            {
+                return this.strictStaticTableBinding;
+            }
+            set
+            {
+                this.strictStaticTableBinding = value;
+                this.Refresh();
+            }
+        }
 
         /// <summary>
         /// Gets or sets timestamp property name regular expression.
@@ -188,7 +292,18 @@ namespace Hypertable.Persistence
         /// <value>
         /// The timestamp property name.
         /// </value>
-        public Regex TimestampPropertyName { get; set; }
+        public Regex TimestampPropertyName
+        {
+            get
+            {
+                return this.timestampPropertyName;
+            }
+            set
+            {
+                this.timestampPropertyName = value;
+                this.Refresh();
+            }
+        }
 
         #endregion
 
@@ -501,6 +616,8 @@ namespace Hypertable.Persistence
 
             lock (this.syncRoot)
             {
+                this.Refresh();
+
                 BindingSpec<IColumnBinding> columnBinding;
                 if (this.columnBindings.TryGetValue(type, out columnBinding))
                 {
@@ -533,6 +650,8 @@ namespace Hypertable.Persistence
 
             lock (this.syncRoot)
             {
+                this.Refresh();
+
                 IKeyBinding keyBinding;
                 if (this.keyBindings.TryGetValue(type, out keyBinding))
                 {
@@ -564,6 +683,8 @@ namespace Hypertable.Persistence
 
             lock (this.syncRoot)
             {
+                this.Refresh();
+
                 BindingSpec<ITableBinding> tableBinding;
                 if (this.tableBindings.TryGetValue(type, out tableBinding))
                 {
@@ -591,85 +712,93 @@ namespace Hypertable.Persistence
         internal EntityReference CreateEntityReference(Inspector inspector)
         {
             var type = inspector.InspectedType;
-            var columnBinding = this.GetColumnBindingForType(type);
-            var keyBinding = this.GetKeyBindingForType(type, columnBinding);
 
-            ////TODO set (or not set) Ignore flag to other valid candidates
-            if (!this.StrictExplicitKeyBinding && inspector.HasProperties)
-            {
-                // Has entity key?
-                var property = inspector.Properties.FirstOrDefault(p => p.HasKey);
-                if (property != null)
+            var entityReference = this.preliminaryEntityReferences.GetOrAdd(
+                type,
+                _ =>
                 {
-                    if (keyBinding == null)
+                    var columnBinding = this.GetColumnBindingForType(type);
+                    var keyBinding = this.GetKeyBindingForType(type, columnBinding);
+
+                    ////TODO set (or not set) Ignore flag to other valid candidates
+                    if (!this.StrictExplicitKeyBinding && inspector.HasProperties)
                     {
-                        keyBinding = GetKeyBindingForProperty(property, columnBinding);
-                    }
-
-                    property.Ignore = true;
-                }
-
-                // Has id attribute?
-                property = inspector.Properties.FirstOrDefault(p => p.IdAttribute != null);
-                if (property != null)
-                {
-                    if (keyBinding == null)
-                    {
-                        keyBinding = GetKeyBindingForProperty(property, columnBinding);
-                    }
-
-                    property.Ignore = true;
-                }
-
-                // Has id property?
-                if (this.IdPropertyName != null)
-                {
-                    property = inspector.Properties.FirstOrDefault(p => this.IdPropertyName.Match(p.Name).Success);
-                    if (property != null)
-                    {
-                        if (keyBinding == null)
+                        // Has entity key?
+                        var property = inspector.Properties.FirstOrDefault(p => p.HasKey);
+                        if (property != null)
                         {
-                            keyBinding = GetKeyBindingForProperty(property, columnBinding);
+                            if (keyBinding == null)
+                            {
+                                keyBinding = GetKeyBindingForProperty(property, columnBinding);
+                            }
+
+                            property.Ignore = true;
                         }
 
-                        property.Ignore = true;
+                        // Has id attribute?
+                        property = inspector.Properties.FirstOrDefault(p => p.IdAttribute != null);
+                        if (property != null)
+                        {
+                            if (keyBinding == null)
+                            {
+                                keyBinding = GetKeyBindingForProperty(property, columnBinding);
+                            }
+
+                            property.Ignore = true;
+                        }
+
+                        // Has id property?
+                        if (this.IdPropertyName != null)
+                        {
+                            property = inspector.Properties.FirstOrDefault(p => this.IdPropertyName.Match(p.Name).Success);
+                            if (property != null)
+                            {
+                                if (keyBinding == null)
+                                {
+                                    keyBinding = GetKeyBindingForProperty(property, columnBinding);
+                                }
+
+                                property.Ignore = true;
+                            }
+                        }
                     }
-                }
-            }
 
-            if (keyBinding == null)
-            {
-                return null;
-            }
-
-            var tableBinding = this.GetTableBindingForType(type);
-            if (tableBinding == null)
-            {
-                var distinctTableBindings = this.DistinctTableBindingsForType(type).ToList();
-                if (distinctTableBindings.Count() != 1)
-                {
-                    return null; // none or ambiguous table bindings
-                }
-
-                tableBinding = distinctTableBindings.First();
-            }
-
-            // Has timestamp?
-            if (this.TimestampPropertyName != null)
-            {
-                var partialKeyBinding = keyBinding as PartialKeyBinding;
-                if (partialKeyBinding != null)
-                {
-                    var property = inspector.Properties.FirstOrDefault(p => this.TimestampPropertyName.Match(p.Name).Success);
-                    if (property != null && property.PropertyType == typeof(DateTime))
+                    if (keyBinding == null)
                     {
-                        property.Ignore = true;
-                        partialKeyBinding.TimestampAction = property.Setter;
+                        return null;
                     }
-                }
-            }
 
-            return new EntityReference(type, tableBinding, columnBinding, keyBinding);
+                    var tableBinding = this.GetTableBindingForType(type);
+                    if (tableBinding == null)
+                    {
+                        var distinctTableBindings = this.DistinctTableBindingsForType(type).ToList();
+                        if (distinctTableBindings.Count() != 1)
+                        {
+                            return null; // none or ambiguous table bindings
+                        }
+
+                        tableBinding = distinctTableBindings.First();
+                    }
+
+                    // Has timestamp?
+                    if (this.TimestampPropertyName != null)
+                    {
+                        var partialKeyBinding = keyBinding as PartialKeyBinding;
+                        if (partialKeyBinding != null)
+                        {
+                            var property = inspector.Properties.FirstOrDefault(p => this.TimestampPropertyName.Match(p.Name).Success);
+                            if (property != null && property.PropertyType == typeof(DateTime))
+                            {
+                                property.Ignore = true;
+                                partialKeyBinding.TimestampAction = property.Setter;
+                            }
+                        }
+                    }
+
+                    return new EntityReference(type, tableBinding, columnBinding, keyBinding);
+                });
+
+            return entityReference != null ? new EntityReference(entityReference) : null;
         }
 
         /// <summary>
@@ -716,11 +845,11 @@ namespace Hypertable.Persistence
         protected virtual IEnumerable<Type> CommonBaseTypeCandidatesForType(Type type)
         {
             return new[]
-                {
-                    TypeFinder.GetCommonBaseType(this.keyBindings.Keys.Where(type.IsAssignableFrom)), 
-                    TypeFinder.GetCommonBaseType(this.tableBindings.Keys.Where(type.IsAssignableFrom)), 
-                    TypeFinder.GetCommonBaseType(this.columnBindings.Keys.Where(type.IsAssignableFrom))
-                };
+            {
+                TypeFinder.GetCommonBaseType(this.keyBindings.Keys.Where(type.IsAssignableFrom)), 
+                TypeFinder.GetCommonBaseType(this.tableBindings.Keys.Where(type.IsAssignableFrom)),
+                TypeFinder.GetCommonBaseType(this.columnBindings.Keys.Where(type.IsAssignableFrom))
+            };
         }
 
         /// <summary>
@@ -988,10 +1117,12 @@ namespace Hypertable.Persistence
         /// </summary>
         private void Refresh()
         {
-            if (this.registeredColumnBindings == null || this.registeredColumnBindings.IsValueCreated)
+            lock (this.syncRoot)
             {
-                this.registeredColumnBindings = new Lazy<IDictionary<Type, IColumnBinding>>(
-                    () =>
+                if (this.registeredColumnBindings == null || this.registeredColumnBindings.IsValueCreated)
+                {
+                    this.registeredColumnBindings = new Lazy<IDictionary<Type, IColumnBinding>>(
+                        () =>
                         {
                             var bindings = new ConcurrentTypeDictionary<IColumnBinding>();
                             foreach (var kv in this.columnBindings)
@@ -1001,12 +1132,12 @@ namespace Hypertable.Persistence
 
                             return bindings;
                         });
-            }
+                }
 
-            if (this.registeredColumnNames == null || this.registeredColumnNames.IsValueCreated)
-            {
-                this.registeredColumnNames = new Lazy<IDictionary<string, ISet<string>>>(
-                    () => 
+                if (this.registeredColumnNames == null || this.registeredColumnNames.IsValueCreated)
+                {
+                    this.registeredColumnNames = new Lazy<IDictionary<string, ISet<string>>>(
+                        () =>
                         {
                             var columnNames = new ConcurrentDictionary<string, ISet<string>>();
                             foreach (var binding in this.RegisteredColumnBindings().Values)
@@ -1020,12 +1151,12 @@ namespace Hypertable.Persistence
 
                             return columnNames;
                         });
-            }
+                }
 
-            if (this.registeredTableBindings == null || this.registeredTableBindings.IsValueCreated)
-            {
-                this.registeredTableBindings = new Lazy<IDictionary<Type, ITableBinding>>(
-                    () => 
+                if (this.registeredTableBindings == null || this.registeredTableBindings.IsValueCreated)
+                {
+                    this.registeredTableBindings = new Lazy<IDictionary<Type, ITableBinding>>(
+                        () =>
                         {
                             var bindings = new ConcurrentTypeDictionary<ITableBinding>();
                             foreach (var kv in this.tableBindings)
@@ -1035,7 +1166,10 @@ namespace Hypertable.Persistence
 
                             return bindings;
                         });
+                }
             }
+
+            this.preliminaryEntityReferences.Clear();
         }
 
         #endregion
