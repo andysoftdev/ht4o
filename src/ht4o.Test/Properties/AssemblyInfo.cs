@@ -32,9 +32,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyProduct("ht4o.Test")]
 [assembly: AssemblyDescription("Hypertable for objects tests")]
 [assembly: AssemblyCompany("ht4o.softdev.ch")]
-[assembly: AssemblyCopyright("Copyright © 2010-2014")]
-[assembly: AssemblyVersion("0.9.8.4")]
-[assembly: AssemblyFileVersion("0.9.8.4")]
+[assembly: AssemblyCopyright("Copyright © 2010-2015")]
+[assembly: AssemblyVersion("0.9.8.6")]
+[assembly: AssemblyFileVersion("0.9.8.6")]
 [assembly: ComVisible(false)]
 [assembly: Guid("4aa86b83-dda8-49d8-b4e3-04422e310355")]
 
