@@ -142,8 +142,7 @@ namespace Hypertable.Persistence.Serialization
         {
             var anyType = value.GetType();
 
-            ////TODO review, correct?
-            if (encoderInfo.Tag >= Tags.FirstCustomType || anyType.IsComplex())
+            if (encoderInfo.HandleObjectRef(anyType))
             {
                 if (this.WriteOrAddObjectRef(value))
                 {

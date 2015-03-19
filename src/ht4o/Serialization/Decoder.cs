@@ -176,7 +176,7 @@ namespace Hypertable.Persistence.Serialization
         /// </returns>
         public static DateTime ReadDateTime(BinaryReader binaryReader)
         {
-            var kind = (DateTimeKind)ReadByte(binaryReader);
+            var kindAndFlag = ReadByte(binaryReader);
             var ticks = ReadLongVariant(binaryReader);
             if (ticks == long.MinValue)
             {
@@ -188,7 +188,10 @@ namespace Hypertable.Persistence.Serialization
                 return DateTime.MaxValue;
             }
 
-            return kind == DateTimeKind.Local ? new DateTime(ticks, DateTimeKind.Utc).ToLocalTime() : new DateTime(ticks, kind);
+            var kind = (DateTimeKind)(kindAndFlag & ~Encoder.LocalTimeTicks);
+            return kind == DateTimeKind.Local && (kindAndFlag & Encoder.LocalTimeTicks) == 0
+                ? new DateTime(ticks, DateTimeKind.Utc).ToLocalTime()
+                : new DateTime(ticks, kind);
         }
 
         /// <summary>
@@ -414,7 +417,7 @@ namespace Hypertable.Persistence.Serialization
         /// </returns>
         public static Type ReadType(BinaryReader binaryReader)
         {
-            return Encoder.Binder.BindToType(ReadString(binaryReader), ReadString(binaryReader));
+            return Encoder.Configuration.Binder.BindToType(ReadString(binaryReader), ReadString(binaryReader));
         }
 
         /// <summary>

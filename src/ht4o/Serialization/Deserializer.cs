@@ -603,6 +603,7 @@ namespace Hypertable.Persistence.Serialization
                         }
 
                     case Tags.TypeSchema:
+                    case Tags.TypeSchema2:
                     case Tags.TypeSchemaRef:
                         value = this.ReadTypeSchema(tag);
                         break;
@@ -1250,9 +1251,10 @@ namespace Hypertable.Persistence.Serialization
             this.objectRefs.Add(value);
             this.BeforeDeserializeObjectProperties(destinationType, inspector, value);
 
+            var positionalHint = 0;
             foreach (var typeSchemaProperty in typeSchema.Properties)
             {
-                var inspectedProperty = inspector.GetProperty(typeSchemaProperty.PropertyName);
+                var inspectedProperty = inspector.GetProperty(typeSchemaProperty.PropertyName, positionalHint++);
                 var tag = Decoder.ReadTag(this.binaryReader);
                 if (inspectedProperty != null)
                 {
@@ -1405,7 +1407,7 @@ namespace Hypertable.Persistence.Serialization
                 items[i] = new KeyValuePair<Type, object>(type, this.Deserialize(type, Decoder.ReadTag(this.binaryReader)));
             }
 
-            if (destinationType.GetInterface("System.ITuple") != null)
+            if (destinationType.IsTuple())
             {
                 var typeArguments = items.Select(kv => kv.Key).ToArray();
                 Type type;
@@ -1613,6 +1615,26 @@ namespace Hypertable.Persistence.Serialization
                         var typeSchema = new TypeSchema(typeSchemaProperties);
                         this.typeSchemaRefs.Add(typeSchema);
                         return typeSchema;
+                    }
+
+                case Tags.TypeSchema2:
+                    {
+                        switch (Decoder.ReadByte(this.binaryReader))
+                        {
+                            case TypeSchema.Version:
+                                var typeSchemaPropertyCount = Decoder.ReadCount(this.binaryReader);
+                                var typeSchemaProperties = new TypeSchemaProperty[typeSchemaPropertyCount];
+                                for (var i = 0; i < typeSchemaPropertyCount; ++i)
+                                {
+                                    typeSchemaProperties[i].PropertyName = Decoder.ReadString(this.binaryReader);
+                                }
+
+                                var typeSchema = new TypeSchema(typeSchemaProperties);
+                                this.typeSchemaRefs.Add(typeSchema);
+                                return typeSchema;
+                        }
+
+                        throw new NotSupportedException("Unsupported type schema");
                     }
 
                 case Tags.TypeSchemaRef:

@@ -22,6 +22,7 @@ namespace Hypertable.Persistence.Serialization
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
@@ -35,6 +36,8 @@ namespace Hypertable.Persistence.Serialization
     {
         #region Fields
 
+        public const byte Version = 0;
+
         /// <summary>
         /// The type schema properties.
         /// </summary>
@@ -44,6 +47,11 @@ namespace Hypertable.Persistence.Serialization
         /// The write object action.
         /// </summary>
         private readonly Action<Serializer, object> writeObject;
+
+        /// <summary>
+        /// The serialized schema.
+        /// </summary>
+        private readonly Lazy<byte[]> serializedSchema;
 
         #endregion
 
@@ -58,6 +66,7 @@ namespace Hypertable.Persistence.Serialization
         internal TypeSchema(IEnumerable<TypeSchemaProperty> typeSchemaProperties)
         {
             this.typeSchemaProperties.AddRange(typeSchemaProperties);
+            this.serializedSchema = new Lazy<byte[]>(() => this.GetSerializedSchema());
         }
 
         /// <summary>
@@ -82,6 +91,7 @@ namespace Hypertable.Persistence.Serialization
             }
 
             this.writeObject = TypeSchema.CompileWriteObjectDelegate(this.typeSchemaProperties);
+            this.serializedSchema = new Lazy<byte[]>(() => this.GetSerializedSchema());
         }
 
         #endregion
@@ -113,6 +123,20 @@ namespace Hypertable.Persistence.Serialization
             get
             {
                 return this.writeObject;
+            }
+        }
+
+        /// <summary>
+        /// Gets the serialized schema.
+        /// </summary>
+        /// <value>
+        /// The serialized schema.
+        /// </value>
+        internal byte[] SerializedSchema
+        {
+            get
+            {
+                return this.serializedSchema.Value;
             }
         }
 
@@ -211,6 +235,28 @@ namespace Hypertable.Persistence.Serialization
             }
 
             return (serializer, o) => { };
+        }
+
+        /// <summary>
+        /// Gets the serializeds schema.
+        /// </summary>
+        private byte[] GetSerializedSchema()
+        {
+            using (var ms = new MemoryStream())
+            {
+                using (var binaryWriter = new BinaryWriter(ms))
+                {
+                    Encoder.WriteTag(binaryWriter, Tags.TypeSchema2);
+                    Encoder.WriteByte(binaryWriter, TypeSchema.Version, false);
+                    Encoder.WriteCount(binaryWriter, this.Properties.Count);
+                    foreach (var typeSchemaProperty in this.Properties)
+                    {
+                        Encoder.WriteString(binaryWriter, typeSchemaProperty.PropertyName, false);
+                    }
+                }
+
+                return ms.ToArray();
+            }
         }
 
         #endregion

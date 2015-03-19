@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Reflection
 {
     using System;
@@ -43,6 +44,11 @@ namespace Hypertable.Persistence.Reflection
         /// </summary>
         private static readonly ConcurrentTypeDictionary<Inspector> Inspectors = new ConcurrentTypeDictionary<Inspector>();
 
+        /// <summary>
+        /// The property name comparer.
+        /// </summary>
+        private static readonly StringComparer propertyNameComparer = StringComparer.OrdinalIgnoreCase;
+
         #endregion
 
         #region Fields
@@ -63,9 +69,14 @@ namespace Hypertable.Persistence.Reflection
         private readonly bool hasSerializationHandlers;
 
         /// <summary>
-        /// The inspected properties.
+        /// The inspected properties dictionary.
         /// </summary>
         private readonly IDictionary<string, InspectedProperty> inspectedProperties;
+
+        /// <summary>
+        /// The inspected properties positional.
+        /// </summary>
+        private readonly KeyValuePair<string, InspectedProperty>[] inspectedPropertiesPositional;
 
         /// <summary>
         /// The serializable.
@@ -86,12 +97,34 @@ namespace Hypertable.Persistence.Reflection
         {
             this.InspectedType = type;
 
+            if (this.IsArray = type.IsArray)
+            {
+                return;
+            }
+
+            if (this.IsEnum = type.IsEnum)
+            {
+                this.EnumType = type.GetEnumUnderlyingType();
+                return;
+            }
+
+            if (this.IsTuple = type.IsTuple())
+            {
+                return;
+            }
+
+            if (this.IsKeyValuePair = type.IsGenericTypeDefinition(typeof(KeyValuePair<,>)))
+            {
+                return;
+            }
+
             if (!typeof(Enumerable).IsAssignableFrom(type))
             {
                 this.constructor = DelegateFactory.CreateConstructor(type);
 
                 ////TODO control isSerializable/ISerializable by settings fields or props?
                 this.inspectedProperties = type.HasAttribute<SerializableAttribute>() ? InspectFields(type) : InspectProperties(type);
+                this.inspectedPropertiesPositional = this.inspectedProperties.ToArray();
 
                 if (typeof(IDictionary).IsAssignableFrom(type))
                 {
@@ -125,6 +158,14 @@ namespace Hypertable.Persistence.Reflection
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets the enum type if the inspected type is an enumeration.
+        /// </summary>
+        /// <value>
+        /// The enum type.
+        /// </value>
+        internal Type EnumType { get; private set; }
 
         /// <summary>
         /// Gets the inspected enumerable.
@@ -177,6 +218,14 @@ namespace Hypertable.Persistence.Reflection
         internal Type InspectedType { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether the inspected type is an array.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the inspected type is an array, otherwise <c>false</c>.
+        /// </value>
+        internal bool IsArray { get; private set; }
+
+        /// <summary>
         /// Gets a value indicating whether the inspector is a collection.
         /// </summary>
         /// <value>
@@ -189,6 +238,14 @@ namespace Hypertable.Persistence.Reflection
                 return this.enumerable != null && this.enumerable.HasAdd;
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether the inspected type is an enum.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the inspected type is an enum, otherwise <c>false</c>.
+        /// </value>
+        internal bool IsEnum { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether the inspector is an enumerable.
@@ -205,6 +262,14 @@ namespace Hypertable.Persistence.Reflection
         }
 
         /// <summary>
+        /// Gets a value indicating whether the inspected type is a key value pair.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the inspected type is key value pair, otherwise <c>false</c>.
+        /// </value>
+        internal bool IsKeyValuePair { get; private set; }
+
+        /// <summary>
         /// Gets a value indicating whether the inspector is a serializable.
         /// </summary>
         /// <value>
@@ -217,6 +282,14 @@ namespace Hypertable.Persistence.Reflection
                 return this.serializable != null;
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether the inspected type is a tuple.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the inspected type is a tuple, otherwise <c>false</c>.
+        /// </value>
+        internal bool IsTuple { get; private set; }
 
         /// <summary>
         /// Gets the OnDeserialized handler.
@@ -318,11 +391,22 @@ namespace Hypertable.Persistence.Reflection
         /// <param name="name">
         /// The property name.
         /// </param>
-        /// <returns>
+        /// <param name="positionalHint">
+        /// The positional hint.
+        /// </param><returns>
         /// The inspected property or null.
         /// </returns>
-        internal InspectedProperty GetProperty(string name)
+        internal InspectedProperty GetProperty(string name, int positionalHint)
         {
+            if (positionalHint >= 0 && positionalHint < this.inspectedPropertiesPositional.Length)
+            {
+                var kv = this.inspectedPropertiesPositional[positionalHint];
+                if (propertyNameComparer.Equals(name, kv.Key))
+                {
+                    return kv.Value;
+                }
+            }
+
             InspectedProperty inspectedProperty;
             this.inspectedProperties.TryGetValue(name, out inspectedProperty);
             return inspectedProperty;
@@ -388,7 +472,7 @@ namespace Hypertable.Persistence.Reflection
         /// </returns>
         private static IDictionary<string, InspectedProperty> InspectFields(Type type)
         {
-            var inspectedProperties = new Dictionary<string, InspectedProperty>(StringComparer.OrdinalIgnoreCase);
+            var inspectedProperties = new Dictionary<string, InspectedProperty>(propertyNameComparer);
             for (var t = type; t != typeof(object) && t != null; t = t.BaseType)
             {
                 var fields = t.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
@@ -430,7 +514,7 @@ namespace Hypertable.Persistence.Reflection
         /// </returns>
         private static IDictionary<string, InspectedProperty> InspectProperties(Type type)
         {
-            var inspectedProperties = new Dictionary<string, InspectedProperty>(StringComparer.OrdinalIgnoreCase);
+            var inspectedProperties = new Dictionary<string, InspectedProperty>(propertyNameComparer);
             for (var t = type; t != typeof(object) && t != null; t = t.BaseType)
             {
                 var properties = t.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);

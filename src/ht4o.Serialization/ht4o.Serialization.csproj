@@ -81,6 +81,7 @@
     <Compile Include="..\ht4o\Serialization\DictionaryFlags.cs" />
     <Compile Include="..\ht4o\Serialization\Encoder.cs" />
     <Compile Include="..\ht4o\Serialization\EncoderInfo.cs" />
+    <Compile Include="..\ht4o\Serialization\EncoderConfiguration.cs" />
     <Compile Include="..\ht4o\Serialization\Resolver.cs" />
     <Compile Include="..\ht4o\Serialization\SerializationBase.cs" />
     <Compile Include="..\ht4o\Serialization\SerializationException.cs" />

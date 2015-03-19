@@ -292,6 +292,11 @@ namespace Hypertable.Persistence.Serialization
         TypeSchema = 56 << 1,
 
         /// <summary>
+        /// The new type schema, introduced with > v0.9.8.
+        /// </summary>
+        TypeSchema2 = TypeSchema | Array,
+
+        /// <summary>
         /// The type schema ref.
         /// </summary>
         TypeSchemaRef = 57 << 1, 

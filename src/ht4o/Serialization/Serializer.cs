@@ -52,6 +52,11 @@ namespace Hypertable.Persistence.Serialization
         #region Fields
 
         /// <summary>
+        /// The encoder configuration.
+        /// </summary>
+        private readonly EncoderConfiguration configuration;
+
+        /// <summary>
         /// The encoder info.
         /// </summary>
         private readonly Dictionary<Type, EncoderInfo> encoderInfos = new Dictionary<Type, EncoderInfo>();
@@ -89,20 +94,19 @@ namespace Hypertable.Persistence.Serialization
         /// Initializes a new instance of the <see cref="Serializer"/> class.
         /// </summary>
         public Serializer()
-            : this(Encoder.StrictExplicitTypeCodes)
+            : this(null, null)
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Serializer"/> class.
         /// </summary>
-        /// <param name="strictExplicitTypeCodes">
-        /// Indicating whether to strictly use explicit type codes.
+        /// <param name="configuration">
+        /// The encoder configuration.
         /// </param>
-        public Serializer(bool strictExplicitTypeCodes)
+        public Serializer(EncoderConfiguration configuration)
+            : this(null, configuration)
         {
-            this.StrictExplicitTypeCodes = strictExplicitTypeCodes;
-            this.encoderInfos.Add(typeof(Type).GetType(), new EncoderInfo(Tags.Type, this.WriteType));
         }
 
         /// <summary>
@@ -112,7 +116,7 @@ namespace Hypertable.Persistence.Serialization
         /// The binary writer.
         /// </param>
         protected Serializer(BinaryWriter binaryWriter)
-            : this(binaryWriter, Encoder.StrictExplicitTypeCodes)
+            : this(binaryWriter, null)
         {
         }
 
@@ -122,14 +126,16 @@ namespace Hypertable.Persistence.Serialization
         /// <param name="binaryWriter">
         /// The binary writer.
         /// </param>
-        /// <param name="strictExplicitTypeCodes">
-        /// Indicating whether to strictly use explicit type codes.
+        /// <param name="configuration">
+        /// The encoder configuration.
         /// </param>
-        protected Serializer(BinaryWriter binaryWriter, bool strictExplicitTypeCodes)
+        protected Serializer(BinaryWriter binaryWriter, EncoderConfiguration configuration)
         {
             this.binaryWriter = binaryWriter;
-            this.StrictExplicitTypeCodes = strictExplicitTypeCodes;
+            this.configuration = EncoderConfiguration.CreateFrom(configuration);
+
             this.encoderInfos.Add(typeof(Type).GetType(), new EncoderInfo(Tags.Type, this.WriteType));
+            this.encoderInfos.Add(typeof(DateTime), new EncoderInfo(Tags.DateTime, this.WriteDateTime));
         }
 
         #endregion
@@ -151,12 +157,18 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Gets a value indicating whether to strictly use explicit type codes.
+        /// Gets the configuration.
         /// </summary>
         /// <value>
-        /// The strict explicit type codes.
+        /// The encoder configuration.
         /// </value>
-        public bool StrictExplicitTypeCodes { get; private set; }
+        public EncoderConfiguration Configuration
+        {
+            get
+            {
+                return this.configuration;
+            }
+        }
 
         #endregion
 
@@ -386,7 +398,7 @@ namespace Hypertable.Persistence.Serialization
         internal virtual void Encode(EncoderInfo encoderInfo, object value, bool writeTag)
         {
             ////TODO review, correct?
-            if (encoderInfo.Tag >= Tags.FirstCustomType || value.GetType().IsComplex())
+            if (encoderInfo.HandleObjectRef(value.GetType()))
             {
                 if (this.WriteOrAddObjectRef(value))
                 {
@@ -428,10 +440,12 @@ namespace Hypertable.Persistence.Serialization
         /// </param>
         internal void Write(Type serializeType, Type type, object value)
         {
-            if (type.IsEnum)
+            var inspector = Inspector.InspectorForType(type);
+
+            if (inspector.IsEnum)
             {
                 ////TODO needs to be declared as enum - deserialize to object!!!!
-                type = Enum.GetUnderlyingType(type);
+                type = inspector.EnumType;
             }
 
             EncoderInfo encoderInfo;
@@ -441,25 +455,23 @@ namespace Hypertable.Persistence.Serialization
                 return;
             }
 
-            if (type.IsArray)
+            if (inspector.IsArray)
             {
                 this.WriteArray(serializeType, type, (Array)value);
                 return;
             }
 
-            if (type.IsGenericTypeDefinition(typeof(KeyValuePair<,>)))
+            if (inspector.IsKeyValuePair)
             {
                 this.WriteKeyValuePair(type, value);
                 return;
             }
 
-            if (type.GetInterface("System.ITuple") != null)
+            if (inspector.IsTuple)
             {
                 this.WriteTuple(type, value);
                 return;
             }
-
-            var inspector = Inspector.InspectorForType(type);
 
             if (inspector.IsSerializable)
             {
@@ -684,7 +696,7 @@ namespace Hypertable.Persistence.Serialization
                     return;
                 }
 
-                Encoder.WriteType(this.binaryWriter, type, true, this.StrictExplicitTypeCodes);
+                Encoder.WriteType(this.binaryWriter, type, this.configuration, true);
             }
         }
 
@@ -922,6 +934,23 @@ namespace Hypertable.Persistence.Serialization
                     this.Write(itemType, item);
                 }
             }
+        }
+
+        /// <summary>
+        /// Write a date time value to the binary writer.
+        /// </summary>
+        /// <param name="bw">
+        /// The binary writer.
+        /// </param>
+        /// <param name="value">
+        /// The value.
+        /// </param>
+        /// <param name="writeTag">
+        /// If <c>true</c> the encoder writes the leading type tag, otherwise <c>false</c>.
+        /// </param>
+        private void WriteDateTime(BinaryWriter bw, object value, bool writeTag)
+        {
+            Encoder.WriteDateTime(bw, (DateTime)value, this.configuration, writeTag);
         }
 
         /// <summary>
@@ -1428,7 +1457,7 @@ namespace Hypertable.Persistence.Serialization
         /// </param>
         private void WriteType(BinaryWriter bw, object value, bool writeTag)
         {
-            Encoder.WriteType(bw, (Type)value, writeTag, this.StrictExplicitTypeCodes);
+            Encoder.WriteType(bw, (Type)value, this.configuration, writeTag);
         }
 
         /// <summary>
@@ -1454,12 +1483,7 @@ namespace Hypertable.Persistence.Serialization
             }
 
             var typeSchema = this.GetTypeSchema(type, inspector);
-            Encoder.WriteTag(this.binaryWriter, Tags.TypeSchema);
-            Encoder.WriteCount(this.binaryWriter, typeSchema.Properties.Count);
-            foreach (var typeSchemaProperty in typeSchema.Properties)
-            {
-                this.WriteString(typeSchemaProperty.PropertyName);
-            }
+            this.binaryWriter.Write(typeSchema.SerializedSchema);
 
             typeSchemaRef.TypeSchema = typeSchema;
             typeSchemaRef.Ref = this.typeSchemaRefDictionary.Count;

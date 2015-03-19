@@ -38,6 +38,16 @@ namespace Hypertable.Persistence.Serialization
         #region Static Fields
 
         /// <summary>
+        /// DateTime ticks stored as lcal time.
+        /// </summary>
+        internal static readonly byte LocalTimeTicks = 0x80;
+
+        /// <summary>
+        /// The encoder configuration.
+        /// </summary>
+        private static readonly EncoderConfiguration EncoderConfiguration = new EncoderConfiguration();
+
+        /// <summary>
         /// The encoder info.
         /// </summary>
         private static readonly ConcurrentDictionary<Type, EncoderInfo> EncoderInfos;
@@ -52,16 +62,6 @@ namespace Hypertable.Persistence.Serialization
         /// </summary>
         private static readonly ConcurrentDictionary<Type, Tuple<string, string>> TypeNameCache = new ConcurrentDictionary<Type, Tuple<string, string>>();
 
-        /// <summary>
-        /// The binder.
-        /// </summary>
-        private static SerializationBinder binder = new Binder();
-
-        /// <summary>
-        /// The type writer.
-        /// </summary>
-        private static Action<BinaryWriter, Type> typeWriter;
-
         #endregion
 
         #region Constructors and Destructors
@@ -71,7 +71,8 @@ namespace Hypertable.Persistence.Serialization
         /// </summary>
         static Encoder()
         {
-            typeWriter = WriteType;
+            EncoderConfiguration.Binder = new Binder();
+            EncoderConfiguration.TypeWriter = WriteType;
 
             var encoderInfos = new Dictionary<Type, EncoderInfo>
                 {
@@ -112,54 +113,16 @@ namespace Hypertable.Persistence.Serialization
         #region Public Properties
 
         /// <summary>
-        /// Gets or sets the binder.
+        /// Gets the configuration.
         /// </summary>
         /// <value>
-        /// The binder.
+        /// The encoder configuration.
         /// </value>
-        public static SerializationBinder Binder
+        public static EncoderConfiguration Configuration
         {
             get
             {
-                return binder;
-            }
-
-            set
-            {
-                if (value != null)
-                {
-                    binder = value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether to strictly use explicit type codes.
-        /// </summary>
-        /// <value>
-        /// The strict explicit type codes.
-        /// </value>
-        public static bool StrictExplicitTypeCodes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type writer.
-        /// </summary>
-        /// <value>
-        /// The type writer.
-        /// </value>
-        public static Action<BinaryWriter, Type> TypeWriter
-        {
-            get
-            {
-                return typeWriter;
-            }
-
-            set
-            {
-                if (value != null)
-                {
-                    typeWriter = value;
-                }
+                return EncoderConfiguration;
             }
         }
 
@@ -386,10 +349,13 @@ namespace Hypertable.Persistence.Serialization
         /// <param name="value">
         /// The value.
         /// </param>
+        /// <param name="configuration">
+        /// The encoder configuration.
+        /// </param>
         /// <param name="writeTag">
         /// If <c>true</c> the encoder writes the leading type tag, otherwise <c>false</c>.
         /// </param>
-        public static void WriteDateTime(BinaryWriter binaryWriter, DateTime value, bool writeTag)
+        public static void WriteDateTime(BinaryWriter binaryWriter, DateTime value, EncoderConfiguration configuration, bool writeTag)
         {
             if (writeTag)
             {
@@ -402,8 +368,21 @@ namespace Hypertable.Persistence.Serialization
                 WriteTag(binaryWriter, Tags.DateTime);
             }
 
-            WriteByte(binaryWriter, (byte)value.Kind, false);
-            WriteLongVariant(binaryWriter, value.Kind == DateTimeKind.Local ? value.ToUniversalTime().Ticks : value.Ticks);
+            if (configuration.DateTimeBehavior == DateTimeBehavior.Utc)
+            {
+                WriteByte(binaryWriter, (byte)value.Kind, false);
+                WriteLongVariant(binaryWriter, value.Kind == DateTimeKind.Local ? value.ToUniversalTime().Ticks : value.Ticks);
+            }
+            else {
+                var kindAndFlag = (byte)value.Kind;
+                if (value.Kind == DateTimeKind.Local)
+                {
+                    kindAndFlag |= LocalTimeTicks;
+                }
+
+                WriteByte(binaryWriter, kindAndFlag, false);
+                WriteLongVariant(binaryWriter, value.Ticks);
+            }
         }
 
         /// <summary>
@@ -730,7 +709,7 @@ namespace Hypertable.Persistence.Serialization
         /// </param>
         public static void WriteType(BinaryWriter binaryWriter, Type value, bool writeTag)
         {
-            WriteType(binaryWriter, value, writeTag, StrictExplicitTypeCodes);
+            WriteType(binaryWriter, value, EncoderConfiguration, writeTag);
         }
 
         /// <summary>
@@ -950,15 +929,15 @@ namespace Hypertable.Persistence.Serialization
         /// <param name="value">
         /// The value.
         /// </param>
+        /// <param name="configuration">
+        /// The encoder configuration.
+        /// </param>
         /// <param name="writeTag">
         /// If <c>true</c> the encoder writes the leading type tag, otherwise <c>false</c>.
         /// </param>
-        /// <param name="strictExplicitTypeCodes">
-        /// The strict explicit type codes.
-        /// </param>
-        internal static void WriteType(BinaryWriter binaryWriter, Type value, bool writeTag, bool strictExplicitTypeCodes)
+        internal static void WriteType(BinaryWriter binaryWriter, Type value, EncoderConfiguration configuration, bool writeTag)
         {
-            if (strictExplicitTypeCodes)
+            if (configuration.StrictExplicitTypeCodes)
             {
                 throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Missing type code for type {0}", value));
             }
@@ -968,7 +947,7 @@ namespace Hypertable.Persistence.Serialization
                 WriteTag(binaryWriter, Tags.Type);
             }
 
-            typeWriter(binaryWriter, value);
+            configuration.TypeWriter(binaryWriter, value, configuration);
         }
 
         /// <summary>
@@ -1058,7 +1037,7 @@ namespace Hypertable.Persistence.Serialization
         /// </param>
         private static void WriteDateTime(BinaryWriter binaryWriter, object value, bool writeTag)
         {
-            WriteDateTime(binaryWriter, (DateTime)value, writeTag);
+            WriteDateTime(binaryWriter, (DateTime)value, EncoderConfiguration, writeTag);
         }
 
         /// <summary>
@@ -1334,17 +1313,37 @@ namespace Hypertable.Persistence.Serialization
         /// <param name="type">
         /// The type.
         /// </param>
-        private static void WriteType(BinaryWriter binaryWriter, Type type)
+        /// <param name="configuration">
+        /// The encoder configuration.
+        /// </param>
+        private static void WriteType(BinaryWriter binaryWriter, Type type, EncoderConfiguration configuration)
+        {
+            WriteType(binaryWriter, type, configuration.Binder);
+        }
+
+        /// <summary>
+        /// Write a type value to the binary writer.
+        /// </summary>
+        /// <param name="binaryWriter">
+        /// The binary writer.
+        /// </param> 
+        /// <param name="type">
+        /// The type.
+        /// </param>
+        /// <param name="binder">
+        /// The serialization binder.
+        /// </param>
+        private static void WriteType(BinaryWriter binaryWriter, Type type, SerializationBinder binder)
         {
             var tuple = TypeNameCache.GetOrAdd(
-                type, 
+                type,
                 _ =>
-                    {
-                        string assemblyName;
-                        string typeName;
-                        binder.BindToName(type, out assemblyName, out typeName);
-                        return new Tuple<string, string>(assemblyName, typeName);
-                    });
+                {
+                    string assemblyName;
+                    string typeName;
+                    binder.BindToName(type, out assemblyName, out typeName);
+                    return new Tuple<string, string>(assemblyName, typeName);
+                });
 
             binaryWriter.Write(tuple.Item1);
             binaryWriter.Write(tuple.Item2);

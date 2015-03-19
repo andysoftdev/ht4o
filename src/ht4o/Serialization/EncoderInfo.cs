@@ -18,8 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Serialization
 {
+    using System;
+
+    using Hypertable.Persistence.Extensions;
     using Hypertable.Persistence.Serialization.Delegates;
 
     /// <summary>
@@ -111,6 +115,21 @@ namespace Hypertable.Persistence.Serialization
 
                 this.serialize(serializer, any);
             }
+        }
+
+        /// <summary>
+        /// Check if the value type requires object ref handling. 
+        /// </summary>
+        /// <param name="type">
+        /// The value type.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if the type requires ObjectRef handling; otherwise <c>false</c>.
+        /// </returns>
+        internal bool HandleObjectRef(Type type)
+        {
+            ////TODO review, correct?
+            return this.Tag >= Tags.FirstCustomType || (this.Tag >= Tags.TypeCode && type.IsComplex());
         }
 
         #endregion

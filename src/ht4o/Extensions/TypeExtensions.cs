@@ -18,24 +18,39 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Extensions
 {
     using System;
     using System.Collections;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
     using System.Text;
-    using System.Text.RegularExpressions;
+
+    using Hypertable.Persistence.Collections;
 
     /// <summary>
     /// The type extensions.
     /// </summary>
     internal static class TypeExtensions
     {
+        #region Static Fields
+
+        /// <summary>
+        /// The complex types.
+        /// </summary>
+        private static readonly ConcurrentTypeDictionary<bool> ComplexTypes = new ConcurrentTypeDictionary<bool>();
+
+        /// <summary>
+        /// The ITuple type.
+        /// </summary>
+        private static readonly Type TypeITuple = typeof(Tuple<int>).GetInterface("System.ITuple");
+
+        #endregion
+
         #region Methods
 
         /// <summary>
@@ -214,7 +229,7 @@ namespace Hypertable.Persistence.Extensions
         }
 
         /// <summary>
-        /// Gets a value indicating whether the is complex.
+        /// Gets a value indicating whether the type is complex.
         /// </summary>
         /// <param name="type">
         /// The type.
@@ -224,7 +239,7 @@ namespace Hypertable.Persistence.Extensions
         /// </returns>
         internal static bool IsComplex(this Type type)
         {
-            return type != typeof(string) && type != typeof(Type).GetType() && type.IsClass && !type.IsValueType;
+            return ComplexTypes.GetOrAdd(type, t => type != typeof(string) && type != typeof(Type).GetType() && type.IsClass);
         }
 
         /// <summary>
@@ -239,11 +254,9 @@ namespace Hypertable.Persistence.Extensions
         internal static bool IsDelegate(this Type type)
         {
             return typeof(Delegate).IsAssignableFrom(type)
-                   ||
-                   (type.IsGenericType
-                    &&
-                    (type.GetGenericTypeDefinition() == typeof(Action<>) || type.GetGenericTypeDefinition() == typeof(Func<>)
-                     || type.GetGenericTypeDefinition() == typeof(Expression<>)));
+                   || (type.IsGenericType
+                       && (type.GetGenericTypeDefinition() == typeof(Action<>) || type.GetGenericTypeDefinition() == typeof(Func<>)
+                           || type.GetGenericTypeDefinition() == typeof(Expression<>)));
         }
 
         /// <summary>
@@ -303,6 +316,20 @@ namespace Hypertable.Persistence.Extensions
         internal static bool IsTransient(this Type type)
         {
             return IsDelegate(type) || type == typeof(IntPtr);
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the type is a tuple.
+        /// </summary>
+        /// <param name="type">
+        /// The type.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if the type is a tuple, otherwise <c>false</c>.
+        /// </returns>
+        internal static bool IsTuple(this Type type)
+        {
+            return TypeITuple.IsAssignableFrom(type);
         }
 
         /// <summary>
