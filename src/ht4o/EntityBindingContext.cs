@@ -79,7 +79,7 @@ namespace Hypertable.Persistence
             }
 
             var columnBindingComparer = new ColumnBindingComparer();
-            var columnFamilyBindings = new Dictionary<string, HashSet<IColumnBinding>>();
+            var columnFamilyBindings = new Dictionary<string, HashSet<IColumnBinding>>(StringComparer.Ordinal);
 
             foreach (var binding in distinctColumnBindings)
             {

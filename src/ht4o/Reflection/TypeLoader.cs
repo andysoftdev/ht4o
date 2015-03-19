@@ -36,7 +36,7 @@ namespace Hypertable.Persistence.Reflection
         /// <summary>
         /// The types.
         /// </summary>
-        private static readonly ConcurrentDictionary<string, Type> Types = new ConcurrentDictionary<string, Type>();
+        private static readonly ConcurrentDictionary<string, Type> Types = new ConcurrentDictionary<string, Type>(StringComparer.Ordinal);
 
         #endregion
 
