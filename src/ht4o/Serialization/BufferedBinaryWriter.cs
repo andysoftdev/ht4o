@@ -117,7 +117,6 @@ namespace Hypertable.Persistence.Serialization
             this.ptr += 1;
         }
 
-        [CLSCompliant(false)]
         public override unsafe void Write(sbyte value)
         {
             this.EnsureBuffer(1);
@@ -275,7 +274,6 @@ namespace Hypertable.Persistence.Serialization
             this.ptr += 2;
         }
 
-        [CLSCompliant(false)]
         public override unsafe void Write(ushort value)
         {
             this.EnsureBuffer(2);
@@ -302,7 +300,6 @@ namespace Hypertable.Persistence.Serialization
             this.ptr += 4;
         }
 
-        [CLSCompliant(false)]
         public override unsafe void Write(uint value)
         {
             this.EnsureBuffer(4);
@@ -335,7 +332,6 @@ namespace Hypertable.Persistence.Serialization
             this.ptr += 8;
         }
 
-        [CLSCompliant(false)]
         public override unsafe void Write(ulong value)
         {
             this.EnsureBuffer(8);
