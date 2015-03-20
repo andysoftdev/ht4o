@@ -38,7 +38,7 @@ namespace Hypertable.Persistence.Serialization
 
         #region Fields
 
-        private readonly IntPtr basePtr;
+        private readonly unsafe byte* basePtr;
 
         private readonly int charMaxByteCount;
 
@@ -46,11 +46,11 @@ namespace Hypertable.Persistence.Serialization
 
         private readonly Encoding encoding;
 
-        private readonly IntPtr endPtr;
+        private readonly unsafe byte* endPtr;
 
         private readonly MemoryPage memoryPage;
 
-        private IntPtr ptr;
+        private unsafe byte* ptr;
 
         #endregion
 
@@ -61,7 +61,7 @@ namespace Hypertable.Persistence.Serialization
         {
         }
 
-        public BufferedBinaryWriter(Stream output, Encoding encoding)
+        public unsafe BufferedBinaryWriter(Stream output, Encoding encoding)
             : base(output, encoding)
         {
             this.memoryPage = Pool.GetPage();
@@ -79,11 +79,11 @@ namespace Hypertable.Persistence.Serialization
 
         #region Properties
 
-        private int Count
+        private unsafe int Count
         {
             get
             {
-                return this.ptr.ToInt32() - this.basePtr.ToInt32();
+                return (int)(this.ptr - this.basePtr);
             }
         }
 
@@ -101,30 +101,30 @@ namespace Hypertable.Persistence.Serialization
         {
             this.EnsureBuffer(1);
 
-            var p = (byte*)this.ptr;
+            var p = this.ptr;
             *p = (byte)(value ? 1 : 0);
 
-            this.ptr += 1;
+            ++this.ptr;
         }
 
         public override unsafe void Write(byte value)
         {
             this.EnsureBuffer(1);
 
-            var p = (byte*)this.ptr;
+            var p = this.ptr;
             *p = value;
 
-            this.ptr += 1;
+            ++this.ptr;
         }
 
         public override unsafe void Write(sbyte value)
         {
             this.EnsureBuffer(1);
 
-            var p = (byte*)this.ptr;
+            var p = this.ptr;
             *p = (byte)value;
 
-            this.ptr += 1;
+            ++this.ptr;
         }
 
         public override unsafe void Write(byte[] value)
@@ -138,7 +138,7 @@ namespace Hypertable.Persistence.Serialization
 
             if (this.EnsureBuffer(l))
             {
-                var p = (byte*)this.ptr;
+                var p = this.ptr;
                 memcpy(p, value, new UIntPtr((uint)l));
 
                 this.ptr += l;
@@ -153,7 +153,7 @@ namespace Hypertable.Persistence.Serialization
         {
             this.EnsureBuffer(this.charMaxByteCount);
 
-            var p = (byte*)this.ptr;
+            var p = this.ptr;
 
             this.ptr += this.encoder.GetBytes(&ch, 1, p, this.charMaxByteCount, true);
         }
@@ -171,7 +171,7 @@ namespace Hypertable.Persistence.Serialization
             {
                 fixed (char* ch = &chars[0])
                 {
-                    var p = (byte*)this.ptr;
+                    var p = this.ptr;
                     this.ptr += this.encoder.GetBytes(ch, l, p, s, true);
                 }
             }
@@ -193,7 +193,7 @@ namespace Hypertable.Persistence.Serialization
             {
                 fixed (char* ch = &chars[index])
                 {
-                    var p = (byte*)this.ptr;
+                    var p = this.ptr;
                     this.ptr += this.encoder.GetBytes(ch, count, p, s, true);
                 }
             }
@@ -207,7 +207,7 @@ namespace Hypertable.Persistence.Serialization
         {
             this.EnsureBuffer(8);
 
-            var p = (byte*)this.ptr;
+            var p = this.ptr;
 
             var v = (ulong*)&value;
             p[0] = (byte)*v;
@@ -226,7 +226,7 @@ namespace Hypertable.Persistence.Serialization
         {
             this.EnsureBuffer(16);
 
-            var p = (byte*)this.ptr;
+            var p = this.ptr;
 
             fixed (int* bits = &Decimal.GetBits(value)[0])
             {
@@ -266,7 +266,7 @@ namespace Hypertable.Persistence.Serialization
         {
             this.EnsureBuffer(2);
 
-            var p = (byte*)this.ptr;
+            var p = this.ptr;
 
             p[0] = (byte)value;
             p[1] = (byte)(value >> 8);
@@ -278,7 +278,7 @@ namespace Hypertable.Persistence.Serialization
         {
             this.EnsureBuffer(2);
 
-            var p = (byte*)this.ptr;
+            var p = this.ptr;
 
             p[0] = (byte)value;
             p[1] = (byte)(value >> 8);
@@ -290,7 +290,7 @@ namespace Hypertable.Persistence.Serialization
         {
             this.EnsureBuffer(4);
 
-            var p = (byte*)this.ptr;
+            var p = this.ptr;
 
             p[0] = (byte)value;
             p[1] = (byte)(value >> 8);
@@ -304,7 +304,7 @@ namespace Hypertable.Persistence.Serialization
         {
             this.EnsureBuffer(4);
 
-            var p = (byte*)this.ptr;
+            var p = this.ptr;
 
             p[0] = (byte)value;
             p[1] = (byte)(value >> 8);
@@ -318,7 +318,7 @@ namespace Hypertable.Persistence.Serialization
         {
             this.EnsureBuffer(8);
 
-            var p = (byte*)this.ptr;
+            var p = this.ptr;
 
             p[0] = (byte)value;
             p[1] = (byte)(value >> 8);
@@ -336,7 +336,7 @@ namespace Hypertable.Persistence.Serialization
         {
             this.EnsureBuffer(8);
 
-            var p = (byte*)this.ptr;
+            var p = this.ptr;
 
             p[0] = (byte)value;
             p[1] = (byte)(value >> 8);
@@ -354,7 +354,7 @@ namespace Hypertable.Persistence.Serialization
         {
             this.EnsureBuffer(4);
 
-            var p = (byte*)this.ptr;
+            var p = this.ptr;
 
             var v = (uint*)&value;
             p[0] = (byte)*v;
@@ -380,7 +380,7 @@ namespace Hypertable.Persistence.Serialization
                 this.WriteStringLength(byteCount);
                 fixed (char* ch = &chars[0])
                 {
-                    var p = (byte*)this.ptr;
+                    var p = this.ptr;
                     this.ptr += this.encoder.GetBytes(ch, length, p, byteCount, true);
                 }
             }
@@ -406,7 +406,7 @@ namespace Hypertable.Persistence.Serialization
 
         private unsafe bool EnsureBuffer(int requiredCapacity)
         {
-            if ((this.ptr + requiredCapacity).ToPointer() >= this.endPtr.ToPointer())
+            if (this.ptr + requiredCapacity >= this.endPtr)
             {
                 this.WriteBuffer();
             }
@@ -414,9 +414,9 @@ namespace Hypertable.Persistence.Serialization
             return requiredCapacity <= MemoryPage.Size;
         }
 
-        private void WriteBuffer()
+        private unsafe void WriteBuffer()
         {
-            if (this.Count > 0)
+            if (this.ptr > this.basePtr)
             {
                 this.Write(this.memoryPage.Buffer, 0, this.Count);
                 this.ptr = this.basePtr;
@@ -425,7 +425,7 @@ namespace Hypertable.Persistence.Serialization
 
         private unsafe void WriteStringLength(int value)
         {
-            var p = (byte*)this.ptr;
+            var p = this.ptr;
 
             var v = (uint)value;
             while (v >= 0x80)
@@ -433,13 +433,13 @@ namespace Hypertable.Persistence.Serialization
                 *p = (byte)(v | 0x80);
 
                 ++p;
-                this.ptr += 1;
+                ++this.ptr;
 
                 v >>= 7;
             }
 
             *p = (byte)v;
-            this.ptr += 1;
+            ++this.ptr;
         }
 
         #endregion
@@ -454,11 +454,11 @@ namespace Hypertable.Persistence.Serialization
 
             #region Fields
 
-            public readonly IntPtr BasePtr;
+            public readonly unsafe byte* BasePtr;
 
             public readonly byte[] Buffer = new byte[Size];
 
-            public readonly IntPtr EndPtr;
+            public readonly unsafe byte* EndPtr;
 
             private GCHandle bufferHandle;
 
@@ -466,10 +466,10 @@ namespace Hypertable.Persistence.Serialization
 
             #region Constructors and Destructors
 
-            public MemoryPage()
+            public unsafe MemoryPage()
             {
                 this.bufferHandle = GCHandle.Alloc(this.Buffer, GCHandleType.Pinned);
-                this.BasePtr = this.bufferHandle.AddrOfPinnedObject();
+                this.BasePtr = (byte*)this.bufferHandle.AddrOfPinnedObject();
                 this.EndPtr = this.BasePtr + Size;
             }
 
