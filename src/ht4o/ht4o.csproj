@@ -25,7 +25,7 @@
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>..\..\ht4o.ruleset</CodeAnalysisRuleSet>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DocumentationFile>..\..\dist\$(VisualStudioVersion)\Win32\Debug\ht4o.xml</DocumentationFile>
     <Ht4n>..\..\..\ht4n\dist\$(VisualStudioVersion)\Win32\Debug\ht4n.dll</Ht4n>
     <NoWarn>1587</NoWarn>
@@ -43,7 +43,7 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
     <CodeAnalysisRuleSet>ht4o.ruleset</CodeAnalysisRuleSet>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DocumentationFile>..\..\dist\$(VisualStudioVersion)\Win32\Release\ht4o.xml</DocumentationFile>
     <Ht4n>..\..\..\ht4n\dist\$(VisualStudioVersion)\Win32\Release\ht4n.dll</Ht4n>
     <NoWarn>1587</NoWarn>
@@ -62,7 +62,7 @@
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>ht4o.ruleset</CodeAnalysisRuleSet>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DocumentationFile>..\..\dist\$(VisualStudioVersion)\x64\Debug\ht4o.xml</DocumentationFile>
     <Ht4n>..\..\..\ht4n\dist\$(VisualStudioVersion)\x64\Debug\ht4n.dll</Ht4n>
     <NoWarn>1587</NoWarn>
@@ -79,7 +79,7 @@
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisRuleSet>ht4o.ruleset</CodeAnalysisRuleSet>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DocumentationFile>..\..\dist\$(VisualStudioVersion)\x64\Release\ht4o.xml</DocumentationFile>
     <Ht4n>..\..\..\ht4n\dist\$(VisualStudioVersion)\x64\Release\ht4n.dll</Ht4n>
     <NoWarn>1587</NoWarn>
@@ -124,6 +124,7 @@
     <Compile Include="Behaviors.cs" />
     <Compile Include="ColumnBindingComparer.cs" />
     <Compile Include="Reflection\InspectedSerializable.cs" />
+    <Compile Include="Serialization\BufferedBinaryWriter.cs" />
     <Compile Include="Serialization\EncoderConfiguration.cs" />
     <Compile Include="Serialization\Resolver.cs" />
     <Compile Include="Scanner\TryGetFetchedEntity.cs" />

@@ -244,7 +244,7 @@ namespace Hypertable.Persistence.Serialization
         {
             using (var ms = new MemoryStream())
             {
-                using (var binaryWriter = new BinaryWriter(ms))
+                using (var binaryWriter = new BufferedBinaryWriter(ms, System.Text.Encoding.ASCII))
                 {
                     Encoder.WriteTag(binaryWriter, Tags.TypeSchema2);
                     Encoder.WriteByte(binaryWriter, TypeSchema.Version, false);

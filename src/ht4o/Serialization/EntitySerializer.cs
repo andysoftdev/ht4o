@@ -117,7 +117,7 @@ namespace Hypertable.Persistence.Serialization
         {
             using (var memoryStream = new MemoryStream(capacity))
             {
-                using (var binaryWriter = new BinaryWriter(memoryStream))
+                using (var binaryWriter = new BufferedBinaryWriter(memoryStream))
                 {
                     new EntitySerializer(entityContext, binaryWriter, value, serializingEntity).Write(serializeType, value);
                 }
