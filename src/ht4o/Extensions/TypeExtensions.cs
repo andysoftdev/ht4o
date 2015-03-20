@@ -72,6 +72,11 @@ namespace Hypertable.Persistence.Extensions
                 return value;
             }
 
+            if (destinationType.IsEnum)
+            {
+                return Enum.ToObject(destinationType, value);
+            }
+
             if (destinationType.IsNullable())
             {
                 destinationType = Nullable.GetUnderlyingType(destinationType);
@@ -80,11 +85,6 @@ namespace Hypertable.Persistence.Extensions
                 {
                     return value;
                 }
-            }
-
-            if (destinationType.IsEnum)
-            {
-                return Enum.ToObject(destinationType, value);
             }
 
             if (destinationType == typeof(string))
