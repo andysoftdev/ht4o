@@ -406,7 +406,7 @@ namespace Hypertable.Persistence.Serialization
 
         private unsafe bool EnsureBuffer(int requiredCapacity)
         {
-            if (this.ptr + requiredCapacity >= this.endPtr)
+            if (this.ptr + requiredCapacity > this.endPtr)
             {
                 this.WriteBuffer();
             }
