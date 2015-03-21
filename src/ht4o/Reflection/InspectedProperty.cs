@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Reflection
 {
     using System;
@@ -26,6 +27,7 @@ namespace Hypertable.Persistence.Reflection
 
     using Hypertable;
     using Hypertable.Persistence.Attributes;
+    using Hypertable.Persistence.Extensions;
 
     using Logging = Hypertable.Persistence.Logging;
 
@@ -76,6 +78,7 @@ namespace Hypertable.Persistence.Reflection
             this.Name = propertyInfo.SerializableName();
             this.InspectedType = type;
             this.PropertyType = propertyInfo.PropertyType;
+            this.IsNotNullableValueType = this.PropertyType.IsNotNullableValueType();
 
             if (propertyInfo.DeclaringType != propertyInfo.ReflectedType)
             {
@@ -142,6 +145,7 @@ namespace Hypertable.Persistence.Reflection
             this.Name = fieldInfo.SerializableName();
             this.InspectedType = type;
             this.PropertyType = fieldInfo.FieldType;
+            this.IsNotNullableValueType = this.PropertyType.IsNotNullableValueType();
 
             if (fieldInfo.DeclaringType != fieldInfo.ReflectedType)
             {
@@ -174,6 +178,14 @@ namespace Hypertable.Persistence.Reflection
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets a value indicating whether the inspected property type is a not nullable value type.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the inspected property type is a not nullable value type, otherwise <c>false</c>.
+        /// </value>
+        internal bool IsNotNullableValueType { get; private set; }
 
         /// <summary>
         /// Gets the getter function.
