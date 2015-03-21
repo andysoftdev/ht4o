@@ -45,6 +45,11 @@ namespace Hypertable.Persistence.Extensions
         private static readonly ConcurrentTypeDictionary<bool> ComplexTypes = new ConcurrentTypeDictionary<bool>();
 
         /// <summary>
+        /// The complex types.
+        /// </summary>
+        private static readonly ConcurrentTypeDictionary<Func<object, object>> EnumToObject = new ConcurrentTypeDictionary<Func<object, object>>();
+
+        /// <summary>
         /// The ITuple type.
         /// </summary>
         private static readonly Type TypeITuple = typeof(Tuple<int>).GetInterface("System.ITuple");
@@ -72,9 +77,49 @@ namespace Hypertable.Persistence.Extensions
                 return value;
             }
 
-            if (destinationType.IsEnum)
+            var enumToObject = EnumToObject.GetOrAdd(
+                destinationType,
+                type =>
+                {
+                    if (type.IsEnum)
+                    {
+                        switch (System.Convert.GetTypeCode(value))
+                        {
+                            case TypeCode.Int32:
+                                return (v => Enum.ToObject(type, (int)v));
+
+                            case TypeCode.SByte:
+                                return (v => Enum.ToObject(type, (sbyte)v));
+
+                            case TypeCode.Int16:
+                                return (v => Enum.ToObject(type, (short)v));
+
+                            case TypeCode.Int64:
+                                return (v => Enum.ToObject(type, (long)v));
+
+                            case TypeCode.UInt32:
+                                return (v => Enum.ToObject(type, (uint)v));
+
+                            case TypeCode.Byte:
+                                return (v => Enum.ToObject(type, (byte)v));
+
+                            case TypeCode.UInt16:
+                                return (v => Enum.ToObject(type, (ushort)v));
+
+                            case TypeCode.UInt64:
+                                return (v => Enum.ToObject(type, (ulong)v));
+
+                            default:
+                                throw new ArgumentException("Invalid type code");
+                        }
+                    }
+
+                    return null;
+                });
+
+            if (enumToObject != null)
             {
-                return Enum.ToObject(destinationType, value);
+                return enumToObject(value);
             }
 
             if (destinationType.IsNullable())
