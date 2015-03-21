@@ -401,7 +401,8 @@ namespace Hypertable.Persistence.Reflection
             if (positionalHint >= 0 && positionalHint < this.inspectedPropertiesPositional.Length)
             {
                 var kv = this.inspectedPropertiesPositional[positionalHint];
-                if (propertyNameComparer.Equals(name, kv.Key))
+                // the propertyNameComparer is not used for performance reason
+                if (string.Equals(name, kv.Key))
                 {
                     return kv.Value;
                 }
