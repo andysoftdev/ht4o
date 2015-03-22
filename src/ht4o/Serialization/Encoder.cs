@@ -357,6 +357,11 @@ namespace Hypertable.Persistence.Serialization
         /// </param>
         public static void WriteDateTime(BinaryWriter binaryWriter, DateTime value, EncoderConfiguration configuration, bool writeTag)
         {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException("configuration");
+            }
+
             if (writeTag)
             {
                 if (value.Ticks == 0)

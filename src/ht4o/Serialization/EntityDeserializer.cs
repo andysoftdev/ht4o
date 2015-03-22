@@ -107,12 +107,9 @@ namespace Hypertable.Persistence.Serialization
         /// </returns>
         internal static object Deserialize(EntityReader entityReader, Type destinationType, byte[] serialized, DeserializingEntity deserializingEntity)
         {
-            using (var memoryStream = new MemoryStream(serialized))
+            using (var binaryReader = new BinaryArrayReader(serialized))
             {
-                using (var binaryReader = new BinaryReader(memoryStream))
-                {
-                    return new EntityDeserializer(entityReader, binaryReader, deserializingEntity).Deserialize(destinationType, Decoder.ReadTag(binaryReader));
-                }
+                return new EntityDeserializer(entityReader, binaryReader, deserializingEntity).Deserialize(destinationType, Decoder.ReadTag(binaryReader));
             }
         }
 

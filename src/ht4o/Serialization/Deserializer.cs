@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Serialization
 {
     using System;
@@ -31,9 +32,7 @@ namespace Hypertable.Persistence.Serialization
     using Hypertable.Persistence.Collections;
     using Hypertable.Persistence.Extensions;
     using Hypertable.Persistence.Reflection;
-
 #if !HT4O_SERIALIZATION
-
     using Hypertable.Persistence.Scanner;
 
 #endif
@@ -173,9 +172,58 @@ namespace Hypertable.Persistence.Serialization
         /// </returns>
         public static T FromByteArray<T>(byte[] serialized)
         {
-            using (var memoryStream = new MemoryStream(serialized))
+            using (var binaryReader = new BinaryArrayReader(serialized))
             {
-                return Deserialize<T>(memoryStream);
+                return FromByteArray<T>(binaryReader);
+            }
+        }
+
+        /// <summary>
+        /// Deserialize from the byte array specified.
+        /// </summary>
+        /// <param name="serialized">
+        /// The serialized object.
+        /// </param>
+        /// <param name="index">
+        /// The index in the data at which deserialization begins
+        /// </param>
+        /// <typeparam name="T">
+        /// Type of the object to deserialize.
+        /// </typeparam>
+        /// <returns>
+        /// The deserialized object.
+        /// </returns>
+        public static T FromByteArray<T>(byte[] serialized, int index)
+        {
+            using (var binaryReader = new BinaryArrayReader(serialized, index))
+            {
+                return FromByteArray<T>(binaryReader);
+            }
+        }
+
+        /// <summary>
+        /// Deserialize from the byte array specified.
+        /// </summary>
+        /// <param name="serialized">
+        /// The serialized object.
+        /// </param>
+        /// <param name="index">
+        /// The index in the data at which deserialization begins
+        /// </param>
+        /// <param name="count">
+        /// The number of bytes to deserialize.
+        /// </param>
+        /// <typeparam name="T">
+        /// Type of the object to deserialize.
+        /// </typeparam>
+        /// <returns>
+        /// The deserialized object.
+        /// </returns>
+        public static T FromByteArray<T>(byte[] serialized, int index, int count)
+        {
+            using (var binaryReader = new BinaryArrayReader(serialized, index, count))
+            {
+                return FromByteArray<T>(binaryReader);
             }
         }
 
@@ -193,12 +241,58 @@ namespace Hypertable.Persistence.Serialization
         /// </returns>
         public static object FromByteArray(Type destinationType, byte[] serialized)
         {
-            using (var memoryStream = new MemoryStream(serialized))
+            using (var binaryReader = new BinaryArrayReader(serialized))
             {
-                using (var binaryReader = new BinaryReader(memoryStream))
-                {
-                    return new Deserializer(binaryReader).Deserialize(destinationType, Decoder.ReadTag(binaryReader));
-                }
+                return new Deserializer(binaryReader).Deserialize(destinationType, Decoder.ReadTag(binaryReader));
+            }
+        }
+
+        /// <summary>
+        /// Deserialize from the byte array specified.
+        /// </summary>
+        /// <param name="destinationType">
+        /// The destination type.
+        /// </param>
+        /// <param name="serialized">
+        /// The serialized object.
+        /// </param>
+        /// <param name="index">
+        /// The index in the data at which deserialization begins
+        /// </param>
+        /// <returns>
+        /// The deserialized object.
+        /// </returns>
+        public static object FromByteArray(Type destinationType, byte[] serialized, int index)
+        {
+            using (var binaryReader = new BinaryArrayReader(serialized, index))
+            {
+                return new Deserializer(binaryReader).Deserialize(destinationType, Decoder.ReadTag(binaryReader));
+            }
+        }
+
+        /// <summary>
+        /// Deserialize from the byte array specified.
+        /// </summary>
+        /// <param name="destinationType">
+        /// The destination type.
+        /// </param>
+        /// <param name="serialized">
+        /// The serialized object.
+        /// </param>
+        /// <param name="index">
+        /// The index in the data at which deserialization begins
+        /// </param>
+        /// <param name="count">
+        /// The number of bytes to deserialize.
+        /// </param>
+        /// <returns>
+        /// The deserialized object.
+        /// </returns>
+        public static object FromByteArray(Type destinationType, byte[] serialized, int index, int count)
+        {
+            using (var binaryReader = new BinaryArrayReader(serialized, index, count))
+            {
+                return new Deserializer(binaryReader).Deserialize(destinationType, Decoder.ReadTag(binaryReader));
             }
         }
 
@@ -220,13 +314,13 @@ namespace Hypertable.Persistence.Serialization
             }
             catch (InvalidCastException e)
             {
-
 #if!HT4O_SERIALIZATION
 
                 if (value is EntitySpec)
                 {
                     throw new SerializationException(
-                        string.Format(CultureInfo.InvariantCulture, @"Unable to resolve entity reference for {0} , consider deferred reading", typeof(T)), e);
+                        string.Format(CultureInfo.InvariantCulture, @"Unable to resolve entity reference for {0} , consider deferred reading", typeof(T)),
+                        e);
                 }
 
 #endif
@@ -334,14 +428,7 @@ namespace Hypertable.Persistence.Serialization
         /// <param name="dictionary">
         /// The dictionary.
         /// </param>
-        internal virtual void ReadDictionaryItem(
-            DictionaryFlags flags, 
-            Type keyType, 
-            Tags keyTag, 
-            Type valueType, 
-            Tags valueTag, 
-            Inspector inspector, 
-            IDictionary dictionary)
+        internal virtual void ReadDictionaryItem(DictionaryFlags flags, Type keyType, Tags keyTag, Type valueType, Tags valueTag, Inspector inspector, IDictionary dictionary)
         {
             if (!flags.HasFlag(DictionaryFlags.KeyTagged))
             {
@@ -403,7 +490,7 @@ namespace Hypertable.Persistence.Serialization
         {
             try
             {
-                if (value == null && inspectedProperty.PropertyType.IsNotNullableValueType())
+                if (value == null && inspectedProperty.IsNotNullableValueType)
                 {
                     value = Activator.CreateInstance(inspectedProperty.PropertyType, true);
                 }
@@ -413,7 +500,7 @@ namespace Hypertable.Persistence.Serialization
             catch (Exception e)
             {
                 throw new SerializationException(
-                    string.Format(CultureInfo.InvariantCulture, "Set property value failed ({0}, {1}, {2})", inspectedProperty.PropertyType, inspectedProperty.InspectedType, tag), 
+                    string.Format(CultureInfo.InvariantCulture, "Set property value failed ({0}, {1}, {2})", inspectedProperty.PropertyType, inspectedProperty.InspectedType, tag),
                     e);
             }
         }
@@ -567,40 +654,40 @@ namespace Hypertable.Persistence.Serialization
                     case Tags.Object:
                         return this.ReadObj(destinationType);
                     case Tags.ObjectRef:
+                    {
+                        var objref = Decoder.ReadCount(this.binaryReader);
+                        if (objref < this.objectRefs.Count)
                         {
-                            var objref = Decoder.ReadCount(this.binaryReader);
-                            if (objref < this.objectRefs.Count)
-                            {
-                                return this.objectRefs[objref];
-                            }
-
-                            throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid object reference {0}", objref));
+                            return this.objectRefs[objref];
                         }
+
+                        throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid object reference {0}", objref));
+                    }
 
                     case Tags.SerializationInfo:
                         return this.ReadSerializationInfo(destinationType);
 
                     case Tags.TypeRef:
+                    {
+                        var typeref = Decoder.ReadCount(this.binaryReader);
+                        if (typeref < this.typeRefs.Count)
                         {
-                            var typeref = Decoder.ReadCount(this.binaryReader);
-                            if (typeref < this.typeRefs.Count)
-                            {
-                                return this.typeRefs[typeref];
-                            }
-
-                            throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid type reference {0}", typeref));
+                            return this.typeRefs[typeref];
                         }
+
+                        throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid type reference {0}", typeref));
+                    }
 
                     case Tags.StringRef:
+                    {
+                        var stringref = Decoder.ReadCount(this.binaryReader);
+                        if (stringref < this.stringRefs.Count)
                         {
-                            var stringref = Decoder.ReadCount(this.binaryReader);
-                            if (stringref < this.stringRefs.Count)
-                            {
-                                return this.stringRefs[stringref];
-                            }
-
-                            throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid string reference {0}", stringref));
+                            return this.stringRefs[stringref];
                         }
+
+                        throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid string reference {0}", stringref));
+                    }
 
                     case Tags.TypeSchema:
                     case Tags.TypeSchema2:
@@ -617,49 +704,43 @@ namespace Hypertable.Persistence.Serialization
                         break;
 
                     case Tags.Collection:
-                        {
-                            var flags = (CollectionFlags)Decoder.ReadByte(this.binaryReader);
-                            value = flags.HasFlag(CollectionFlags.Typed)
-                                        ? (flags.HasFlag(CollectionFlags.Tagged)
-                                               ? this.ReadCollectionTypedTagged(destinationType, flags)
-                                               : this.ReadCollectionTyped(destinationType, flags))
-                                        : (flags.HasFlag(CollectionFlags.Tagged)
-                                               ? this.ReadCollectionTagged(destinationType, flags)
-                                               : this.ReadCollection(destinationType, flags));
-                            break;
-                        }
+                    {
+                        var flags = (CollectionFlags)Decoder.ReadByte(this.binaryReader);
+                        value = flags.HasFlag(CollectionFlags.Typed)
+                            ? (flags.HasFlag(CollectionFlags.Tagged) ? this.ReadCollectionTypedTagged(destinationType, flags) : this.ReadCollectionTyped(destinationType, flags))
+                            : (flags.HasFlag(CollectionFlags.Tagged) ? this.ReadCollectionTagged(destinationType, flags) : this.ReadCollection(destinationType, flags));
+                        break;
+                    }
 
                     case Tags.Enumerable:
                         value = this.ReadEnumerable(destinationType);
                         break;
 
                     case Tags.Dictionary:
-                        {
-                            var flags = (DictionaryFlags)Decoder.ReadByte(this.binaryReader);
-                            value = flags.HasFlag(DictionaryFlags.Typed)
-                                        ? this.ReadDictionaryTyped(destinationType, flags)
-                                        : this.ReadDictionary(destinationType, flags);
-                            break;
-                        }
+                    {
+                        var flags = (DictionaryFlags)Decoder.ReadByte(this.binaryReader);
+                        value = flags.HasFlag(DictionaryFlags.Typed) ? this.ReadDictionaryTyped(destinationType, flags) : this.ReadDictionary(destinationType, flags);
+                        break;
+                    }
 
                     default:
+                    {
+                        DecoderInfo decoderInfo;
+                        if (!this.TryGetDecoder(tag, out decoderInfo))
                         {
-                            DecoderInfo decoderInfo;
-                            if (!this.TryGetDecoder(tag, out decoderInfo))
-                            {
-                                throw new SerializationException(@"Invalid tag");
-                            }
-
-                            var objref = this.objectRefs.Count;
-                            this.objectRefs.Add(null); // TODO DOES NOT WORK in all cases
-                            value = decoderInfo.Deserialize(this);
-                            this.objectRefs[objref] = value;
-
-                            if (value != null)
-                            {
-                                this.BeforeDeserializeObjectProperties(destinationType, Inspector.InspectorForType(value.GetType()), value);
-                            }
+                            throw new SerializationException(@"Invalid tag");
                         }
+
+                        var objref = this.objectRefs.Count;
+                        this.objectRefs.Add(null); // TODO DOES NOT WORK in all cases
+                        value = decoderInfo.Deserialize(this);
+                        this.objectRefs[objref] = value;
+
+                        if (value != null)
+                        {
+                            this.BeforeDeserializeObjectProperties(destinationType, Inspector.InspectorForType(value.GetType()), value);
+                        }
+                    }
 
                         break;
                 }
@@ -741,7 +822,8 @@ namespace Hypertable.Persistence.Serialization
                 }
             }
 
-            throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid destination type {0}, expecting IList, IList<T>, ISet<T> or Array", destinationType));
+            throw new SerializationException(
+                string.Format(CultureInfo.InvariantCulture, @"Invalid destination type {0}, expecting IList, IList<T>, ISet<T> or Array", destinationType));
         }
 
         /// <summary>
@@ -857,9 +939,7 @@ namespace Hypertable.Persistence.Serialization
 
             if (destinationType == typeof(object))
             {
-                destinationType = flags.HasFlag(CollectionFlags.Set) ? 
-                    typeof(HashSet<>).MakeGenericType(typeof(object)) :
-                    typeof(List<>).MakeGenericType(typeof(object));
+                destinationType = flags.HasFlag(CollectionFlags.Set) ? typeof(HashSet<>).MakeGenericType(typeof(object)) : typeof(List<>).MakeGenericType(typeof(object));
             }
 
             var inspector = InspectorForEnumerable(destinationType);
@@ -885,7 +965,8 @@ namespace Hypertable.Persistence.Serialization
                 }
             }
 
-            throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid destination type {0}, expecting IList, IList<T>, ISet<T> or Array", destinationType));
+            throw new SerializationException(
+                string.Format(CultureInfo.InvariantCulture, @"Invalid destination type {0}, expecting IList, IList<T>, ISet<T> or Array", destinationType));
         }
 
         /// <summary>
@@ -924,9 +1005,9 @@ namespace Hypertable.Persistence.Serialization
 
             if (destinationType == typeof(object))
             {
-                destinationType = flags.HasFlag(CollectionFlags.Set) ? 
-                    typeof(HashSet<>).MakeGenericType(Serializer.TypeFromTag(tag)) :
-                    typeof(List<>).MakeGenericType(Serializer.TypeFromTag(tag));
+                destinationType = flags.HasFlag(CollectionFlags.Set)
+                    ? typeof(HashSet<>).MakeGenericType(Serializer.TypeFromTag(tag))
+                    : typeof(List<>).MakeGenericType(Serializer.TypeFromTag(tag));
             }
 
             var inspector = InspectorForEnumerable(destinationType);
@@ -951,7 +1032,8 @@ namespace Hypertable.Persistence.Serialization
                 }
             }
 
-            throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid destination type {0}, expecting  IList<>, IList, ISet<> or Array", destinationType));
+            throw new SerializationException(
+                string.Format(CultureInfo.InvariantCulture, @"Invalid destination type {0}, expecting  IList<>, IList, ISet<> or Array", destinationType));
         }
 
         /// <summary>
@@ -969,14 +1051,12 @@ namespace Hypertable.Persistence.Serialization
         protected object ReadCollectionTyped(Type destinationType, CollectionFlags flags)
         {
             var type = this.ReadType();
-            return this.ReadCollection(
-                destinationType == typeof(object) ||
-                destinationType.IsInterface ||
-                destinationType.IsAbstract ||
-                !typeof(IEnumerable).IsAssignableFrom(destinationType)
-                    ? type
-                    : destinationType,
-                flags);
+            return
+                this.ReadCollection(
+                    destinationType == typeof(object) || destinationType.IsInterface || destinationType.IsAbstract || !typeof(IEnumerable).IsAssignableFrom(destinationType)
+                        ? type
+                        : destinationType,
+                    flags);
         }
 
         /// <summary>
@@ -999,14 +1079,12 @@ namespace Hypertable.Persistence.Serialization
             }
 
             var type = this.ReadType();
-            return this.ReadCollectionTagged(
-                destinationType == typeof(object) || 
-                destinationType.IsInterface || 
-                destinationType.IsAbstract || 
-                !typeof(IEnumerable).IsAssignableFrom(destinationType)
-                    ? type
-                    : destinationType,
-                flags);
+            return
+                this.ReadCollectionTagged(
+                    destinationType == typeof(object) || destinationType.IsInterface || destinationType.IsAbstract || !typeof(IEnumerable).IsAssignableFrom(destinationType)
+                        ? type
+                        : destinationType,
+                    flags);
         }
 
         /// <summary>
@@ -1084,14 +1162,12 @@ namespace Hypertable.Persistence.Serialization
             }
 
             var type = this.ReadType();
-            return this.ReadDictionary(
-                destinationType == typeof(object) ||
-                destinationType.IsInterface || 
-                destinationType.IsAbstract || 
-                !typeof(IDictionary).IsAssignableFrom(destinationType)
-                    ? type
-                    : destinationType,
-                flags);
+            return
+                this.ReadDictionary(
+                    destinationType == typeof(object) || destinationType.IsInterface || destinationType.IsAbstract || !typeof(IDictionary).IsAssignableFrom(destinationType)
+                        ? type
+                        : destinationType,
+                    flags);
         }
 
         /// <summary>
@@ -1110,7 +1186,8 @@ namespace Hypertable.Persistence.Serialization
                 throw new ArgumentNullException("destinationType");
             }
 
-            if (destinationType == typeof(object)) {
+            if (destinationType == typeof(object))
+            {
                 destinationType = typeof(object[]);
             }
 
@@ -1147,7 +1224,8 @@ namespace Hypertable.Persistence.Serialization
                 }
             }
 
-            throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid destination type {0}, expecting IList, IList<T>, ISet<T> or Array", destinationType));
+            throw new SerializationException(
+                string.Format(CultureInfo.InvariantCulture, @"Invalid destination type {0}, expecting IList, IList<T>, ISet<T> or Array", destinationType));
         }
 
         /// <summary>
@@ -1180,11 +1258,7 @@ namespace Hypertable.Persistence.Serialization
             var ci = type.GetConstructor(genericArguments);
             return
                 ci.Invoke(
-                    new[]
-                        {
-                            this.Deserialize(genericArguments[0], Decoder.ReadTag(this.binaryReader)), 
-                            this.Deserialize(genericArguments[1], Decoder.ReadTag(this.binaryReader))
-                        });
+                    new[] { this.Deserialize(genericArguments[0], Decoder.ReadTag(this.binaryReader)), this.Deserialize(genericArguments[1], Decoder.ReadTag(this.binaryReader)) });
         }
 
         /// <summary>
@@ -1462,7 +1536,8 @@ namespace Hypertable.Persistence.Serialization
                 return ci.Invoke(new[] { items[0].Value, items[1].Value });
             }
 
-            throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid destination type {0}, expecting Tuple<,[,]>, or KeyValuePair<,>", destinationType));
+            throw new SerializationException(
+                string.Format(CultureInfo.InvariantCulture, @"Invalid destination type {0}, expecting Tuple<,[,]>, or KeyValuePair<,>", destinationType));
         }
 
         /// <summary>
@@ -1604,38 +1679,38 @@ namespace Hypertable.Persistence.Serialization
                 case Tags.Null:
                     return null;
                 case Tags.TypeSchema:
+                {
+                    var typeSchemaPropertyCount = Decoder.ReadCount(this.binaryReader);
+                    var typeSchemaProperties = new TypeSchemaProperty[typeSchemaPropertyCount];
+                    for (var i = 0; i < typeSchemaPropertyCount; ++i)
                     {
-                        var typeSchemaPropertyCount = Decoder.ReadCount(this.binaryReader);
-                        var typeSchemaProperties = new TypeSchemaProperty[typeSchemaPropertyCount];
-                        for (var i = 0; i < typeSchemaPropertyCount; ++i)
-                        {
-                            typeSchemaProperties[i].PropertyName = this.ReadString();
-                        }
-
-                        var typeSchema = new TypeSchema(typeSchemaProperties);
-                        this.typeSchemaRefs.Add(typeSchema);
-                        return typeSchema;
+                        typeSchemaProperties[i].PropertyName = this.ReadString();
                     }
+
+                    var typeSchema = new TypeSchema(typeSchemaProperties);
+                    this.typeSchemaRefs.Add(typeSchema);
+                    return typeSchema;
+                }
 
                 case Tags.TypeSchema2:
+                {
+                    switch (Decoder.ReadByte(this.binaryReader))
                     {
-                        switch (Decoder.ReadByte(this.binaryReader))
-                        {
-                            case TypeSchema.Version:
-                                var typeSchemaPropertyCount = Decoder.ReadCount(this.binaryReader);
-                                var typeSchemaProperties = new TypeSchemaProperty[typeSchemaPropertyCount];
-                                for (var i = 0; i < typeSchemaPropertyCount; ++i)
-                                {
-                                    typeSchemaProperties[i].PropertyName = Decoder.ReadString(this.binaryReader);
-                                }
+                        case TypeSchema.Version:
+                            var typeSchemaPropertyCount = Decoder.ReadCount(this.binaryReader);
+                            var typeSchemaProperties = new TypeSchemaProperty[typeSchemaPropertyCount];
+                            for (var i = 0; i < typeSchemaPropertyCount; ++i)
+                            {
+                                typeSchemaProperties[i].PropertyName = Decoder.ReadString(this.binaryReader);
+                            }
 
-                                var typeSchema = new TypeSchema(typeSchemaProperties);
-                                this.typeSchemaRefs.Add(typeSchema);
-                                return typeSchema;
-                        }
-
-                        throw new NotSupportedException("Unsupported type schema");
+                            var typeSchema = new TypeSchema(typeSchemaProperties);
+                            this.typeSchemaRefs.Add(typeSchema);
+                            return typeSchema;
                     }
+
+                    throw new NotSupportedException("Unsupported type schema");
+                }
 
                 case Tags.TypeSchemaRef:
                     var typeschemaref = Decoder.ReadCount(this.binaryReader);

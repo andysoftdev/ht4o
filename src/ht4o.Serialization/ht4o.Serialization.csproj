@@ -73,6 +73,7 @@
     <Compile Include="..\ht4o\Reflection\Inspector.cs" />
     <Compile Include="..\ht4o\Reflection\TypeLoader.cs" />
     <Compile Include="..\ht4o\Serialization\Binder.cs" />
+    <Compile Include="..\ht4o\Serialization\BinaryArrayReader.cs" />
     <Compile Include="..\ht4o\Serialization\BufferedBinaryWriter.cs" />
     <Compile Include="..\ht4o\Serialization\CollectionFlags.cs" />
     <Compile Include="..\ht4o\Serialization\Decoder.cs" />
