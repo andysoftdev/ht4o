@@ -58,7 +58,7 @@ namespace Hypertable.Persistence.Serialization
         }
 
         public BinaryArrayReader(byte[] buffer, int index)
-            : this(buffer, index, buffer.Length)
+            : this(buffer, index, buffer.Length - index)
         {
         }
 
