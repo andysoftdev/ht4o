@@ -565,6 +565,13 @@ namespace Hypertable.Persistence.Serialization
                 return type;
             }
 
+            if (Resolver.TypeCodeResolver != null)
+            {
+                if ((type = Resolver.TypeCodeResolver(typecode)) != null) {
+                    return null;
+                }
+            }
+
             throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Invalid type code {0}", typecode));
         }
 

@@ -51,6 +51,11 @@ namespace Hypertable.Persistence.Serialization
         /// </summary>
         private static Func<Assembly, string, bool, Type> typeResolver;
 
+        /// <summary>
+        /// The type code resolver.
+        /// </summary>
+        private static Func<int, Type> typeCodeResolver;
+
         #endregion
 
         #region Constructors and Destructors
@@ -163,6 +168,30 @@ namespace Hypertable.Persistence.Serialization
                 }
 
                 typeResolver = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the type code resolver.
+        /// </summary>
+        /// <value>
+        /// The type code resolver.
+        /// </value>
+        public static Func<int, Type> TypeCodeResolver
+        {
+            get
+            {
+                return typeCodeResolver;
+            }
+
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value");
+                }
+
+                typeCodeResolver = value;
             }
         }
 
