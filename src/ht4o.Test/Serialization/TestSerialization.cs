@@ -2240,6 +2240,24 @@ namespace Hypertable.Persistence.Test.Serialization
             Assert.IsTrue(Deserializer.FromByteArray<string>(b) == "abcdefg");
             Assert.IsTrue(Deserializer.FromByteArray<StringBuilder>(b).ToString() == "abcdefg");
 
+            var largeString = new string('x', 256);
+            b = Serializer.ToByteArray(largeString);
+            Assert.IsNotNull(b);
+            Assert.IsTrue(Deserializer.FromByteArray<string>(b) == largeString);
+            Assert.IsTrue(Deserializer.FromByteArray<StringBuilder>(b).ToString() == largeString);
+
+            largeString = string.Concat(new string('x', 256), new string('y', 256));
+            b = Serializer.ToByteArray(largeString);
+            Assert.IsNotNull(b);
+            Assert.IsTrue(Deserializer.FromByteArray<string>(b) == largeString);
+            Assert.IsTrue(Deserializer.FromByteArray<StringBuilder>(b).ToString() == largeString);
+
+            largeString = string.Concat(new string('x', 256), new string('y', 256), new string('z', 256));
+            b = Serializer.ToByteArray(largeString);
+            Assert.IsNotNull(b);
+            Assert.IsTrue(Deserializer.FromByteArray<string>(b) == largeString);
+            Assert.IsTrue(Deserializer.FromByteArray<StringBuilder>(b).ToString() == largeString);
+
             b = Serializer.ToByteArray<string>(null);
             Assert.IsNotNull(b);
             Assert.IsNull(Deserializer.FromByteArray<string>(b));
