@@ -165,19 +165,19 @@ namespace Hypertable.Persistence.Serialization
                 throw new ArgumentNullException("chars");
             }
 
-            var l = chars.Length;
-            var s = this.charMaxByteCount * l;
-            if (this.EnsureBuffer(s))
+            var length = chars.Length;
+            var byteCount = this.charMaxByteCount > 1 ? this.encoding.GetByteCount(chars, 0, length) : length;
+            if (this.EnsureBuffer(byteCount))
             {
                 fixed (char* ch = &chars[0])
                 {
                     var p = this.ptr;
-                    this.ptr += this.encoder.GetBytes(ch, l, p, s, true);
+                    this.ptr += this.encoder.GetBytes(ch, length, p, byteCount, true);
                 }
             }
             else
             {
-                base.Write(chars);
+                base.Write(chars, 0, length);
             }
         }
 
@@ -188,13 +188,13 @@ namespace Hypertable.Persistence.Serialization
                 throw new ArgumentNullException("chars");
             }
 
-            var s = this.charMaxByteCount * count;
-            if (this.EnsureBuffer(s))
+            var byteCount = this.charMaxByteCount > 1 ? this.encoding.GetByteCount(chars, index, count) : count;
+            if (this.EnsureBuffer(byteCount))
             {
                 fixed (char* ch = &chars[index])
                 {
                     var p = this.ptr;
-                    this.ptr += this.encoder.GetBytes(ch, count, p, s, true);
+                    this.ptr += this.encoder.GetBytes(ch, count, p, byteCount, true);
                 }
             }
             else
@@ -372,8 +372,8 @@ namespace Hypertable.Persistence.Serialization
                 throw new ArgumentNullException("value");
             }
 
-            var length = value.Length;
             var chars = value.ToCharArray();
+            var length = chars.Length;
             var byteCount = this.charMaxByteCount > 1 ? this.encoding.GetByteCount(chars, 0, length) : length;
             if (this.EnsureBuffer(byteCount + 5))
             {
@@ -386,6 +386,7 @@ namespace Hypertable.Persistence.Serialization
             }
             else
             {
+                this.WriteStringLengthDirect(byteCount);
                 base.Write(chars, 0, length);
             }
         }
@@ -425,21 +426,25 @@ namespace Hypertable.Persistence.Serialization
 
         private unsafe void WriteStringLength(int value)
         {
-            var p = this.ptr;
-
             var v = (uint)value;
             while (v >= 0x80)
             {
-                *p = (byte)(v | 0x80);
-
-                ++p;
-                ++this.ptr;
-
+                *this.ptr++ = (byte)(v | 0x80);
                 v >>= 7;
             }
 
-            *p = (byte)v;
-            ++this.ptr;
+            *this.ptr++ = (byte)v;
+        }
+
+        private void WriteStringLengthDirect(int value)
+        {
+           var v = (uint)value;
+            while (v >= 0x80)
+            {
+                base.Write((byte)(v | 0x80));
+                v >>= 7;
+            }
+            base.Write((byte)v);
         }
 
         #endregion
