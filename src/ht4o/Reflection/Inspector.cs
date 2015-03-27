@@ -23,11 +23,13 @@ namespace Hypertable.Persistence.Reflection
 {
     using System;
     using System.Collections;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
     using System.Runtime.Serialization;
+    using System.Text.RegularExpressions;
 
     using Hypertable.Persistence.Collections;
     using Hypertable.Persistence.Extensions;
@@ -47,7 +49,7 @@ namespace Hypertable.Persistence.Reflection
         /// <summary>
         /// The property name comparer.
         /// </summary>
-        private static readonly StringComparer propertyNameComparer = StringComparer.OrdinalIgnoreCase;
+        private static readonly StringComparer PropertyNameComparer = StringComparer.OrdinalIgnoreCase;
 
         #endregion
 
@@ -82,6 +84,11 @@ namespace Hypertable.Persistence.Reflection
         /// The serializable.
         /// </summary>
         private readonly InspectedSerializable serializable;
+
+        /// <summary>
+        /// The inspected property per regular expression.
+        /// </summary>
+        private readonly ConcurrentDictionary<string, InspectedProperty> regexProperties = new ConcurrentDictionary<string, InspectedProperty>();
 
         #endregion
 
@@ -393,7 +400,8 @@ namespace Hypertable.Persistence.Reflection
         /// </param>
         /// <param name="positionalHint">
         /// The positional hint.
-        /// </param><returns>
+        /// </param>
+        /// <returns>
         /// The inspected property or null.
         /// </returns>
         internal InspectedProperty GetProperty(string name, int positionalHint)
@@ -411,6 +419,24 @@ namespace Hypertable.Persistence.Reflection
             InspectedProperty inspectedProperty;
             this.inspectedProperties.TryGetValue(name, out inspectedProperty);
             return inspectedProperty;
+        }
+
+        /// <summary>
+        /// Gets the inspected property by the regex specified.
+        /// </summary>
+        /// <param name="regex">
+        /// The regular expression to match.
+        /// </param>
+        /// <returns>
+        /// The inspected property or null.
+        /// </returns>
+        internal InspectedProperty GetProperty(Regex regex)
+        {
+            return regex == null
+                       ? null
+                       : this.regexProperties.GetOrAdd(
+                           regex.ToString(),
+                           _ => this.Properties.FirstOrDefault(p => regex.Match(p.Name).Success));
         }
 
         /// <summary>
@@ -473,7 +499,7 @@ namespace Hypertable.Persistence.Reflection
         /// </returns>
         private static IDictionary<string, InspectedProperty> InspectFields(Type type)
         {
-            var inspectedProperties = new Dictionary<string, InspectedProperty>(propertyNameComparer);
+            var inspectedProperties = new Dictionary<string, InspectedProperty>(PropertyNameComparer);
             for (var t = type; t != typeof(object) && t != null; t = t.BaseType)
             {
                 var fields = t.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
@@ -515,7 +541,7 @@ namespace Hypertable.Persistence.Reflection
         /// </returns>
         private static IDictionary<string, InspectedProperty> InspectProperties(Type type)
         {
-            var inspectedProperties = new Dictionary<string, InspectedProperty>(propertyNameComparer);
+            var inspectedProperties = new Dictionary<string, InspectedProperty>(PropertyNameComparer);
             for (var t = type; t != typeof(object) && t != null; t = t.BaseType)
             {
                 var properties = t.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);

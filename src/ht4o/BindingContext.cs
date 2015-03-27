@@ -41,6 +41,16 @@ namespace Hypertable.Persistence
         #region Fields
 
         /// <summary>
+        /// The default regular expression for the id property.
+        /// </summary>
+        private static readonly Regex DefaultIdPropertyName = new Regex("^([Ii]d$)|(<Id>.*)", RegexOptions.Compiled);
+
+        /// <summary>
+        /// The default regular expression for the timestamp property.
+        /// </summary>
+        private static readonly Regex DefaultTimestampPropertyName = new Regex("^([Ll]astModified$)|(<LastModified>.*)", RegexOptions.Compiled);
+
+        /// <summary>
         /// The column bindings.
         /// </summary>
         private readonly ConcurrentTypeDictionary<BindingSpec<IColumnBinding>> columnBindings = new ConcurrentTypeDictionary<BindingSpec<IColumnBinding>>();
@@ -63,7 +73,7 @@ namespace Hypertable.Persistence
         /// <summary>
         /// The preliminary entity references.
         /// </summary>
-        private ConcurrentTypeDictionary<EntityReference> preliminaryEntityReferences;
+        private readonly ConcurrentTypeDictionary<EntityReference> preliminaryEntityReferences;
 
         /// <summary>
         /// The registered column bindings.
@@ -108,8 +118,8 @@ namespace Hypertable.Persistence
             this.preliminaryEntityReferences = new ConcurrentTypeDictionary<EntityReference>();
 
             this.DefaultColumnFamily = "e";
-            this.IdPropertyName = new Regex("^([Ii]d$)|(<Id>.*)", RegexOptions.Compiled);
-            this.TimestampPropertyName = new Regex("^([Ll]astModified$)|(<LastModified>.*)", RegexOptions.Compiled);
+            this.IdPropertyName = DefaultIdPropertyName;
+            this.TimestampPropertyName = DefaultTimestampPropertyName;
 
             this.Refresh();
         }
@@ -750,7 +760,7 @@ namespace Hypertable.Persistence
                         // Has id property?
                         if (this.IdPropertyName != null)
                         {
-                            property = inspector.Properties.FirstOrDefault(p => this.IdPropertyName.Match(p.Name).Success);
+                            property = inspector.GetProperty(this.IdPropertyName);
                             if (property != null)
                             {
                                 if (keyBinding == null)
@@ -786,7 +796,7 @@ namespace Hypertable.Persistence
                         var partialKeyBinding = keyBinding as PartialKeyBinding;
                         if (partialKeyBinding != null)
                         {
-                            var property = inspector.Properties.FirstOrDefault(p => this.TimestampPropertyName.Match(p.Name).Success);
+                            var property = inspector.GetProperty(this.TimestampPropertyName);
                             if (property != null && property.PropertyType == typeof(DateTime))
                             {
                                 property.Ignore = true;
@@ -993,7 +1003,7 @@ namespace Hypertable.Persistence
                 return new GuidPropertyKeyBinding(property, columnBinding);
             }
 
-            throw new PersistenceException(string.Format(CultureInfo.InvariantCulture, @"Unsupported id property type {0}", property.PropertyType));
+            throw new PersistenceException(String.Format(CultureInfo.InvariantCulture, @"Unsupported id property type {0}", property.PropertyType));
         }
 
         /// <summary>
