@@ -568,7 +568,7 @@ namespace Hypertable.Persistence.Serialization
             if (Resolver.TypeCodeResolver != null)
             {
                 if ((type = Resolver.TypeCodeResolver(typecode)) != null) {
-                    return null;
+                    return type;
                 }
             }
 
