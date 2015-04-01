@@ -398,7 +398,7 @@ namespace Hypertable.Persistence.Serialization
         internal virtual void Encode(EncoderInfo encoderInfo, object value, bool writeTag)
         {
             ////TODO review, correct?
-            if (encoderInfo.HandleObjectRef(value.GetType()))
+            if (value != null && encoderInfo.HandleObjectRef(value.GetType()))
             {
                 if (this.WriteOrAddObjectRef(value))
                 {
