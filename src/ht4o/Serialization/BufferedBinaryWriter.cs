@@ -374,14 +374,17 @@ namespace Hypertable.Persistence.Serialization
 
             var chars = value.ToCharArray();
             var length = chars.Length;
-            var byteCount = this.charMaxByteCount > 1 ? this.encoding.GetByteCount(chars, 0, length) : length;
+            var byteCount = length > 0 && this.charMaxByteCount > 1 ? this.encoding.GetByteCount(chars, 0, length) : length;
             if (this.EnsureBuffer(byteCount + 5))
             {
                 this.WriteStringLength(byteCount);
-                fixed (char* ch = &chars[0])
+                if (byteCount > 0)
                 {
-                    var p = this.ptr;
-                    this.ptr += this.encoder.GetBytes(ch, length, p, byteCount, true);
+                    fixed (char* ch = &chars[0])
+                    {
+                        var p = this.ptr;
+                        this.ptr += this.encoder.GetBytes(ch, length, p, byteCount, true);
+                    }
                 }
             }
             else

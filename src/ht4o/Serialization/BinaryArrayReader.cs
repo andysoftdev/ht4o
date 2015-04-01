@@ -340,7 +340,7 @@ namespace Hypertable.Persistence.Serialization
             this.ThrowIfEndOfStream(byteCount);
             var index = (int)(this.ptr - this.basePtr) + this.offset;
             this.ptr += byteCount;
-            return this.encoding.GetString(this.buffer, index, byteCount);
+            return byteCount > 0 ? this.encoding.GetString(this.buffer, index, byteCount) : string.Empty;
         }
 
         public override unsafe ushort ReadUInt16()
