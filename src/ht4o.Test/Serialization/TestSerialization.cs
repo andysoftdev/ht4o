@@ -2629,6 +2629,120 @@ namespace Hypertable.Persistence.Test.Serialization
         }
 
         /// <summary>
+        /// Test the string array.
+        /// </summary>
+        [TestMethod]
+        public void TestStringArray()
+        {
+            {
+                var l = new string[0];
+                var l2 =
+                    Deserializer.FromByteArray<string[]>(
+                        Serializer.ToByteArray(l));
+
+                Assert.IsInstanceOfType(l2, typeof(string[]));
+                Assert.IsTrue(Equatable.AreEqual(l, l2));
+            }
+
+            {
+                var l = new string[] { "Abc" };
+                var l2 =
+                    Deserializer.FromByteArray<string[]>(
+                        Serializer.ToByteArray(l));
+
+                Assert.IsInstanceOfType(l2, typeof(string[]));
+                Assert.IsTrue(Equatable.AreEqual(l, l2));
+            }
+
+            {
+                var l = new string[] { "Abc", "Efg" };
+                var l2 =
+                    Deserializer.FromByteArray<string[]>(
+                        Serializer.ToByteArray(l));
+
+                Assert.IsInstanceOfType(l2, typeof(string[]));
+                Assert.IsTrue(Equatable.AreEqual(l, l2));
+            }
+
+            {
+                var l = new string[] { string.Empty };
+                var l2 =
+                    Deserializer.FromByteArray<string[]>(
+                        Serializer.ToByteArray(l));
+
+                Assert.IsInstanceOfType(l2, typeof(string[]));
+                Assert.IsTrue(Equatable.AreEqual(l, l2));
+            }
+
+            /*{
+                var l = new string[] { null };
+                var l2 =
+                    Deserializer.FromByteArray<string[]>(
+                        Serializer.ToByteArray(l));
+
+                Assert.IsInstanceOfType(l2, typeof(string[]));
+                Assert.IsTrue(Equatable.AreEqual(l, l2));
+            }*/
+        }
+
+        /// <summary>
+        /// Test the string list.
+        /// </summary>
+        [TestMethod]
+        public void TestStringList()
+        {
+            {
+                var l = new List<string>();
+                var l2 =
+                    Deserializer.FromByteArray<List<string>>(
+                        Serializer.ToByteArray(l));
+
+                Assert.IsInstanceOfType(l2, typeof(List<string>));
+                Assert.IsTrue(Equatable.AreEqual(l, l2));
+            }
+
+            {
+                var l = new List<string> { "Abc" };
+                var l2 =
+                    Deserializer.FromByteArray<List<string>>(
+                        Serializer.ToByteArray(l));
+
+                Assert.IsInstanceOfType(l2, typeof(List<string>));
+                Assert.IsTrue(Equatable.AreEqual(l, l2));
+            }
+
+            {
+                var l = new List<string> { "Abc", "Efg" };
+                var l2 =
+                    Deserializer.FromByteArray<List<string>>(
+                        Serializer.ToByteArray(l));
+
+                Assert.IsInstanceOfType(l2, typeof(List<string>));
+                Assert.IsTrue(Equatable.AreEqual(l, l2));
+            }
+
+            {
+                var l = new List<string> { string.Empty };
+                var l2 =
+                    Deserializer.FromByteArray<List<string>>(
+                        Serializer.ToByteArray(l));
+
+                Assert.IsInstanceOfType(l2, typeof(List<string>));
+                Assert.IsTrue(Equatable.AreEqual(l, l2));
+            }
+
+            /*{
+                var l = new List<string> { null };
+                var l2 =
+                    Deserializer.FromByteArray<List<string>>(
+                        Serializer.ToByteArray(l));
+
+                Assert.IsInstanceOfType(l2, typeof(List<string>));
+                Assert.IsTrue(Equatable.AreEqual(l, l2));
+            }*/
+        }
+
+        /// <summary>
         /// The test structs.
         /// </summary>
         [TestMethod]
