@@ -34,7 +34,7 @@ namespace Hypertable.Persistence.Serialization
         None = 0, 
 
         /// <summary>
-        /// For a types collection.
+        /// For a typed collection.
         /// </summary>
         Typed = 1, 
 

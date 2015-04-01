@@ -34,7 +34,7 @@ namespace Hypertable.Persistence.Serialization
         None = 0, 
 
         /// <summary>
-        /// The typed.
+        /// For a typed dictionary.
         /// </summary>
         Typed = 1, 
 
