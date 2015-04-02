@@ -167,7 +167,7 @@ namespace Hypertable.Persistence.Serialization
             Inspector inspector, 
             IDictionary dictionary)
         {
-            if (!flags.HasFlag(DictionaryFlags.KeyTagged))
+            if (!flags.HasFlag(DictionaryFlags.KeyTypeTagged) || flags.HasFlag(DictionaryFlags.KeyValueTagged))
             {
                 keyTag = Decoder.ReadTag(this.BinaryReader);
             }
@@ -180,7 +180,7 @@ namespace Hypertable.Persistence.Serialization
                 throw new NotImplementedException();
             }
 
-            if (!flags.HasFlag(DictionaryFlags.ValueTagged))
+            if (!flags.HasFlag(DictionaryFlags.ValueTypeTagged) || flags.HasFlag(DictionaryFlags.ValueTagged))
             {
                 valueTag = Decoder.ReadTag(this.BinaryReader);
             }

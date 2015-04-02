@@ -2674,7 +2674,7 @@ namespace Hypertable.Persistence.Test.Serialization
                 Assert.IsTrue(Equatable.AreEqual(l, l2));
             }
 
-            /*{
+            {
                 var l = new string[] { null };
                 var l2 =
                     Deserializer.FromByteArray<string[]>(
@@ -2682,7 +2682,7 @@ namespace Hypertable.Persistence.Test.Serialization
 
                 Assert.IsInstanceOfType(l2, typeof(string[]));
                 Assert.IsTrue(Equatable.AreEqual(l, l2));
-            }*/
+            }
         }
 
         /// <summary>
@@ -2731,7 +2731,7 @@ namespace Hypertable.Persistence.Test.Serialization
                 Assert.IsTrue(Equatable.AreEqual(l, l2));
             }
 
-            /*{
+            {
                 var l = new List<string> { null };
                 var l2 =
                     Deserializer.FromByteArray<List<string>>(
@@ -2739,7 +2739,7 @@ namespace Hypertable.Persistence.Test.Serialization
 
                 Assert.IsInstanceOfType(l2, typeof(List<string>));
                 Assert.IsTrue(Equatable.AreEqual(l, l2));
-            }*/
+            }
         }
 
         /// <summary>

@@ -55,6 +55,7 @@
     <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="..\ht4o\Attributes\IgnoreAttribute.cs" />
     <Compile Include="..\ht4o\Attributes\TransientAttribute.cs" />
     <Compile Include="..\ht4o\Collections\ChunkedCollection.cs" />
@@ -65,13 +66,13 @@
     <Compile Include="..\ht4o\Extensions\TypeExtensions.cs" />
     <Compile Include="..\ht4o\Extensions\ReflectionExtensions.cs" />
     <Compile Include="..\ht4o\Logging.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="..\ht4o\Reflection\DelegateFactory.cs" />
     <Compile Include="..\ht4o\Reflection\InspectedEnumerable.cs" />
     <Compile Include="..\ht4o\Reflection\InspectedProperty.cs" />
     <Compile Include="..\ht4o\Reflection\InspectedSerializable.cs" />
     <Compile Include="..\ht4o\Reflection\Inspector.cs" />
     <Compile Include="..\ht4o\Reflection\TypeLoader.cs" />
+    <Compile Include="..\ht4o\Serialization\ArrayFlags.cs" />
     <Compile Include="..\ht4o\Serialization\Binder.cs" />
     <Compile Include="..\ht4o\Serialization\BinaryArrayReader.cs" />
     <Compile Include="..\ht4o\Serialization\BufferedBinaryWriter.cs" />

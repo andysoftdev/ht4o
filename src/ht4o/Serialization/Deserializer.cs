@@ -372,6 +372,28 @@ namespace Hypertable.Persistence.Serialization
         #region Methods
 
         /// <summary>
+        /// Determine if the type tag requires an collection element tag.
+        /// </summary>
+        /// <param name="tag">
+        /// The type tag.
+        /// </param>
+        /// <param name="type">
+        /// The type.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if the type requires an collection element tag, otherwise <c>false</c>.
+        /// </returns>
+        /// <remarks>
+        /// Required for reading old data, before v0.9.8.7
+        /// </remarks>
+        private static bool LegacyHasElementTag(Tags tag, Type type)
+        {
+            tag &= ~Tags.Array;
+            return tag == Tags.Object || tag == Tags.Int || tag == Tags.UInt || tag == Tags.Long || tag == Tags.ULong || tag == Tags.Float || tag == Tags.Double
+                   || (tag >= Tags.FirstCustomType && !type.IsSealed);
+        }
+
+        /// <summary>
         /// Before deserialize object properties notification.
         /// </summary>
         /// <param name="destinationType">
@@ -430,13 +452,13 @@ namespace Hypertable.Persistence.Serialization
         /// </param>
         internal virtual void ReadDictionaryItem(DictionaryFlags flags, Type keyType, Tags keyTag, Type valueType, Tags valueTag, Inspector inspector, IDictionary dictionary)
         {
-            if (!flags.HasFlag(DictionaryFlags.KeyTagged))
+            if (!flags.HasFlag(DictionaryFlags.KeyTypeTagged) || flags.HasFlag(DictionaryFlags.KeyValueTagged))
             {
                 keyTag = Decoder.ReadTag(this.binaryReader);
             }
 
             var key = this.Deserialize(keyType, keyTag);
-            if (!flags.HasFlag(DictionaryFlags.ValueTagged))
+            if (!flags.HasFlag(DictionaryFlags.ValueTypeTagged) || flags.HasFlag(DictionaryFlags.ValueTagged))
             {
                 valueTag = Decoder.ReadTag(this.binaryReader);
             }
@@ -707,8 +729,12 @@ namespace Hypertable.Persistence.Serialization
                     {
                         var flags = (CollectionFlags)Decoder.ReadByte(this.binaryReader);
                         value = flags.HasFlag(CollectionFlags.Typed)
-                            ? (flags.HasFlag(CollectionFlags.Tagged) ? this.ReadCollectionTypedTagged(destinationType, flags) : this.ReadCollectionTyped(destinationType, flags))
-                            : (flags.HasFlag(CollectionFlags.Tagged) ? this.ReadCollectionTagged(destinationType, flags) : this.ReadCollection(destinationType, flags));
+                            ? (flags.HasFlag(CollectionFlags.TypeTagged) 
+                                ? this.ReadCollectionTypedTagged(destinationType, flags)
+                                : this.ReadCollectionTyped(destinationType, flags))
+                            : (flags.HasFlag(CollectionFlags.TypeTagged) 
+                                ? this.ReadCollectionTagged(destinationType, flags)
+                                : this.ReadCollection(destinationType, flags));
                         break;
                     }
 
@@ -719,7 +745,9 @@ namespace Hypertable.Persistence.Serialization
                     case Tags.Dictionary:
                     {
                         var flags = (DictionaryFlags)Decoder.ReadByte(this.binaryReader);
-                        value = flags.HasFlag(DictionaryFlags.Typed) ? this.ReadDictionaryTyped(destinationType, flags) : this.ReadDictionary(destinationType, flags);
+                        value = flags.HasFlag(DictionaryFlags.Typed) 
+                            ? this.ReadDictionaryTyped(destinationType, flags)
+                            : this.ReadDictionary(destinationType, flags);
                         break;
                     }
 
@@ -768,7 +796,9 @@ namespace Hypertable.Persistence.Serialization
                 throw new ArgumentNullException("destinationType");
             }
 
-            var rank = Decoder.ReadCount(this.binaryReader);
+            var rankAndFlags = Decoder.ReadCount(this.binaryReader);
+            // an array can have a maximum of 32 dimensions
+            var rank = rankAndFlags & (byte)ArrayFlags.RankMask;
             var lengths = new int[rank];
             for (var dimension = 0; dimension < rank; ++dimension)
             {
@@ -778,7 +808,8 @@ namespace Hypertable.Persistence.Serialization
             if (destinationType.IsArray || destinationType == typeof(object))
             {
                 var elementType = destinationType.IsArray ? destinationType.GetElementType() : Serializer.TypeFromTag(tag);
-                var hasElementTag = Serializer.HasElementTag(tag, elementType);
+                var hasElementTag = (rankAndFlags & (byte)ArrayFlags.ValueTagged) > 0
+                                    || ((rankAndFlags & (byte)ArrayFlags.ValueNotTagged) == 0 && LegacyHasElementTag(tag, elementType));
 
                 if (rank == 1 && typeof(byte) == elementType && tag == Tags.Byte && !hasElementTag)
                 {
@@ -807,7 +838,9 @@ namespace Hypertable.Persistence.Serialization
                     }
 
                     var elementType = inspector.Enumerable.ElementType;
-                    var hasElementTag = Serializer.HasElementTag(tag, elementType);
+                    var hasElementTag = (rankAndFlags & (byte)ArrayFlags.ValueTagged) > 0
+                                        || ((rankAndFlags & (byte)ArrayFlags.ValueNotTagged) == 0 && LegacyHasElementTag(tag, elementType));
+
                     for (var n = 0; n < length; n++)
                     {
                         if (hasElementTag)
@@ -997,6 +1030,11 @@ namespace Hypertable.Persistence.Serialization
                 this.objectRefs.Add(array);
                 for (var index = 0; index < count; ++index)
                 {
+                    if (flags.HasFlag(CollectionFlags.ValueTagged))
+                    {
+                        tag = Decoder.ReadTag(this.binaryReader);
+                    }
+
                     array.SetValue(this.Deserialize(elementType, tag), index);
                 }
 
@@ -1025,6 +1063,11 @@ namespace Hypertable.Persistence.Serialization
                     var elementType = inspector.Enumerable.ElementType;
                     for (var n = 0; n < count; ++n)
                     {
+                        if (flags.HasFlag(CollectionFlags.ValueTagged))
+                        {
+                            tag = Decoder.ReadTag(this.binaryReader);
+                        }
+
                         this.ReadEnumerableItem(elementType, tag, inspector, obj, n, count);
                     }
 
@@ -1106,10 +1149,10 @@ namespace Hypertable.Persistence.Serialization
                 throw new ArgumentNullException("destinationType");
             }
 
-            var tagKey = flags.HasFlag(DictionaryFlags.KeyTagged) ? Decoder.ReadTag(this.binaryReader) : Tags.Null;
+            var tagKey = flags.HasFlag(DictionaryFlags.KeyTypeTagged) ? Decoder.ReadTag(this.binaryReader) : Tags.Null;
             var keyType = Serializer.TypeFromTag(tagKey);
 
-            var tagValue = flags.HasFlag(DictionaryFlags.ValueTagged) ? Decoder.ReadTag(this.binaryReader) : Tags.Null;
+            var tagValue = flags.HasFlag(DictionaryFlags.ValueTypeTagged) ? Decoder.ReadTag(this.binaryReader) : Tags.Null;
             var valueType = Serializer.TypeFromTag(tagValue);
 
             if (destinationType == typeof(object))

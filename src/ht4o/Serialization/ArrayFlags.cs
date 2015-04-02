@@ -23,39 +23,29 @@ namespace Hypertable.Persistence.Serialization
     using System;
 
     /// <summary>
-    /// The dictionary flags.
+    /// The array flags.
     /// </summary>
     [Flags]
-    public enum DictionaryFlags
+    internal enum ArrayFlags
     {
         /// <summary>
         /// Nothing have been set.
         /// </summary>
-        None = 0, 
+        None = 0,
 
         /// <summary>
-        /// Set if a typed dictionary.
+        /// The array rank mask.
         /// </summary>
-        Typed = 1, 
+        RankMask = 0x2f, 
 
         /// <summary>
-        /// Set if a tag for the declared key type have been written.
+        /// Set if the element values have not been tagged.
         /// </summary>
-        KeyTypeTagged = 1 << 1, 
+        ValueNotTagged = 0x40,
 
         /// <summary>
-        /// Set if a tag for the declared value type have been written.
+        /// Set if the element values have been tagged.
         /// </summary>
-        ValueTypeTagged = 1 << 2,
-
-        /// <summary>
-        /// Set if the key values have been tagged.
-        /// </summary>
-        KeyValueTagged = 1 << 3,
-
-        /// <summary>
-        /// Set if the values have been tagged.
-        /// </summary>
-        ValueTagged = 1 << 4
+        ValueTagged = 0x80
     }
 }

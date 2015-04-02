@@ -126,6 +126,7 @@
     <Compile Include="Reflection\InspectedSerializable.cs" />
     <Compile Include="Serialization\BinaryArrayReader.cs" />
     <Compile Include="Serialization\BufferedBinaryWriter.cs" />
+    <Compile Include="Serialization\ArrayFlags.cs" />
     <Compile Include="Serialization\EncoderConfiguration.cs" />
     <Compile Include="Serialization\Resolver.cs" />
     <Compile Include="Scanner\TryGetFetchedEntity.cs" />

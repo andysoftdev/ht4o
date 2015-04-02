@@ -31,7 +31,6 @@ namespace Hypertable.Persistence.Serialization
     using System.Runtime.Serialization;
 
     using Hypertable.Persistence.Collections;
-    using Hypertable.Persistence.Extensions;
     using Hypertable.Persistence.Reflection;
     using Hypertable.Persistence.Serialization.Delegates;
 
@@ -323,8 +322,8 @@ namespace Hypertable.Persistence.Serialization
         internal static bool HasElementTag(Tags tag, Type type)
         {
             tag &= ~Tags.Array;
-            return tag == Tags.Object || tag == Tags.Int || tag == Tags.UInt || tag == Tags.Long || tag == Tags.ULong || tag == Tags.Float || tag == Tags.Double
-                   || (tag >= Tags.FirstCustomType && !type.IsSealed);
+            return tag == Tags.Object || tag == Tags.String || tag == Tags.Tuple || tag == Tags.Uri
+                   || (tag >= Tags.FirstCustomType && type.IsClass);
         }
 
         /// <summary>
@@ -757,6 +756,8 @@ namespace Hypertable.Persistence.Serialization
         /// </returns>
         private static DictionaryFlags GetDictionaryFlags(Type serializeType, Type type)
         {
+            var flags = DictionaryFlags.None;
+
             if (serializeType == typeof(object) || serializeType.IsInterface || serializeType.IsAbstract)
             {
                 if (serializeType.IsGenericType)
@@ -764,13 +765,12 @@ namespace Hypertable.Persistence.Serialization
                     var baseType = type.GetGenericTypeDefinition();
                     if (baseType != typeof(Dictionary<,>))
                     {
-                        // skip defaults
-                        return DictionaryFlags.Typed;
+                        flags |= DictionaryFlags.Typed;
                     }
                 }
             }
 
-            return DictionaryFlags.None;
+            return flags;
         }
 
         /// <summary>
@@ -871,14 +871,16 @@ namespace Hypertable.Persistence.Serialization
             EncoderInfo encoderInfo;
             if (this.TryGetEncoder(elementType, out encoderInfo))
             {
+                var hasElementTag = HasElementTag(encoderInfo.Tag, elementType);
+
                 Encoder.WriteTag(this.binaryWriter, encoderInfo.Tag | Tags.Array);
-                Encoder.WriteCount(this.binaryWriter, value.Rank);
+                // an array can have a maximum of 32 dimensions
+                Encoder.WriteCount(this.binaryWriter, value.Rank | (byte)(hasElementTag ? ArrayFlags.ValueTagged : ArrayFlags.ValueNotTagged));
                 for (var dimension = 0; dimension < value.Rank; dimension++)
                 {
                     Encoder.WriteCount(this.binaryWriter, value.GetLength(dimension));
                 }
 
-                var hasElementTag = HasElementTag(encoderInfo.Tag, elementType);
                 if (elementType.IsSealed || elementType.IsPrimitive)
                 {
                     foreach (var item in value)
@@ -983,35 +985,25 @@ namespace Hypertable.Persistence.Serialization
             EncoderInfo valueEncoderInfo;
             if (this.TryGetEncoder(keyType, out keyEncoderInfo))
             {
+                flags |= DictionaryFlags.KeyTypeTagged;
                 var hasKeyElementTag = HasElementTag(keyEncoderInfo.Tag, keyType);
-                if (!hasKeyElementTag)
-                {
-                    flags |= DictionaryFlags.KeyTagged;
-                }
+                flags |= hasKeyElementTag ? DictionaryFlags.KeyValueTagged : DictionaryFlags.None;
 
                 if (this.TryGetEncoder(valueType, out valueEncoderInfo))
                 {
+                    flags |= DictionaryFlags.ValueTypeTagged;
                     var hasValueElementTag = HasElementTag(valueEncoderInfo.Tag, valueType);
-                    if (!hasValueElementTag)
-                    {
-                        flags |= DictionaryFlags.ValueTagged;
-                    }
+                    flags |= hasValueElementTag ? DictionaryFlags.ValueTagged : DictionaryFlags.None;
 
                     Encoder.WriteByte(this.binaryWriter, (byte)flags, false);
+
                     if (flags.HasFlag(DictionaryFlags.Typed))
                     {
                         this.WriteType(type);
                     }
 
-                    if (flags.HasFlag(DictionaryFlags.KeyTagged))
-                    {
-                        Encoder.WriteTag(this.binaryWriter, keyEncoderInfo.Tag);
-                    }
-
-                    if (flags.HasFlag(DictionaryFlags.ValueTagged))
-                    {
-                        Encoder.WriteTag(this.binaryWriter, valueEncoderInfo.Tag);
-                    }
+                    Encoder.WriteTag(this.binaryWriter, keyEncoderInfo.Tag);
+                    Encoder.WriteTag(this.binaryWriter, valueEncoderInfo.Tag);
 
                     Encoder.WriteCount(this.binaryWriter, value.Count);
                     if ((keyType.IsSealed || keyType.IsPrimitive) && (valueType.IsSealed || valueType.IsPrimitive))
@@ -1090,11 +1082,7 @@ namespace Hypertable.Persistence.Serialization
                         this.WriteType(type);
                     }
 
-                    if (flags.HasFlag(DictionaryFlags.KeyTagged))
-                    {
-                        Encoder.WriteTag(this.binaryWriter, keyEncoderInfo.Tag);
-                    }
-
+                    Encoder.WriteTag(this.binaryWriter, keyEncoderInfo.Tag);
                     Encoder.WriteCount(this.binaryWriter, value.Count);
                     if (keyType.IsSealed || keyType.IsPrimitive)
                     {
@@ -1142,11 +1130,9 @@ namespace Hypertable.Persistence.Serialization
             }
             else if (this.TryGetEncoder(valueType, out valueEncoderInfo))
             {
+                flags |= DictionaryFlags.ValueTypeTagged;
                 var hasValueElementTag = HasElementTag(valueEncoderInfo.Tag, valueType);
-                if (!hasValueElementTag)
-                {
-                    flags |= DictionaryFlags.ValueTagged;
-                }
+                flags |= hasValueElementTag ? DictionaryFlags.ValueTagged : DictionaryFlags.None;
 
                 Encoder.WriteByte(this.binaryWriter, (byte)flags, false);
                 if (flags.HasFlag(DictionaryFlags.Typed))
@@ -1154,10 +1140,7 @@ namespace Hypertable.Persistence.Serialization
                     this.WriteType(type);
                 }
 
-                if (flags.HasFlag(DictionaryFlags.ValueTagged))
-                {
-                    Encoder.WriteTag(this.binaryWriter, valueEncoderInfo.Tag);
-                }
+                Encoder.WriteTag(this.binaryWriter, valueEncoderInfo.Tag);
 
                 Encoder.WriteCount(this.binaryWriter, value.Count);
                 if (valueType.IsSealed || valueType.IsPrimitive)
@@ -1251,11 +1234,9 @@ namespace Hypertable.Persistence.Serialization
                 EncoderInfo encoderInfo;
                 if (this.TryGetEncoder(elementType, out encoderInfo))
                 {
+                    flags |= CollectionFlags.TypeTagged;
                     var hasElementTag = HasElementTag(encoderInfo.Tag, elementType);
-                    if (!hasElementTag)
-                    {
-                        flags |= CollectionFlags.Tagged;
-                    }
+                    flags |= hasElementTag ? CollectionFlags.ValueTagged : CollectionFlags.None;
 
                     Encoder.WriteByte(this.binaryWriter, (byte)flags, false);
 
@@ -1264,10 +1245,7 @@ namespace Hypertable.Persistence.Serialization
                         this.WriteType(type);
                     }
 
-                    if (flags.HasFlag(CollectionFlags.Tagged))
-                    {
-                        Encoder.WriteTag(this.binaryWriter, encoderInfo.Tag);
-                    }
+                    Encoder.WriteTag(this.binaryWriter, encoderInfo.Tag);
 
                     Encoder.WriteCount(this.binaryWriter, (int)inspector.Enumerable.Count(value));
 
