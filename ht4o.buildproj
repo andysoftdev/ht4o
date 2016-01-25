@@ -9,11 +9,12 @@
 		<FxVersion Condition="'$(TargetFrameworkVersion)' == 'v4.0'">4.0</FxVersion>
 		<FxVersion Condition="'$(TargetFrameworkVersion)' == 'v4.5'">4.5</FxVersion>
 		<FxVersion Condition="'$(TargetFrameworkVersion)' == 'v4.5.2'">4.5.2</FxVersion>
+		<FxVersion Condition="'$(TargetFrameworkVersion)' == 'v4.6'">4.6</FxVersion>
 
 		<FxVersion Condition="'$(FxVersion)' == '' And '$(VisualStudioVersion)' == '10.0'">4.0</FxVersion>
 		<FxVersion Condition="'$(FxVersion)' == '' And '$(VisualStudioVersion)' == '11.0'">4.5</FxVersion>
 		<FxVersion Condition="'$(FxVersion)' == '' And '$(VisualStudioVersion)' == '12.0'">4.5</FxVersion>
-		<FxVersion Condition="'$(FxVersion)' == '' And '$(VisualStudioVersion)' == '14.0'">4.5</FxVersion>
+		<FxVersion Condition="'$(FxVersion)' == '' And '$(VisualStudioVersion)' == '14.0'">4.5.2</FxVersion>
 
 		<Master_x86>dist\$(VisualStudioVersion)\ht4o-$(Version)-x86-fx$(FxVersion)-vc$(VisualStudioVersion).zip</Master_x86>
 		<Master_x64>dist\$(VisualStudioVersion)\ht4o-$(Version)-x64-fx$(FxVersion)-vc$(VisualStudioVersion).zip</Master_x64>
@@ -63,7 +64,7 @@
 		<TargetFrameworkVersion Condition="'$(TargetFrameworkVersion)' == '' And '$(VisualStudioVersion)' == '10.0'">v4.0</TargetFrameworkVersion>
 		<TargetFrameworkVersion Condition="'$(TargetFrameworkVersion)' == '' And '$(VisualStudioVersion)' == '11.0'">v4.5</TargetFrameworkVersion>
 		<TargetFrameworkVersion Condition="'$(TargetFrameworkVersion)' == '' And '$(VisualStudioVersion)' == '12.0'">v4.5</TargetFrameworkVersion>
-		<TargetFrameworkVersion Condition="'$(TargetFrameworkVersion)' == '' And '$(VisualStudioVersion)' == '14.0'">v4.5</TargetFrameworkVersion>
+		<TargetFrameworkVersion Condition="'$(TargetFrameworkVersion)' == '' And '$(VisualStudioVersion)' == '14.0'">v4.5.2</TargetFrameworkVersion>
 	</PropertyGroup>
 
 	<!-- Check for mstest64 -->
@@ -113,7 +114,7 @@
 			public static void ScriptMain() {
 				string filename = @"..\ht4w\dist\$(VisualStudioVersion)\Win32\release\hypertable.service.exe";
 				if( !File.Exists(filename) )
-					filename = @"..\ht4w\dist\10.0\Win32\release\hypertable.service.exe";
+					filename = @"..\ht4w\dist\$(VisualStudioVersion)\Win32\release\hypertable.service.exe";
 				ProcessStartInfo psi = new ProcessStartInfo(filename, @"--stop-all-services --kill-servers --start-servers --Hypertable.Master.DiskThreshold.Percentage=100");
 				psi.WindowStyle = ProcessWindowStyle.Hidden;
 				Process p = Process.Start(psi);
@@ -127,7 +128,7 @@
 			public static void ScriptMain() {
 				string filename = @"..\ht4w\dist\$(VisualStudioVersion)\Win32\release\hypertable.service.exe";
 				if( !File.Exists(filename) )
-					filename = @"..\ht4w\dist\10.0\Win32\release\hypertable.service.exe";
+					filename = @"..\ht4w\dist\$(VisualStudioVersion)\Win32\release\hypertable.service.exe";
 				ProcessStartInfo psi = new ProcessStartInfo(filename, @"--stop-all-services --kill-servers");
 				psi.WindowStyle = ProcessWindowStyle.Hidden;
 				Process p = Process.Start(psi);
