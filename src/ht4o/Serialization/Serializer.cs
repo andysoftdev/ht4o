@@ -868,72 +868,84 @@ namespace Hypertable.Persistence.Serialization
 
             var elementType = type.GetElementType();
 
-            EncoderInfo encoderInfo;
-            if (this.TryGetEncoder(elementType, out encoderInfo))
+            // Dedicated handling of trivial byte arrays (performance)
+            if (elementType == typeof(byte) && value.Rank == 1)
             {
-                var hasElementTag = HasElementTag(encoderInfo.Tag, elementType);
-
-                Encoder.WriteTag(this.binaryWriter, encoderInfo.Tag | Tags.Array);
+                Encoder.WriteTag(this.binaryWriter, Tags.Byte | Tags.Array);
                 // an array can have a maximum of 32 dimensions
-                Encoder.WriteCount(this.binaryWriter, value.Rank | (byte)(hasElementTag ? ArrayFlags.ValueTagged : ArrayFlags.ValueNotTagged));
-                for (var dimension = 0; dimension < value.Rank; dimension++)
+                Encoder.WriteCount(this.binaryWriter, value.Rank | (byte)ArrayFlags.ValueNotTagged);
+                Encoder.WriteCount(this.binaryWriter, value.Length);
+                this.binaryWriter.Write((byte[])value);
+            }
+            else
+            {
+                EncoderInfo encoderInfo;
+                if (this.TryGetEncoder(elementType, out encoderInfo))
                 {
-                    Encoder.WriteCount(this.binaryWriter, value.GetLength(dimension));
-                }
+                    var hasElementTag = HasElementTag(encoderInfo.Tag, elementType);
 
-                if (elementType.IsSealed || elementType.IsPrimitive)
-                {
-                    foreach (var item in value)
+                    Encoder.WriteTag(this.binaryWriter, encoderInfo.Tag | Tags.Array);
+                    // an array can have a maximum of 32 dimensions
+                    Encoder.WriteCount(this.binaryWriter, value.Rank | (byte)(hasElementTag ? ArrayFlags.ValueTagged : ArrayFlags.ValueNotTagged));
+                    for (var dimension = 0; dimension < value.Rank; dimension++)
                     {
-                        this.Encode(encoderInfo, item, hasElementTag);
+                        Encoder.WriteCount(this.binaryWriter, value.GetLength(dimension));
                     }
-                }
-                else
-                {
-                    EncoderInfo itemEncoderInfo = null;
-                    var itemType = typeof(object);
 
-                    foreach (var item in value)
+                    if (elementType.IsSealed || elementType.IsPrimitive)
                     {
-                        if (item != null && item.GetType() != elementType)
-                        {
-                            if (itemEncoderInfo == null || itemType != item.GetType())
-                            {
-                                if (this.TryGetEncoder(item.GetType(), out itemEncoderInfo))
-                                {
-                                    this.Encode(itemEncoderInfo, item, hasElementTag);
-                                    itemType = item.GetType();
-                                }
-                                else
-                                {
-                                    this.Write(serializeType != typeof(object[]) && serializeType != typeof(object) ? elementType : typeof(object), item);
-                                }
-                            }
-                            else
-                            {
-                                this.Encode(itemEncoderInfo, item, hasElementTag);
-                            }
-                        }
-                        else
+                        foreach (var item in value)
                         {
                             this.Encode(encoderInfo, item, hasElementTag);
                         }
                     }
-                }
-            }
-            else
-            {
-                Encoder.WriteTag(this.binaryWriter, Tags.Object | Tags.Array);
-                Encoder.WriteCount(this.binaryWriter, value.Rank);
-                for (var dimension = 0; dimension < value.Rank; dimension++)
-                {
-                    Encoder.WriteCount(this.binaryWriter, value.GetLength(dimension));
-                }
+                    else
+                    {
+                        EncoderInfo itemEncoderInfo = null;
+                        var itemType = typeof(object);
 
-                var itemType = serializeType != typeof(object[]) && serializeType != typeof(object) ? elementType : typeof(object);
-                foreach (var item in value)
+                        foreach (var item in value)
+                        {
+                            if (item != null && item.GetType() != elementType)
+                            {
+                                if (itemEncoderInfo == null || itemType != item.GetType())
+                                {
+                                    if (this.TryGetEncoder(item.GetType(), out itemEncoderInfo))
+                                    {
+                                        this.Encode(itemEncoderInfo, item, hasElementTag);
+                                        itemType = item.GetType();
+                                    }
+                                    else
+                                    {
+                                        this.Write(serializeType != typeof(object[]) && serializeType != typeof(object) ? elementType : typeof(object), item);
+                                    }
+                                }
+                                else
+                                {
+                                    this.Encode(itemEncoderInfo, item, hasElementTag);
+                                }
+                            }
+                            else
+                            {
+                                this.Encode(encoderInfo, item, hasElementTag);
+                            }
+                        }
+                    }
+                }
+                else
                 {
-                    this.Write(itemType, item);
+                    Encoder.WriteTag(this.binaryWriter, Tags.Object | Tags.Array);
+                    Encoder.WriteCount(this.binaryWriter, value.Rank);
+                    for (var dimension = 0; dimension < value.Rank; dimension++)
+                    {
+                        Encoder.WriteCount(this.binaryWriter, value.GetLength(dimension));
+                    }
+
+                    var itemType = serializeType != typeof(object[]) && serializeType != typeof(object) ? elementType : typeof(object);
+                    foreach (var item in value)
+                    {
+                        this.Write(itemType, item);
+                    }
                 }
             }
         }
