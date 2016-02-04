@@ -873,7 +873,7 @@ namespace Hypertable.Persistence.Serialization
             {
                 Encoder.WriteTag(this.binaryWriter, Tags.Byte | Tags.Array);
                 // an array can have a maximum of 32 dimensions
-                Encoder.WriteCount(this.binaryWriter, value.Rank | (byte)ArrayFlags.ValueNotTagged);
+                Encoder.WriteCount(this.binaryWriter, 1 | (byte)ArrayFlags.ValueNotTagged);
                 Encoder.WriteCount(this.binaryWriter, value.Length);
                 this.binaryWriter.Write((byte[])value);
             }
