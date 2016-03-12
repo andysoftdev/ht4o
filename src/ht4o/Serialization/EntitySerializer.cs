@@ -140,22 +140,24 @@ namespace Hypertable.Persistence.Serialization
         /// </param>
         internal override void Encode(EncoderInfo encoderInfo, object value, bool writeTag)
         {
-            var anyType = value.GetType();
-
-            if (encoderInfo.HandleObjectRef(anyType))
+            if (value != null)
             {
-                if (this.WriteOrAddObjectRef(value))
+                var anyType = value.GetType();
+                if (encoderInfo.HandleObjectRef(anyType))
                 {
-                    return;
-                }
+                    if (this.WriteOrAddObjectRef(value))
+                    {
+                        return;
+                    }
 
-                var inspector = Inspector.InspectorForType(anyType);
-                var entityReference = this.entityContext.EntityReferenceForInspector(inspector);
+                    var inspector = Inspector.InspectorForType(anyType);
+                    var entityReference = this.entityContext.EntityReferenceForInspector(inspector);
 
-                // Entity?
-                if (entityReference != null && this.SerializeEntityReference(entityReference, anyType, value))
-                {
-                    return;
+                    // Entity?
+                    if (entityReference != null && this.SerializeEntityReference(entityReference, anyType, value))
+                    {
+                        return;
+                    }
                 }
             }
 
