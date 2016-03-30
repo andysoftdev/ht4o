@@ -2027,6 +2027,16 @@ namespace Hypertable.Persistence.Test.Serialization
             Assert.IsNotNull(b);
             oC.AssertIsEqualObjectC(Deserializer.FromByteArray<ObjectC>(b));
 
+            oC.Randomize();
+            b = Serializer.ToByteArray(oC);
+            Assert.IsNotNull(b);
+            oC.AssertIsEqualObjectC(Deserializer.FromByteArray<List<ObjectC>>(b)[0]);
+
+            oC.Randomize();
+            b = Serializer.ToByteArray(oC);
+            Assert.IsNotNull(b);
+            oC.AssertIsEqualObjectC(Deserializer.FromByteArray<ObjectC[]>(b)[0]);
+
             IList<ObjectA> loA = new List<ObjectA>();
             loA.Add(new ObjectA().Randomize());
             loA.Add(new ObjectA().Randomize());

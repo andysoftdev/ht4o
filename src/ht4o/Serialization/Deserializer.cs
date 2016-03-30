@@ -674,7 +674,9 @@ namespace Hypertable.Persistence.Serialization
                         return null;
 
                     case Tags.Object:
-                        return this.ReadObj(destinationType);
+                        value = this.ReadObj(destinationType);
+                        break;
+
                     case Tags.ObjectRef:
                     {
                         var objref = Decoder.ReadCount(this.binaryReader);
@@ -768,9 +770,9 @@ namespace Hypertable.Persistence.Serialization
                         {
                             this.BeforeDeserializeObjectProperties(destinationType, Inspector.InspectorForType(value.GetType()), value);
                         }
-                    }
 
                         break;
+                    }
                 }
             }
 
@@ -1327,7 +1329,7 @@ namespace Hypertable.Persistence.Serialization
 
             // type
             var type = this.ReadType();
-            if (destinationType.IsAssignableFrom(type))
+            if (destinationType.IsAssignableFrom(type) || destinationType.IsArray || typeof(IList).IsAssignableFrom(destinationType))
             {
                 inspector = Inspector.InspectorForType(type);
                 value = inspector.CreateInstance();

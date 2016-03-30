@@ -27,6 +27,7 @@ namespace Hypertable.Persistence.Serialization
 
     using Hypertable;
     using Hypertable.Persistence.Attributes;
+    using Hypertable.Persistence.Extensions;
     using Hypertable.Persistence.Reflection;
     using Hypertable.Persistence.Scanner;
     using Hypertable.Persistence.Serialization.Delegates;
@@ -405,7 +406,7 @@ namespace Hypertable.Persistence.Serialization
                 if (this.entityReader.TryGetFetchedEntity(entitySpec, out entity))
                 {
                     this.ObjectRefs.Add(entity);
-                    return entity;
+                    return destinationType.Convert(entity);
                 }
 
                 return entitySpec;
