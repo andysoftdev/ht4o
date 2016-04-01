@@ -3,8 +3,8 @@
 
 	<!-- Master files to make -->
 	<PropertyGroup>
-		<Version>0.9.8.10</Version>
-		<Ht4nVersion Condition="'$(Ht4nVersion)' == ''">0.9.8.10</Ht4nVersion>
+		<Version>0.9.8.11</Version>
+		<Ht4nVersion Condition="'$(Ht4nVersion)' == ''">0.9.8.11</Ht4nVersion>
 
 		<FxVersion Condition="'$(TargetFrameworkVersion)' == 'v4.0'">4.0</FxVersion>
 		<FxVersion Condition="'$(TargetFrameworkVersion)' == 'v4.5'">4.5</FxVersion>
