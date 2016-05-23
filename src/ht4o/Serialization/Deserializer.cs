@@ -1371,9 +1371,11 @@ namespace Hypertable.Persistence.Serialization
             this.BeforeDeserializeObjectProperties(destinationType, inspector, value);
 
             var positionalHint = 0;
-            foreach (var typeSchemaProperty in typeSchema.Properties)
+            var typeSchemaProperties = typeSchema.Properties;
+            var length = typeSchemaProperties.Length;
+            for (var i = 0; i < length; ++i)
             {
-                var inspectedProperty = inspector.GetProperty(typeSchemaProperty.PropertyName, positionalHint++);
+                var inspectedProperty = inspector.GetProperty(typeSchemaProperties[i].PropertyName, positionalHint++);
                 var tag = Decoder.ReadTag(this.binaryReader);
                 if (inspectedProperty != null)
                 {
@@ -1381,7 +1383,8 @@ namespace Hypertable.Persistence.Serialization
                 }
                 else
                 {
-                    Resolver.ObsoletePropertyResolver(value, this.Deserialize(typeof(object), tag)); // Read unassignable values
+                    // Read unassignable values
+                    Resolver.ObsoletePropertyResolver(value, this.Deserialize(typeof(object), tag));
                 }
             }
 

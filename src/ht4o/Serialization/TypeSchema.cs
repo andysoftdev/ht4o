@@ -41,7 +41,7 @@ namespace Hypertable.Persistence.Serialization
         /// <summary>
         /// The type schema properties.
         /// </summary>
-        private readonly List<TypeSchemaProperty> typeSchemaProperties = new List<TypeSchemaProperty>();
+        private readonly TypeSchemaProperty[] typeSchemaProperties;
 
         /// <summary>
         /// The write object action.
@@ -63,9 +63,9 @@ namespace Hypertable.Persistence.Serialization
         /// <param name="typeSchemaProperties">
         /// The type schema properties.
         /// </param>
-        internal TypeSchema(IEnumerable<TypeSchemaProperty> typeSchemaProperties)
+        internal TypeSchema(TypeSchemaProperty[] typeSchemaProperties)
         {
-            this.typeSchemaProperties.AddRange(typeSchemaProperties);
+            this.typeSchemaProperties = typeSchemaProperties;
             this.serializedSchema = new Lazy<byte[]>(() => this.GetSerializedSchema());
         }
 
@@ -80,16 +80,17 @@ namespace Hypertable.Persistence.Serialization
         /// </param>
         internal TypeSchema(Inspector inspector, bool handlePropertyIgnore)
         {
-            this.typeSchemaProperties.Capacity = inspector.Properties.Count;
+            var properties = new List<TypeSchemaProperty>(inspector.Properties.Count);
             foreach (var property in inspector.Properties.Where(property => !handlePropertyIgnore || !property.Ignore))
             {
                 TypeSchemaProperty typeSchemaProperty;
                 typeSchemaProperty.PropertyName = property.Name;
                 typeSchemaProperty.InspectedProperty = property;
                 Encoder.TryGetEncoder(property.PropertyType, out typeSchemaProperty.EncoderInfo);
-                this.typeSchemaProperties.Add(typeSchemaProperty);
+                properties.Add(typeSchemaProperty);
             }
 
+            this.typeSchemaProperties = properties.ToArray();
             this.writeObject = TypeSchema.CompileWriteObjectDelegate(this.typeSchemaProperties);
             this.serializedSchema = new Lazy<byte[]>(() => this.GetSerializedSchema());
         }
@@ -104,7 +105,7 @@ namespace Hypertable.Persistence.Serialization
         /// <value>
         /// The type schema properties.
         /// </value>
-        internal ICollection<TypeSchemaProperty> Properties
+        internal TypeSchemaProperty[] Properties
         {
             get
             {
@@ -248,7 +249,7 @@ namespace Hypertable.Persistence.Serialization
                 {
                     Encoder.WriteTag(binaryWriter, Tags.TypeSchema2);
                     Encoder.WriteByte(binaryWriter, TypeSchema.Version, false);
-                    Encoder.WriteCount(binaryWriter, this.Properties.Count);
+                    Encoder.WriteCount(binaryWriter, this.Properties.Length);
                     foreach (var typeSchemaProperty in this.Properties)
                     {
                         Encoder.WriteString(binaryWriter, typeSchemaProperty.PropertyName, false);
