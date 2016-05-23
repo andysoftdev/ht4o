@@ -154,7 +154,7 @@ namespace Hypertable.Persistence.Scanner.TableScan
         {
             lock (this.syncRoot)
             {
-                entityScanTarget = new EntityQueryScanTarget(this.entityScanResult.EntityType, this.entityScanResult, key, this.entityScanResult.Values);
+                entityScanTarget = new EntityQueryScanTarget(this.entityScanResult.EntityType, this.entityScanResult, key, this.entityScanResult.ValueSink);
             }
 
             return true;

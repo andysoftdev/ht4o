@@ -119,6 +119,7 @@ namespace Hypertable.Persistence
         {
             get
             {
+                this.ThrowIfDisposed();
                 return this.entityContext.Configuration;
             }
         }
@@ -370,6 +371,111 @@ namespace Hypertable.Persistence
         /// <summary>
         /// Fetches all entities of the entity type specified from the database.
         /// </summary>
+        /// <typeparam name="T">
+        /// Type of the entities to fetch.
+        /// </typeparam>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        public void Fetch<T>(Action<T> entitySink) where T : class
+        {
+            this.Fetch<T>(entitySink, Behaviors.Default);
+        }
+
+        /// <summary>
+        /// Fetches all entities of the entity type specified from the database.
+        /// </summary>
+        /// <param name="behaviors">
+        /// The behaviors.
+        /// </param>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        /// <typeparam name="T">
+        /// Type of the entities to fetch.
+        /// </typeparam>
+        public void Fetch<T>(Action<T> entitySink, Behaviors behaviors) where T : class
+        {
+            this.Fetch(typeof(T), OfType<T>(entitySink), this.CheckBehaviors(behaviors));
+        }
+
+        /// <summary>
+        /// Fetches all entities of the types specified from the database.
+        /// </summary>
+        /// <param name="queryTypes">
+        /// The query types.
+        /// </param>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        /// <typeparam name="T">
+        /// Type of the entities to fetch.
+        /// </typeparam>
+        public void Fetch<T>(IEnumerable<Type> queryTypes, Action<T> entitySink) where T : class
+        {
+            this.Fetch<T>(queryTypes, OfType<T>(entitySink), Behaviors.Default);
+        }
+
+        /// <summary>
+        /// Fetches all entities of the types specified from the database.
+        /// </summary>
+        /// <param name="queryTypes">
+        /// The query types.
+        /// </param>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        /// <param name="behaviors">
+        /// The behaviors.
+        /// </param>
+        /// <typeparam name="T">
+        /// Type of the entities to fetch.
+        /// </typeparam>
+        public void Fetch<T>(IEnumerable<Type> queryTypes, Action<T> entitySink, Behaviors behaviors) where T : class
+        {
+            this.Fetch(typeof(T), queryTypes, OfType<T>(entitySink), this.CheckBehaviors(behaviors));
+        }
+
+        /// <summary>
+        /// Fetches all entities using the given  scan specification from the database.
+        /// </summary>
+        /// <param name="scanSpec">
+        /// The scan specification.
+        /// </param>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        /// <typeparam name="T">
+        /// Type of the entities to fetch.
+        /// </typeparam>
+        public void Fetch<T>(ScanSpec scanSpec, Action<T> entitySink) where T : class
+        {
+            this.Fetch<T>(scanSpec, OfType<T>(entitySink), Behaviors.Default);
+        }
+
+        /// <summary>
+        /// Fetches all entities using the given  scan specification from the database.
+        /// </summary>
+        /// <param name="scanSpec">
+        /// The scan specification.
+        /// </param>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        /// <param name="behaviors">
+        /// The behaviors.
+        /// </param>
+        /// <typeparam name="T">
+        /// Type of the entities to fetch.
+        /// </typeparam>
+        public void Fetch<T>(ScanSpec scanSpec, Action<T> entitySink, Behaviors behaviors) where T : class
+        {
+            this.Fetch(typeof(T), scanSpec, OfType<T>(entitySink), this.CheckBehaviors(behaviors));
+        }
+
+        /// <summary>
+        /// Fetches all entities of the entity type specified from the database.
+        /// </summary>
         /// <param name="entityType">
         /// The entity type.
         /// </param>
@@ -395,6 +501,7 @@ namespace Hypertable.Persistence
         /// </returns>
         public IEnumerable Fetch(Type entityType, Behaviors behaviors)
         {
+            this.ThrowIfDisposed();
             return this.entityContext.Fetch(entityType, this.CheckBehaviors(behaviors));
         }
 
@@ -432,6 +539,7 @@ namespace Hypertable.Persistence
         /// </returns>
         public IEnumerable Fetch(Type entityType, IEnumerable<Type> queryTypes, Behaviors behaviors)
         {
+            this.ThrowIfDisposed();
             return this.entityContext.Fetch(entityType, queryTypes, this.CheckBehaviors(behaviors));
         }
 
@@ -471,6 +579,114 @@ namespace Hypertable.Persistence
         {
             this.ThrowIfDisposed();
             return this.entityContext.Fetch(entityType, scanSpec, this.CheckBehaviors(behaviors));
+        }
+
+        /// <summary>
+        /// Fetches all entities of the entity type specified from the database.
+        /// </summary>
+        /// <param name="entityType">
+        /// The entity type.
+        /// </param>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        public void Fetch(Type entityType, Action<object> entitySink)
+        {
+            this.Fetch(entityType, entitySink, Behaviors.Default);
+        }
+
+        /// <summary>
+        /// Fetches all entities of the entity type specified from the database.
+        /// </summary>
+        /// <param name="entityType">
+        /// The entity type.
+        /// </param>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        /// <param name="behaviors">
+        /// The behaviors.
+        /// </param>
+        public void Fetch(Type entityType, Action<object> entitySink, Behaviors behaviors)
+        {
+            this.ThrowIfDisposed();
+            this.entityContext.Fetch(entityType, entitySink, this.CheckBehaviors(behaviors));
+        }
+
+        /// <summary>
+        /// Fetches all entities of the types specified from the database.
+        /// </summary>
+        /// <param name="entityType">
+        /// The entity type.
+        /// </param>
+        /// <param name="queryTypes">
+        /// The query types.
+        /// </param>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        public void Fetch(Type entityType, Action<object> entitySink, IEnumerable<Type> queryTypes)
+        {
+            this.Fetch(entityType, queryTypes, entitySink, Behaviors.Default);
+        }
+
+        /// <summary>
+        /// Fetches all entities of the types specified from the database.
+        /// </summary>
+        /// <param name="entityType">
+        /// The entity type.
+        /// </param>
+        /// <param name="queryTypes">
+        /// The query types.
+        /// </param>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        /// <param name="behaviors">
+        /// The behaviors.
+        /// </param>
+        public void Fetch(Type entityType, IEnumerable<Type> queryTypes, Action<object> entitySink, Behaviors behaviors)
+        {
+            this.ThrowIfDisposed();
+            this.entityContext.Fetch(entityType, queryTypes, entitySink, this.CheckBehaviors(behaviors));
+        }
+
+        /// <summary>
+        /// Fetches all entities using the given scan specification from the database.
+        /// </summary>
+        /// <param name="entityType">
+        /// The entity type.
+        /// </param>
+        /// <param name="scanSpec">
+        /// The scan specification.
+        /// </param>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        public void Fetch(Type entityType, ScanSpec scanSpec, Action<object> entitySink)
+        {
+            this.Fetch(entityType, scanSpec, entitySink, Behaviors.Default);
+        }
+
+        /// <summary>
+        /// Fetches all entities using the given scan specification from the database.
+        /// </summary>
+        /// <param name="entityType">
+        /// The entity type.
+        /// </param>
+        /// <param name="scanSpec">
+        /// The scan specification.
+        /// </param>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        /// <param name="behaviors">
+        /// The behaviors.
+        /// </param>
+        public void Fetch(Type entityType, ScanSpec scanSpec, Action<object> entitySink, Behaviors behaviors)
+        {
+            this.ThrowIfDisposed();
+            this.entityContext.Fetch(entityType, scanSpec, entitySink, this.CheckBehaviors(behaviors));
         }
 
         /// <summary>
@@ -584,7 +800,44 @@ namespace Hypertable.Persistence
         {
             return OfType<T>(this.FindMany(typeof(T), keyProviders, this.CheckBehaviors(behaviors)));
         }
-        
+
+        /// <summary>
+        /// Find the entities in the database using the key providers specified.
+        /// </summary>
+        /// <param name="keyProviders">
+        /// The key providers.
+        /// </param>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        /// <typeparam name="T">
+        /// Type of the entities to find.
+        /// </typeparam>
+        public void FindMany<T>(IEnumerable keyProviders, Action<T> entitySink) where T : class
+        {
+            this.FindMany<T>(keyProviders, entitySink, Behaviors.Default);
+        }
+
+        /// <summary>
+        /// Find the entities in the database using the key providers specified.
+        /// </summary>
+        /// <param name="keyProviders">
+        /// The key providers.
+        /// </param>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        /// <param name="behaviors">
+        /// The behaviors.
+        /// </param>
+        /// <typeparam name="T">
+        /// Type of the entities to find.
+        /// </typeparam>
+        public void FindMany<T>(IEnumerable keyProviders, Action<T> entitySink, Behaviors behaviors) where T : class
+        {
+            this.FindMany(typeof(T), keyProviders, OfType<T>(entitySink), this.CheckBehaviors(behaviors));
+        }
+
         /// <summary>
         /// Find the entities in the database using the key providers specified.
         /// </summary>
@@ -622,6 +875,45 @@ namespace Hypertable.Persistence
             this.ThrowIfDisposed();
             return this.entityContext.FindMany(entityType, keyProviders, this.CheckBehaviors(behaviors));
         }
+
+        /// <summary>
+        /// Find the entities in the database using the key providers specified.
+        /// </summary>
+        /// <param name="entityType">
+        /// The entity type.
+        /// </param>
+        /// <param name="keyProviders">
+        /// The key providers.
+        /// </param>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        public void FindMany(Type entityType, IEnumerable keyProviders, Action<object> entitySink)
+        {
+            this.FindMany(entityType, keyProviders, entitySink, Behaviors.Default);
+        }
+
+        /// <summary>
+        /// Find the entities in the database using the key providers specified.
+        /// </summary>
+        /// <param name="entityType">
+        /// The entity type.
+        /// </param>
+        /// <param name="keyProviders">
+        /// The key providers.
+        /// </param>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        /// <param name="behaviors">
+        /// The behaviors.
+        /// </param>
+        public void FindMany(Type entityType, IEnumerable keyProviders, Action<object> entitySink, Behaviors behaviors)
+        {
+            this.ThrowIfDisposed();
+            this.entityContext.FindMany(entityType, keyProviders, entitySink, this.CheckBehaviors(behaviors));
+        }
+
 
         /// <summary>
         /// Flush the entity context to the server.
@@ -908,6 +1200,30 @@ namespace Hypertable.Persistence
         private static IEnumerable<T> OfType<T>(IEnumerable enumerable) where T : class
         {
             return enumerable != null ? enumerable.OfType<T>() : null;
+        }
+
+        /// <summary>
+        /// Forward an untyped action to type action.
+        /// </summary>
+        /// <param name="sink">
+        /// The sink.
+        /// </param>
+        /// <typeparam name="T">
+        /// The sink element type.
+        /// </typeparam>
+        /// <returns>
+        /// The untyped action.
+        /// </returns>
+        private static Action<object> OfType<T>(Action<T> sink) where T : class
+        {
+            return o =>
+                {
+                    var e = o as T;
+                    if (e != null)
+                    {
+                        sink(e);
+                    }
+                };
         }
 
         /// <summary>

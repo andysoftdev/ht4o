@@ -20,6 +20,8 @@
  */
 namespace Hypertable.Persistence.Scanner
 {
+    using System;
+    using System.Collections;
     using System.Collections.Generic;
 
     using Hypertable.Persistence.Collections;
@@ -36,6 +38,11 @@ namespace Hypertable.Persistence.Scanner
         /// </summary>
         private readonly ChunkedCollection<object> collection = new ChunkedCollection<object>();
 
+        /// <summary>
+        /// The entity sink, receives the entities fetched.
+        /// </summary>
+        private readonly Action<object > valueSink;
+
         #endregion
 
         #region Constructors and Destructors
@@ -49,6 +56,29 @@ namespace Hypertable.Persistence.Scanner
         internal EntityScanResult(EntityReference entityReference)
             : base(entityReference, null)
         {
+            this.collection = new ChunkedCollection<object>();
+            this.valueSink = v =>
+                {
+                    lock (this.collection.SyncRoot)
+                    {
+                        this.collection.Add(v);
+                    }
+                };
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityScanResult"/> class.
+        /// </summary>
+        /// <param name="entityReference">
+        /// The entity reference.
+        /// </param>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        internal EntityScanResult(EntityReference entityReference, Action<object> entitySink)
+            : base(entityReference, null)
+        {
+            this.valueSink = entitySink;
         }
 
         #endregion
@@ -65,10 +95,21 @@ namespace Hypertable.Persistence.Scanner
         {
             get
             {
-                lock (this.collection)
-                {
-                    return this.collection;
-                }
+                return this.collection;
+            }
+        }
+
+        /// <summary>
+        /// Gets the value sink.
+        /// </summary>
+        /// <value>
+        /// The values.
+        /// </value>
+        internal Action<object> ValueSink
+        {
+            get
+            {
+                return this.valueSink;
             }
         }
 

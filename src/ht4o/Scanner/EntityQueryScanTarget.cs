@@ -31,9 +31,9 @@ namespace Hypertable.Persistence.Scanner
         #region Fields
 
         /// <summary>
-        /// The target collection.
+        /// The value sink.
         /// </summary>
-        private readonly ICollection<object> collection;
+        private readonly Action<object> valueSink;
 
         #endregion
 
@@ -51,14 +51,14 @@ namespace Hypertable.Persistence.Scanner
         /// <param name="key">
         /// The entity key.
         /// </param>
-        /// <param name="collection">
-        /// The target collection.
+        /// <param name="valueSink">
+        /// The value sink.
         /// </param>
-        internal EntityQueryScanTarget(Type entityType, EntitySpec entitySpec, Key key, ICollection<object> collection)
+        internal EntityQueryScanTarget(Type entityType, EntitySpec entitySpec, Key key, Action<object> valueSink)
             : base(entityType, entitySpec, key)
         {
             this.setter = this.Add;
-            this.collection = collection;
+            this.valueSink = valueSink;
         }
 
         #endregion
@@ -76,10 +76,7 @@ namespace Hypertable.Persistence.Scanner
         /// </param>
         private void Add(object target, object value)
         {
-            lock (this.collection)
-            {
-                this.collection.Add(value);
-            }
+            this.valueSink(value);
         }
 
         #endregion

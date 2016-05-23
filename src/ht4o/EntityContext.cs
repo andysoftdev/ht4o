@@ -232,6 +232,35 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
+        /// Fetches all entities of the entity type specified from the database.
+        /// </summary>
+        /// <param name="entityType">
+        /// The entity type.
+        /// </param>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        /// <param name="behaviors">
+        /// The behaviors.
+        /// </param>
+        public void Fetch(Type entityType, Action<object> entitySink, Behaviors behaviors)
+        {
+            if (entityType == null)
+            {
+                throw new ArgumentNullException("entityType");
+            }
+
+            var entityReference = this.EntityReferenceForType(entityType);
+            if (entityReference == null)
+            {
+                throw new PersistenceException(string.Format(CultureInfo.InvariantCulture, @"{0} is not a valid entity", entityType));
+            }
+
+            var scanSpec = this.ScanSpecForType(entityType);
+            EntityReader.Read(this, entityReference, scanSpec, entitySink, behaviors);
+        }
+
+        /// <summary>
         /// Fetches all entities of the types specified from the database.
         /// </summary>
         /// <param name="entityType">
@@ -260,6 +289,37 @@ namespace Hypertable.Persistence
             }
 
             return EntityReader.Read(this, entityReference, this.ScanSpecForType(queryTypes), behaviors);
+        }
+
+        /// <summary>
+        /// Fetches all entities of the types specified from the database.
+        /// </summary>
+        /// <param name="entityType">
+        /// The entity type.
+        /// </param>
+        /// <param name="queryTypes">
+        /// The query types.
+        /// </param>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        /// <param name="behaviors">
+        /// The behaviors.
+        /// </param>
+        public void Fetch(Type entityType, IEnumerable<Type> queryTypes, Action<object> entitySink, Behaviors behaviors)
+        {
+            if (entityType == null)
+            {
+                throw new ArgumentNullException("entityType");
+            }
+
+            var entityReference = this.EntityReferenceForType(entityType);
+            if (entityReference == null)
+            {
+                throw new PersistenceException(string.Format(CultureInfo.InvariantCulture, @"{0} is not a valid entity", entityType));
+            }
+
+            EntityReader.Read(this, entityReference, this.ScanSpecForType(queryTypes), entitySink, behaviors);
         }
 
         /// <summary>
@@ -296,6 +356,42 @@ namespace Hypertable.Persistence
             }
 
             return EntityReader.Read(this, entityReference, scanSpec, behaviors);
+        }
+
+        /// <summary>
+        /// Fetches all entities using the given scan specification from the database.
+        /// </summary>
+        /// <param name="entityType">
+        /// The entity type.
+        /// </param>
+        /// <param name="scanSpec">
+        /// The scan specification.
+        /// </param>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        /// <param name="behaviors">
+        /// The behaviors.
+        /// </param>
+        public void Fetch(Type entityType, ScanSpec scanSpec, Action<object> entitySink, Behaviors behaviors)
+        {
+            if (entityType == null)
+            {
+                throw new ArgumentNullException("entityType");
+            }
+
+            if (scanSpec == null)
+            {
+                throw new ArgumentNullException("scanSpec");
+            }
+
+            var entityReference = this.EntityReferenceForType(entityType);
+            if (entityReference == null)
+            {
+                throw new PersistenceException(string.Format(CultureInfo.InvariantCulture, @"{0} is not a valid entity", entityType));
+            }
+
+            EntityReader.Read(this, entityReference, scanSpec, entitySink, behaviors);
         }
 
         /// <summary>
@@ -368,6 +464,42 @@ namespace Hypertable.Persistence
             }
 
             return EntityReader.Read(this, entityReference, keyProviders, behaviors);
+        }
+
+        /// <summary>
+        /// Find the entities in the database using the key providers specified.
+        /// </summary>
+        /// <param name="entityType">
+        /// The entity type.
+        /// </param>
+        /// <param name="keyProviders">
+        /// The key providers.
+        /// </param>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        /// <param name="behaviors">
+        /// The behaviors.
+        /// </param>
+        public void FindMany(Type entityType, IEnumerable keyProviders, Action<object> entitySink, Behaviors behaviors)
+        {
+            if (entityType == null)
+            {
+                throw new ArgumentNullException("entityType");
+            }
+
+            if (keyProviders == null)
+            {
+                throw new ArgumentNullException("keyProviders");
+            }
+
+            var entityReference = this.EntityReferenceForType(entityType);
+            if (entityReference == null)
+            {
+                throw new PersistenceException(string.Format(CultureInfo.InvariantCulture, @"{0} is not a valid entity", entityType));
+            }
+
+            EntityReader.Read(this, entityReference, keyProviders, entitySink, behaviors);
         }
 
         /// <summary>

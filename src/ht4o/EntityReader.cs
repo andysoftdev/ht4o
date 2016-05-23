@@ -170,6 +170,41 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
+        /// Reads all entities which belongs to the given database keys from the database.
+        /// </summary>
+        /// <param name="entityContext">
+        /// The entity context.
+        /// </param>
+        /// <param name="entityReference">
+        /// The entity reference.
+        /// </param>
+        /// <param name="keys">
+        /// The entity keys.
+        /// </param>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        /// <param name="behaviors">
+        /// The behaviors.
+        /// </param>
+        internal static void Read(EntityContext entityContext, EntityReference entityReference, IEnumerable keys, Action<object> entitySink, Behaviors behaviors)
+        {
+            var entityScanner = new EntityScanner(entityContext);
+            var entityScanTargets = new ChunkedCollection<EntityScanTarget>();
+            foreach (var key in keys)
+            {
+                if (key != null)
+                {
+                    var entityScanTarget = new EntityScanTarget(entityReference, entityReference.GetKeyFromObject(key, false), entitySink);
+                    entityScanTargets.Add(entityScanTarget);
+                    entityScanner.Add(entityScanTarget);
+                }
+            }
+
+            new EntityReader(entityScanner, behaviors).Read();
+        }
+
+        /// <summary>
         /// Reads all entities which belongs to the given scan specification from the database.
         /// </summary>
         /// <param name="entityContext">
@@ -198,17 +233,44 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Attempts to get an already fetched entity from the cache.
+        /// Reads all entities which belongs to the given scan specification from the database.
         /// </summary>
-        /// <param name="entitySpec">
-        /// The entity spec.
+        /// <param name="entityContext">
+        /// The entity context.
         /// </param>
-        /// <param name="entity">
-        /// The entity.
+        /// <param name="entityReference">
+        /// The entity reference.
         /// </param>
-        /// <returns>
-        /// <c>true</c> if the cache contains an element with the specified entity spec, otherwise <c>false</c>.
-        /// </returns>
+        /// <param name="scanSpec">
+        /// The scan spec.
+        /// </param>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        /// <param name="behaviors">
+        /// The behaviors.
+        /// </param>
+        internal static void Read(EntityContext entityContext, EntityReference entityReference, ScanSpec scanSpec, Action<object> entitySink, Behaviors behaviors)
+        {
+            var entityScanResult = new EntityScanResult(entityReference, entitySink);
+            var entityScanner = new EntityScanner(entityContext);
+            entityScanner.Add(entityScanResult, scanSpec);
+
+            new EntityReader(entityScanner, behaviors).Read();
+        }
+
+        /// <summary>
+    /// Attempts to get an already fetched entity from the cache.
+    /// </summary>
+    /// <param name="entitySpec">
+    /// The entity spec.
+    /// </param>
+    /// <param name="entity">
+    /// The entity.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if the cache contains an element with the specified entity spec, otherwise <c>false</c>.
+    /// </returns>
         internal bool TryGetFetchedEntity(EntitySpec entitySpec, out object entity)
         {
             return this.entitiesFetched.TryGetValue(entitySpec, out entity);

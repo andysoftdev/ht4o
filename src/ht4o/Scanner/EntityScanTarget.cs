@@ -91,6 +91,25 @@ namespace Hypertable.Persistence.Scanner
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityScanTarget"/> class.
         /// </summary>
+        /// <param name="entityReference">
+        /// The entity reference.
+        /// </param>
+        /// <param name="key">
+        /// The entity key.
+        /// </param>
+        /// <param name="entitySink">
+        /// The entity sink, receives the entities fetched.
+        /// </param>
+        internal EntityScanTarget(EntityReference entityReference, Key key, Action<object> entitySink)
+            : base(entityReference, key)
+        {
+            // no need for an additional field
+            this.setter = (t, v) => entitySink(v);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityScanTarget"/> class.
+        /// </summary>
         /// <param name="property">
         /// The inspected property.
         /// </param>
