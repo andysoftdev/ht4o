@@ -23,6 +23,7 @@ namespace Hypertable.Persistence.Serialization
 {
     using System;
     using System.IO;
+    using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
     using System.Text;
 
@@ -196,6 +197,7 @@ namespace Hypertable.Persistence.Serialization
             return *this.ptr++ != 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override unsafe byte ReadByte()
         {
             this.ThrowIfEndOfStream(1);
@@ -254,47 +256,60 @@ namespace Hypertable.Persistence.Serialization
 
         public override unsafe decimal ReadDecimal()
         {
-            this.ThrowIfEndOfStream(16);
-
-            var lo = ((int)this.ptr[0]) | ((int)this.ptr[1] << 8) | ((int)this.ptr[2] << 16) | ((int)this.ptr[3] << 24);
-            var mid = ((int)this.ptr[4]) | ((int)this.ptr[5] << 8) | ((int)this.ptr[6] << 16) | ((int)this.ptr[7] << 24);
-            var hi = ((int)this.ptr[8]) | ((int)this.ptr[9] << 8) | ((int)this.ptr[10] << 16) | ((int)this.ptr[11] << 24);
-            var flags = ((int)this.ptr[12]) | ((int)this.ptr[13] << 8) | ((int)this.ptr[14] << 16) | ((int)this.ptr[15] << 24);
-
-            this.ptr += 16;
-
-            try
+            unchecked
             {
-                const int SignMask = unchecked((int)0x80000000);
-                const int ScaleShift = 16;
-                return new Decimal(lo, mid, hi, (flags & SignMask) > 0, (byte)(flags >> ScaleShift));
-            }
-            catch (ArgumentException)
-            {
-                // ReadDecimal cannot leak out ArgumentException
-                throw new IOException("Read decimal failed");
+                this.ThrowIfEndOfStream(16);
+
+                var lo = ((int)this.ptr[0]) | ((int)this.ptr[1] << 8) | ((int)this.ptr[2] << 16)
+                         | ((int)this.ptr[3] << 24);
+                var mid = ((int)this.ptr[4]) | ((int)this.ptr[5] << 8) | ((int)this.ptr[6] << 16)
+                          | ((int)this.ptr[7] << 24);
+                var hi = ((int)this.ptr[8]) | ((int)this.ptr[9] << 8) | ((int)this.ptr[10] << 16)
+                         | ((int)this.ptr[11] << 24);
+                var flags = ((int)this.ptr[12]) | ((int)this.ptr[13] << 8) | ((int)this.ptr[14] << 16)
+                            | ((int)this.ptr[15] << 24);
+
+                this.ptr += 16;
+
+                try
+                {
+                    const int SignMask = unchecked((int)0x80000000);
+                    const int ScaleShift = 16;
+                    return new Decimal(lo, mid, hi, (flags & SignMask) > 0, (byte)(flags >> ScaleShift));
+                }
+                catch (ArgumentException)
+                {
+                    // ReadDecimal cannot leak out ArgumentException
+                    throw new IOException("Read decimal failed");
+                }
             }
         }
 
         public override unsafe double ReadDouble()
         {
-            this.ThrowIfEndOfStream(8);
+            unchecked
+            {
+                this.ThrowIfEndOfStream(8);
 
-            var lo = (uint)(this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
-            var hi = (uint)(this.ptr[4] | this.ptr[5] << 8 | this.ptr[6] << 16 | this.ptr[7] << 24);
+                var lo = (uint)(this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
+                var hi = (uint)(this.ptr[4] | this.ptr[5] << 8 | this.ptr[6] << 16 | this.ptr[7] << 24);
 
-            this.ptr += 8;
+                this.ptr += 8;
 
-            var v = ((ulong)hi) << 32 | lo;
-            return *((double*)&v);
+                var v = ((ulong)hi) << 32 | lo;
+                return *((double*)&v);
+            }
         }
 
         public override unsafe short ReadInt16()
         {
-            this.ThrowIfEndOfStream(2);
+            unchecked
+            {
+                this.ThrowIfEndOfStream(2);
 
-            this.ptr += 2;
-            return (short)(this.ptr[0] | this.ptr[1] << 8);
+                this.ptr += 2;
+                return (short)(this.ptr[0] | this.ptr[1] << 8);
+            }
         }
 
         public override unsafe int ReadInt32()
@@ -307,68 +322,89 @@ namespace Hypertable.Persistence.Serialization
 
         public override unsafe long ReadInt64()
         {
-            this.ThrowIfEndOfStream(8);
+            unchecked
+            {
+                this.ThrowIfEndOfStream(8);
 
-            var lo = (uint)(this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
-            var hi = (uint)(this.ptr[4] | this.ptr[5] << 8 | this.ptr[6] << 16 | this.ptr[7] << 24);
+                var lo = (uint)(this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
+                var hi = (uint)(this.ptr[4] | this.ptr[5] << 8 | this.ptr[6] << 16 | this.ptr[7] << 24);
 
-            this.ptr += 8;
+                this.ptr += 8;
 
-            return (long)((ulong)hi) << 32 | lo;
+                return (long)((ulong)hi) << 32 | lo;
+            }
         }
 
         public override unsafe sbyte ReadSByte()
         {
-            this.ThrowIfEndOfStream(1);
-            return (sbyte)*this.ptr++;
+            unchecked
+            {
+                this.ThrowIfEndOfStream(1);
+                return (sbyte)*this.ptr++;
+            }
         }
 
         public override unsafe float ReadSingle()
         {
-            this.ThrowIfEndOfStream(4);
+            unchecked
+            {
+                this.ThrowIfEndOfStream(4);
 
-            var v = (uint)(this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
+                var v = (uint)(this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
 
-            this.ptr += 4;
+                this.ptr += 4;
 
-            return *((float*)&v);
+                return *((float*)&v);
+            }
         }
 
         public override unsafe string ReadString()
         {
-            var byteCount = this.ReadStringLength();
-            this.ThrowIfEndOfStream(byteCount);
-            var index = (int)(this.ptr - this.basePtr) + this.offset;
-            this.ptr += byteCount;
-            return byteCount > 0 ? this.encoding.GetString(this.buffer, index, byteCount) : string.Empty;
+            unchecked
+            {
+                var byteCount = this.ReadStringLength();
+                this.ThrowIfEndOfStream(byteCount);
+                var index = (int)(this.ptr - this.basePtr) + this.offset;
+                this.ptr += byteCount;
+                return byteCount > 0 ? this.encoding.GetString(this.buffer, index, byteCount) : string.Empty;
+            }
         }
 
         public override unsafe ushort ReadUInt16()
         {
-            this.ThrowIfEndOfStream(2);
+            unchecked
+            {
+                this.ThrowIfEndOfStream(2);
 
-            this.ptr += 2;
-            return (ushort)(this.ptr[0] | this.ptr[1] << 8);
+                this.ptr += 2;
+                return (ushort)(this.ptr[0] | this.ptr[1] << 8);
+            }
         }
 
         public override unsafe uint ReadUInt32()
         {
-            this.ThrowIfEndOfStream(4);
+            unchecked
+            {
+                this.ThrowIfEndOfStream(4);
 
-            this.ptr += 4;
-            return (uint)(this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
+                this.ptr += 4;
+                return (uint)(this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
+            }
         }
 
         public override unsafe ulong ReadUInt64()
         {
-            this.ThrowIfEndOfStream(8);
+            unchecked
+            {
+                this.ThrowIfEndOfStream(8);
 
-            var lo = (uint)(this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
-            var hi = (uint)(this.ptr[4] | this.ptr[5] << 8 | this.ptr[6] << 16 | this.ptr[7] << 24);
+                var lo = (uint)(this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
+                var hi = (uint)(this.ptr[4] | this.ptr[5] << 8 | this.ptr[6] << 16 | this.ptr[7] << 24);
 
-            this.ptr += 8;
+                this.ptr += 8;
 
-            return ((ulong)hi) << 32 | lo;
+                return ((ulong)hi) << 32 | lo;
+            }
         }
 
         #endregion
@@ -386,20 +422,24 @@ namespace Hypertable.Persistence.Serialization
 
         private unsafe int ReadStringLength()
         {
-            var count = 0;
-            var shift = 0;
-            byte b;
-            do
+            unchecked
             {
-                this.ThrowIfEndOfStream(1);
-                b = *this.ptr++;
-                count |= (b & 0x7F) << shift;
-                shift += 7;
+                var count = 0;
+                var shift = 0;
+                byte b;
+                do
+                {
+                    this.ThrowIfEndOfStream(1);
+                    b = *this.ptr++;
+                    count |= (b & 0x7F) << shift;
+                    shift += 7;
+                }
+                while ((b & 0x80) != 0);
+                return count;
             }
-            while ((b & 0x80) != 0);
-            return count;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private unsafe void ThrowIfEndOfStream(int requiredBytes)
         {
             if (this.ptr + requiredBytes > this.endPtr)
@@ -410,13 +450,16 @@ namespace Hypertable.Persistence.Serialization
 
         private unsafe int Truncate(int requiredBytes)
         {
-            var remainigBytes = (int)(this.endPtr - this.ptr);
-            if (remainigBytes < requiredBytes)
+            unchecked
             {
-                requiredBytes = remainigBytes;
-            }
+                var remainigBytes = (int)(this.endPtr - this.ptr);
+                if (remainigBytes < requiredBytes)
+                {
+                    requiredBytes = remainigBytes;
+                }
 
-            return requiredBytes;
+                return requiredBytes;
+            }
         }
 
         #endregion

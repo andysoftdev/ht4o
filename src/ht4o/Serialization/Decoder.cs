@@ -813,31 +813,34 @@ namespace Hypertable.Persistence.Serialization
         /// </returns>
         private static uint ReadUIntVariant(BinaryReader binaryReader)
         {
-            var b = binaryReader.ReadByte();
-            var value = b & 0x7FU;
-
-            if ((b & 0x80) != 0)
+            unchecked
             {
-                b = binaryReader.ReadByte();
-                value |= (b & 0x7FU) << 7;
+                var b = binaryReader.ReadByte();
+                var value = b & 0x7FU;
+
                 if ((b & 0x80) != 0)
                 {
                     b = binaryReader.ReadByte();
-                    value |= (b & 0x7FU) << 14;
+                    value |= (b & 0x7FU) << 7;
                     if ((b & 0x80) != 0)
                     {
                         b = binaryReader.ReadByte();
-                        value |= (b & 0x7FU) << 21;
+                        value |= (b & 0x7FU) << 14;
                         if ((b & 0x80) != 0)
                         {
                             b = binaryReader.ReadByte();
-                            value |= (b & 0x7FU) << 28;
+                            value |= (b & 0x7FU) << 21;
+                            if ((b & 0x80) != 0)
+                            {
+                                b = binaryReader.ReadByte();
+                                value |= (b & 0x7FU) << 28;
+                            }
                         }
                     }
                 }
-            }
 
-            return value;
+                return value;
+            }
         }
 
         /// <summary>
@@ -851,17 +854,20 @@ namespace Hypertable.Persistence.Serialization
         /// </returns>
         private static ulong ReadULongVariant(BinaryReader binaryReader)
         {
-            var b = binaryReader.ReadByte();
-            var value = b & 0x7FUL;
-            var shift = 7;
-            while ((b & 0x80) != 0)
+            unchecked
             {
-                b = binaryReader.ReadByte();
-                value |= (b & 0x7FUL) << shift;
-                shift += 7;
-            }
+                var b = binaryReader.ReadByte();
+                var value = b & 0x7FUL;
+                var shift = 7;
+                while ((b & 0x80) != 0)
+                {
+                    b = binaryReader.ReadByte();
+                    value |= (b & 0x7FUL) << shift;
+                    shift += 7;
+                }
 
-            return value;
+                return value;
+            }
         }
 
         /// <summary>
@@ -875,21 +881,24 @@ namespace Hypertable.Persistence.Serialization
         /// </returns>
         private static ushort ReadUShortVariant(BinaryReader binaryReader)
         {
-            var b = binaryReader.ReadByte();
-            var value = (ushort)(b & 0x7FU);
-
-            if ((b & 0x80) != 0)
+            unchecked
             {
-                b = binaryReader.ReadByte();
-                value |= (ushort)((b & 0x7FU) << 7);
+                var b = binaryReader.ReadByte();
+                var value = (ushort)(b & 0x7FU);
+
                 if ((b & 0x80) != 0)
                 {
                     b = binaryReader.ReadByte();
-                    value |= (ushort)((b & 0x7FU) << 14);
+                    value |= (ushort)((b & 0x7FU) << 7);
+                    if ((b & 0x80) != 0)
+                    {
+                        b = binaryReader.ReadByte();
+                        value |= (ushort)((b & 0x7FU) << 14);
+                    }
                 }
-            }
 
-            return value;
+                return value;
+            }
         }
 
         /// <summary>
@@ -903,8 +912,11 @@ namespace Hypertable.Persistence.Serialization
         /// </returns>
         private static short Zag(ushort ziggedValue)
         {
-            var value = (short)ziggedValue;
-            return (short)((-(value & 0x01)) ^ ((value >> 1) & ~Int16Msb));
+            unchecked
+            {
+                var value = (short)ziggedValue;
+                return (short)((-(value & 0x01)) ^ ((value >> 1) & ~Int16Msb));
+            }
         }
 
         /// <summary>
@@ -918,8 +930,11 @@ namespace Hypertable.Persistence.Serialization
         /// </returns>
         private static int Zag(uint ziggedValue)
         {
-            var value = (int)ziggedValue;
-            return (-(value & 0x01)) ^ ((value >> 1) & ~Int32Msb);
+            unchecked
+            {
+                var value = (int)ziggedValue;
+                return (-(value & 0x01)) ^ ((value >> 1) & ~Int32Msb);
+            }
         }
 
         /// <summary>
@@ -933,8 +948,11 @@ namespace Hypertable.Persistence.Serialization
         /// </returns>
         private static long Zag(ulong ziggedValue)
         {
-            var value = (long)ziggedValue;
-            return (-(value & 0x01L)) ^ ((value >> 1) & ~Int64Msb);
+            unchecked
+            {
+                var value = (long)ziggedValue;
+                return (-(value & 0x01L)) ^ ((value >> 1) & ~Int64Msb);
+            }
         }
 
         #endregion
