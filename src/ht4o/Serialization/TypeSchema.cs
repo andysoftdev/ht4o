@@ -83,7 +83,7 @@ namespace Hypertable.Persistence.Serialization
             var properties = new List<TypeSchemaProperty>(inspector.Properties.Count);
             foreach (var property in inspector.Properties.Where(property => !handlePropertyIgnore || !property.Ignore))
             {
-                TypeSchemaProperty typeSchemaProperty;
+                var typeSchemaProperty = new TypeSchemaProperty();
                 typeSchemaProperty.PropertyName = property.Name;
                 typeSchemaProperty.InspectedProperty = property;
                 Encoder.TryGetEncoder(property.PropertyType, out typeSchemaProperty.EncoderInfo);

@@ -25,7 +25,7 @@ namespace Hypertable.Persistence.Serialization
     /// <summary>
     /// The type schema property.
     /// </summary>
-    internal struct TypeSchemaProperty
+    internal sealed class TypeSchemaProperty
     {
         #region Fields
 

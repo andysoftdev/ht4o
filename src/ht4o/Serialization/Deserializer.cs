@@ -1370,12 +1370,14 @@ namespace Hypertable.Persistence.Serialization
             this.objectRefs.Add(value);
             this.BeforeDeserializeObjectProperties(destinationType, inspector, value);
 
-            var positionalHint = 0;
             var typeSchemaProperties = typeSchema.Properties;
             var length = typeSchemaProperties.Length;
             for (var i = 0; i < length; ++i)
             {
-                var inspectedProperty = inspector.GetProperty(typeSchemaProperties[i].PropertyName, positionalHint++);
+                // type schema will not be shared accross types, therefore we can assign the inspected property
+                var inspectedProperty = typeSchemaProperties[i].InspectedProperty
+                                        ?? inspector.GetProperty(typeSchemaProperties[i].PropertyName, i);
+
                 var tag = Decoder.ReadTag(this.binaryReader);
                 if (inspectedProperty != null)
                 {
@@ -1383,6 +1385,23 @@ namespace Hypertable.Persistence.Serialization
                 }
                 else
                 {
+                    // Alternate property name
+                    if (Resolver.PropertyNameResolver != null)
+                    {
+                        var resolvedName = Resolver.PropertyNameResolver(type, typeSchemaProperties[i].PropertyName);
+                        inspectedProperty = inspector.GetProperty(resolvedName, typeSchemaProperties[i].PropertyName);
+                        if (inspectedProperty != null)
+                        {
+                            this.SetObjectProperty(
+                                inspectedProperty,
+                                value,
+                                this.Deserialize(inspectedProperty, tag),
+                                tag);
+                        }
+
+                        continue;
+                    }
+
                     // Read unassignable values
                     Resolver.ObsoletePropertyResolver(value, this.Deserialize(typeof(object), tag));
                 }
@@ -1732,7 +1751,7 @@ namespace Hypertable.Persistence.Serialization
                     var typeSchemaProperties = new TypeSchemaProperty[typeSchemaPropertyCount];
                     for (var i = 0; i < typeSchemaPropertyCount; ++i)
                     {
-                        typeSchemaProperties[i].PropertyName = this.ReadString();
+                        typeSchemaProperties[i] = new TypeSchemaProperty { PropertyName = this.ReadString() };
                     }
 
                     var typeSchema = new TypeSchema(typeSchemaProperties);
@@ -1749,7 +1768,7 @@ namespace Hypertable.Persistence.Serialization
                             var typeSchemaProperties = new TypeSchemaProperty[typeSchemaPropertyCount];
                             for (var i = 0; i < typeSchemaPropertyCount; ++i)
                             {
-                                typeSchemaProperties[i].PropertyName = Decoder.ReadString(this.binaryReader);
+                                typeSchemaProperties[i] = new TypeSchemaProperty { PropertyName = Decoder.ReadString(this.binaryReader) };
                             }
 
                             var typeSchema = new TypeSchema(typeSchemaProperties);

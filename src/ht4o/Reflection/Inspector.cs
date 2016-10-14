@@ -422,6 +422,31 @@ namespace Hypertable.Persistence.Reflection
         }
 
         /// <summary>
+        /// Gets the inspected property by the alternate name.
+        /// </summary> 
+        /// <param name="name">
+        /// The property name.
+        /// </param>
+        /// <param name="alternateName">
+        /// The alternate property name.
+        /// </param>
+        /// <returns>
+        /// The inspected property or null.
+        /// </returns>
+        internal InspectedProperty GetProperty(string name, string alternateName)
+        {
+            InspectedProperty inspectedProperty = null;
+            if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(alternateName)) {
+                this.inspectedProperties.TryGetValue(name, out inspectedProperty);
+                if (inspectedProperty != null && !this.inspectedProperties.ContainsKey(alternateName))
+                {
+                    this.inspectedProperties.Add(alternateName, inspectedProperty);
+                }
+            }
+            return inspectedProperty;
+        }
+
+        /// <summary>
         /// Gets the inspected property by the regex specified.
         /// </summary>
         /// <param name="regex">

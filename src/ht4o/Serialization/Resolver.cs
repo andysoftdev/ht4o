@@ -47,6 +47,11 @@ namespace Hypertable.Persistence.Serialization
         private static Action<object, object> obsoletePropertyResolver;
 
         /// <summary>
+        /// The property name resolver.
+        /// </summary>
+        private static Func<Type, string, string> propertyNameResolver;
+
+        /// <summary>
         /// The type resolver.
         /// </summary>
         private static Func<Assembly, string, bool, Type> typeResolver;
@@ -144,6 +149,30 @@ namespace Hypertable.Persistence.Serialization
                 }
 
                 obsoletePropertyResolver = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the property name resolver.
+        /// </summary>
+        /// <value>
+        /// The property name resolver.
+        /// </value>
+        public static Func<Type, string, string> PropertyNameResolver
+        {
+            get
+            {
+                return propertyNameResolver;
+            }
+
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value");
+                }
+
+                propertyNameResolver = value;
             }
         }
 
