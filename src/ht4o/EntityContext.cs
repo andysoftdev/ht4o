@@ -770,7 +770,7 @@ namespace Hypertable.Persistence
             scanSpec.AddColumn(ScanSpec.DistictColumn(columnNames));
             if (scanSpec.ColumnCount == 0)
             {
-                throw new PersistenceException("Missing ot invalid entity types");
+                throw new PersistenceException("Missing of invalid entity types");
             }
 
             return scanSpec;
