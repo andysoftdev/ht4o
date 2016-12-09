@@ -20,13 +20,14 @@
  */
 namespace Hypertable.Persistence.Collections
 {
+    using System.Collections;
     using System.Collections.Generic;
     using System.Runtime.CompilerServices;
 
     /// <summary>
     /// The identity comparer.
     /// </summary>
-    internal sealed class IdentityComparer : IEqualityComparer<object>
+    internal sealed class IdentityComparer : IEqualityComparer<object>, IEqualityComparer
     {
         #region Public Methods and Operators
 
