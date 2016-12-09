@@ -40,7 +40,7 @@ namespace Hypertable.Persistence.Serialization
         /// <summary>
         /// DateTime ticks stored as lcal time.
         /// </summary>
-        internal static readonly byte LocalTimeTicks = 0x80;
+        internal const byte LocalTimeTicks = 0x80;
 
         /// <summary>
         /// The encoder configuration.
