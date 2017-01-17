@@ -1397,9 +1397,9 @@ namespace Hypertable.Persistence.Serialization
                                 value,
                                 this.Deserialize(inspectedProperty, tag),
                                 tag);
-                        }
 
-                        continue;
+                            continue;
+                        }
                     }
 
                     // Read unassignable values
