@@ -38,7 +38,7 @@ namespace Hypertable.Persistence.Serialization
         #region Static Fields
 
         /// <summary>
-        /// DateTime ticks stored as lcal time.
+        /// DateTime ticks stored as local time.
         /// </summary>
         internal const byte LocalTimeTicks = 0x80;
 
