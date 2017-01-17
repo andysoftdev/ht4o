@@ -31,6 +31,7 @@ namespace Hypertable.Persistence.Serialization
     using System.Runtime.Serialization;
 
     using Hypertable.Persistence.Collections;
+    using Hypertable.Persistence.Extensions;
     using Hypertable.Persistence.Reflection;
     using Hypertable.Persistence.Serialization.Delegates;
 
@@ -84,6 +85,11 @@ namespace Hypertable.Persistence.Serialization
         /// The binary writer.
         /// </summary>
         private BinaryWriter binaryWriter;
+
+        /// <summary>
+        /// The identity value.
+        /// </summary>
+        private int identityValue;
 
         #endregion
 
@@ -396,7 +402,6 @@ namespace Hypertable.Persistence.Serialization
         /// </param>
         internal virtual void Encode(EncoderInfo encoderInfo, object value, bool writeTag)
         {
-            ////TODO review, correct?
             if (value != null && encoderInfo.HandleObjectRef(value.GetType()))
             {
                 if (this.WriteOrAddObjectRef(value))
@@ -633,11 +638,22 @@ namespace Hypertable.Persistence.Serialization
         /// </returns>
         protected bool WriteOrAddObjectRef(object value)
         {
-            return this.WriteOrAddRef(this.identityDictionary, value, Tags.ObjectRef);
+            // Avoid extensive adding of value types to the identity dictionary
+            if (!value.GetType().IsValueType)
+            {
+                if (this.WriteOrAddRef(this.identityDictionary, value, this.identityValue, Tags.ObjectRef))
+                {
+                    return true;
+                }
+            }
+
+            ++this.identityValue;
+
+            return false;
         }
 
         /// <summary>
-        /// Writes or adds an string reference.
+        /// Writes or adds a string reference.
         /// </summary>
         /// <param name="value">
         /// The object.
@@ -647,11 +663,11 @@ namespace Hypertable.Persistence.Serialization
         /// </returns>
         protected bool WriteOrAddStringRef(string value)
         {
-            return this.WriteOrAddRef(this.stringDictionary, value, Tags.StringRef);
+            return this.WriteOrAddRef(this.stringDictionary, value, this.stringDictionary.Count, Tags.StringRef);
         }
 
         /// <summary>
-        /// Writes or adds an type reference.
+        /// Writes or adds a type reference.
         /// </summary>
         /// <param name="type">
         /// The type.
@@ -661,7 +677,7 @@ namespace Hypertable.Persistence.Serialization
         /// </returns>
         protected bool WriteOrAddTypeRef(Type type)
         {
-            return this.WriteOrAddRef(this.typeDictionary, type, Tags.TypeRef);
+            return this.WriteOrAddRef(this.typeDictionary, type, this.typeDictionary.Count, Tags.TypeRef);
         }
 
         /// <summary>
@@ -1373,6 +1389,9 @@ namespace Hypertable.Persistence.Serialization
         /// <param name="key">
         /// The key.
         /// </param>
+        /// <param name="value">
+        /// The value.
+        /// </param>
         /// <param name="tag">
         /// The tag.
         /// </param>
@@ -1382,7 +1401,7 @@ namespace Hypertable.Persistence.Serialization
         /// <typeparam name="TKey">
         /// The key type.
         /// </typeparam>
-        private bool WriteOrAddRef<TKey>(IDictionary<TKey, int> dictionary, TKey key, Tags tag)
+        private bool WriteOrAddRef<TKey>(IDictionary<TKey, int> dictionary, TKey key, int value, Tags tag)
         {
             int valueref;
             if (dictionary.TryGetValue(key, out valueref))
@@ -1392,7 +1411,7 @@ namespace Hypertable.Persistence.Serialization
                 return true;
             }
 
-            dictionary.Add(key, dictionary.Count);
+            dictionary.Add(key, value);
             return false;
         }
 
