@@ -162,12 +162,12 @@ namespace Hypertable.Persistence.Scanner.TableScan
         /// <summary>
         /// The entity keys.
         /// </summary>
-        private readonly Dictionary<Key, EntityScanTarget> keys = new Dictionary<Key, EntityScanTarget>(new KeyComparer());
+        private readonly IDictionary<Key, EntityScanTarget> keys = new Dictionary<Key, EntityScanTarget>(new KeyComparer());
         
         /// <summary>
         /// The unqualified entity keys.
         /// </summary>
-        private readonly Dictionary<Key, EntityScanTarget> unqualifiedKeys = new Dictionary<Key, EntityScanTarget>(new RowComparer());
+        private readonly IDictionary<Key, EntityScanTarget> unqualifiedKeys = new Dictionary<Key, EntityScanTarget>(new RowComparer());
 
         #endregion
 
@@ -399,12 +399,12 @@ namespace Hypertable.Persistence.Scanner.TableScan
         /// <summary>
         /// The entity keys.
         /// </summary>
-        private readonly Dictionary<Key, EntityScanTarget> keys = new Dictionary<Key, EntityScanTarget>(new KeyComparer());
+        private readonly IDictionary<Key, EntityScanTarget> keys = new Dictionary<Key, EntityScanTarget>(new KeyComparer());
 
         /// <summary>
         /// The unqualified entity keys.
         /// </summary>
-        private readonly Dictionary<Key, EntityScanTarget> unqualifiedKeys = new Dictionary<Key, EntityScanTarget>(new RowComparer());
+        private readonly IDictionary<Key, EntityScanTarget> unqualifiedKeys = new Dictionary<Key, EntityScanTarget>(new RowComparer());
 
         #endregion
 

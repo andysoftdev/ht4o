@@ -36,7 +36,7 @@ namespace Hypertable.Persistence.Collections
         /// Initializes a new instance of the <see cref="IdentityDictionary{T}"/> class.
         /// </summary>
         internal IdentityDictionary()
-            : base(new IdentityComparer())
+            : base(256, new IdentityComparer())
         {
         }
 

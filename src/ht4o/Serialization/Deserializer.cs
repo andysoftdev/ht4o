@@ -61,7 +61,7 @@ namespace Hypertable.Persistence.Serialization
         /// <summary>
         /// The decoder infos.
         /// </summary>
-        private readonly Dictionary<Tags, DecoderInfo> decoderInfos = new Dictionary<Tags, DecoderInfo>();
+        private readonly IDictionary<Tags, DecoderInfo> decoderInfos = new Dictionary<Tags, DecoderInfo>(256);
 
         /// <summary>
         /// The object references.

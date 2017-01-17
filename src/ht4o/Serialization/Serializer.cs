@@ -59,7 +59,7 @@ namespace Hypertable.Persistence.Serialization
         /// <summary>
         /// The encoder info.
         /// </summary>
-        private readonly Dictionary<Type, EncoderInfo> encoderInfos = new Dictionary<Type, EncoderInfo>();
+        private readonly IDictionary<Type, EncoderInfo> encoderInfos = new Dictionary<Type, EncoderInfo>(256);
 
         /// <summary>
         /// The identity dictionary.
@@ -69,17 +69,17 @@ namespace Hypertable.Persistence.Serialization
         /// <summary>
         /// The string dictionary.
         /// </summary>
-        private readonly Dictionary<string, int> stringDictionary = new Dictionary<string, int>();
+        private readonly IDictionary<string, int> stringDictionary = new Dictionary<string, int>(256);
 
         /// <summary>
         /// The type dictionary.
         /// </summary>
-        private readonly Dictionary<Type, int> typeDictionary = new Dictionary<Type, int>();
+        private readonly IDictionary<Type, int> typeDictionary = new Dictionary<Type, int>(256);
 
         /// <summary>
         /// The type schema reference dictionary.
         /// </summary>
-        private readonly Dictionary<Type, TypeSchemaRef> typeSchemaRefDictionary = new Dictionary<Type, TypeSchemaRef>();
+        private readonly IDictionary<Type, TypeSchemaRef> typeSchemaRefDictionary = new Dictionary<Type, TypeSchemaRef>(256);
 
         /// <summary>
         /// The binary writer.
