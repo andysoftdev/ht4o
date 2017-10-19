@@ -42,7 +42,7 @@ namespace Hypertable.Persistence
         /// <summary>
         /// The entity context.
         /// </summary>
-        private readonly EntityContext entityContext;
+        private EntityContext entityContext;
 
         /// <summary>
         /// Indicating whether this factory context has been disposed.
@@ -1255,6 +1255,7 @@ namespace Hypertable.Persistence
                     this.entityContext.Dispose();
                 }
 
+                this.entityContext = null;
                 this.disposed = true;
             }
         }

@@ -48,12 +48,12 @@ namespace Hypertable.Persistence
         /// <summary>
         /// The entity specs fetched.
         /// </summary>
-        private readonly EntitySpecSet entitySpecsFetched = new EntitySpecSet();
+        private EntitySpecSet entitySpecsFetched = new EntitySpecSet();
 
         /// <summary>
         /// The entity specs written.
         /// </summary>
-        private readonly EntitySpecSet entitySpecsWritten = new EntitySpecSet();
+        private EntitySpecSet entitySpecsWritten = new EntitySpecSet();
 
         /// <summary>
         /// The entity manager factory context.
@@ -770,7 +770,7 @@ namespace Hypertable.Persistence
             scanSpec.AddColumn(ScanSpec.DistictColumn(columnNames));
             if (scanSpec.ColumnCount == 0)
             {
-                throw new PersistenceException("Missing of invalid entity types");
+                throw new PersistenceException("Missing or invalid entity types");
             }
 
             return scanSpec;
@@ -859,6 +859,12 @@ namespace Hypertable.Persistence
                         tableMutator.Dispose();
                     }
                 }
+
+                this.entitySpecsFetched.Clear();
+                this.entitySpecsFetched = null;
+
+                this.entitySpecsWritten.Clear();
+                this.entitySpecsWritten = null;
 
                 this.disposed = true;
             }
