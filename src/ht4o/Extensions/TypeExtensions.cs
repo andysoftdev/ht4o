@@ -52,7 +52,7 @@ namespace Hypertable.Persistence.Extensions
         /// <summary>
         /// The ITuple type.
         /// </summary>
-        private static readonly Type TypeITuple = typeof(Tuple<int>).GetInterface("System.ITuple");
+        private static readonly Type TypeITuple = typeof(Tuple<int>).GetInterface("System.Runtime.CompilerServices.ITuple") ?? typeof(Tuple<int>).GetInterface("System.ITuple");
 
         #endregion
 
