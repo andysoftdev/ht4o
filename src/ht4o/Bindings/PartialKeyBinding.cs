@@ -198,17 +198,20 @@ namespace Hypertable.Persistence.Bindings
         /// <param name="key">
         /// The key to update.
         /// </param>
+        /// <param name="type">
+        /// The entity type.
+        /// </param>
         /// <returns>
         /// The updated key.
         /// </returns>
-        protected Key GenerateKey(Key key)
+        protected Key GenerateKey(Key key, Type type)
         {
             if (key == null)
             {
                 throw new ArgumentNullException("key");
             }
 
-            key.Row = Key.Generate();
+            key.Row = Key.Generate(type);
             return this.Merge(key);
         }
 

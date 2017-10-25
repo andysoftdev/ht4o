@@ -77,7 +77,7 @@ namespace Hypertable.Persistence.Bindings
         /// </returns>
         public override Key CreateKey(object entity)
         {
-            var key = this.GenerateKey(new Key());
+            var key = this.GenerateKey(new Key(), entity.GetType());
             this.set(entity, key.Row);
             return key;
         }

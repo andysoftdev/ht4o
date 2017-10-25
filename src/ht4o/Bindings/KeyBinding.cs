@@ -254,7 +254,7 @@ namespace Hypertable.Persistence.Bindings
         {
             if (this.generateKey)
             {
-                var key = this.GenerateKey(new Key());
+                var key = this.GenerateKey(new Key(), entity.GetType());
                 this.set((T)entity, key.Row);
                 return key;
             }

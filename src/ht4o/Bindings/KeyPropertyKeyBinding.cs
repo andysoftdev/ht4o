@@ -97,7 +97,7 @@ namespace Hypertable.Persistence.Bindings
                 key = (Key)obj;
             }
 
-            return this.GenerateKey(key);
+            return this.GenerateKey(key, entity.GetType());
         }
 
         /// <summary>
