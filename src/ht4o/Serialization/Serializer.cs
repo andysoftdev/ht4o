@@ -262,6 +262,22 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
+        /// Deserialize from the stream specified.
+        /// </summary>
+        /// <param name="destinationType">
+        /// The destination type.
+        /// </param>
+        /// <param name="stream">
+        /// The stream.
+        /// </param>
+        /// <returns>
+        /// The deserialized object.
+        /// </returns>
+        public object Deserialize(Type destinationType, Stream stream) {
+            return Deserializer.Deserialize(destinationType, stream);
+        }
+
+        /// <summary>
         /// Serializes the object specified.
         /// </summary>
         /// <typeparam name="T">
@@ -776,7 +792,7 @@ namespace Hypertable.Persistence.Serialization
 
             if (serializeType == typeof(object) || serializeType.IsInterface || serializeType.IsAbstract)
             {
-                if (serializeType.IsGenericType)
+                if (type.IsGenericType)
                 {
                     var baseType = type.GetGenericTypeDefinition();
                     if (baseType != typeof(Dictionary<,>))
@@ -1104,6 +1120,11 @@ namespace Hypertable.Persistence.Serialization
                 }
                 else
                 {
+                    if (serializeType == typeof(object))
+                    {
+                        flags |= DictionaryFlags.Typed;
+                    }
+
                     Encoder.WriteByte(this.binaryWriter, (byte)flags, false);
                     if (flags.HasFlag(DictionaryFlags.Typed))
                     {
@@ -1215,6 +1236,11 @@ namespace Hypertable.Persistence.Serialization
             }
             else
             {
+                if (serializeType == typeof(object))
+                {
+                    flags |= DictionaryFlags.Typed;
+                }
+
                 Encoder.WriteByte(this.binaryWriter, (byte)flags, false);
                 if (flags.HasFlag(DictionaryFlags.Typed))
                 {
@@ -1318,6 +1344,11 @@ namespace Hypertable.Persistence.Serialization
                     }
 
                     return;
+                }
+
+                if (serializeType == typeof(object))
+                {
+                    flags |= CollectionFlags.Typed;
                 }
 
                 Encoder.WriteByte(this.binaryWriter, (byte)flags, false);

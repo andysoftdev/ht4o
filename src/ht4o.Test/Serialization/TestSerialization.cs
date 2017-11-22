@@ -1646,6 +1646,19 @@ namespace Hypertable.Persistence.Test.Serialization
                 Assert.IsInstanceOfType(dr, typeof(Dictionary<string, string>));
                 Assert.IsTrue(Equatable.AreEqual(dv, dr));
             }
+
+            {
+                var l = new Dictionary<Guid, ObjectH2> { { Guid.NewGuid(), new ObjectH2() } };
+                var b = Serializer.ToByteArray<object>(l);
+                Assert.IsNotNull(b);
+                var d = Deserializer.FromByteArray<object>(b);
+                Assert.IsNotNull(d);
+                Assert.IsInstanceOfType(d, typeof(Dictionary<Guid, ObjectH2>));
+                var ld = (Dictionary<Guid, ObjectH2>)d;
+                Assert.IsTrue(ld.Count == 1);
+                Assert.IsNotNull(ld.First().Value);
+                Assert.IsInstanceOfType(ld.First().Value, typeof(ObjectH2));
+            }
         }
 
         /// <summary>
@@ -1727,6 +1740,19 @@ namespace Hypertable.Persistence.Test.Serialization
                 Assert.IsNotNull(hsvgr);
                 var ssvgr = Deserializer.FromByteArray<SortedSet<byte>>(b);
                 Assert.IsNotNull(ssvgr);
+            }
+
+            {
+                var l = new List<ObjectH2> { new ObjectH2() };
+                var b = Serializer.ToByteArray<object>(l);
+                Assert.IsNotNull(b);
+                var d = Deserializer.FromByteArray<object>(b);
+                Assert.IsNotNull(d);
+                Assert.IsInstanceOfType(d, typeof(List<ObjectH2>));
+                var ld = (List<ObjectH2>)d;
+                Assert.IsTrue(ld.Count == 1);
+                Assert.IsNotNull(ld[0]);
+                Assert.IsInstanceOfType(ld[0], typeof(ObjectH2));
             }
         }
 

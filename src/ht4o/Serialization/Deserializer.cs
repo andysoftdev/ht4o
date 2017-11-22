@@ -159,6 +159,26 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
+        /// Deserialize from the stream specified.
+        /// </summary>
+        /// <param name="destinationType">
+        /// The destination type.
+        /// </param>
+        /// <param name="stream">
+        /// The stream.
+        /// </param>
+        /// <returns>
+        /// The deserialized object.
+        /// </returns>
+        public static object Deserialize(Type destinationType, Stream stream)
+        {
+            using (var binaryReader = new BinaryReader(stream))
+            {
+                return FromByteArray(destinationType, binaryReader);
+            }
+        }
+
+        /// <summary>
         /// Deserialize from the byte array specified.
         /// </summary>
         /// <param name="serialized">
@@ -573,6 +593,22 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
+        /// Deserializes an object from the binary reader specified.
+        /// </summary>
+        /// <param name="destinationType">
+        /// The destination type.
+        /// </param>
+        /// <param name="binaryReader">
+        /// The binary reader.
+        /// </param>
+        /// <returns>
+        /// The deserialized object.
+        /// </returns>
+        protected static object FromByteArray(Type destinationType, BinaryReader binaryReader) {
+            return new Deserializer(binaryReader).Deserialize(destinationType);
+        }
+
+        /// <summary>
         /// The deferred read object.
         /// </summary>
         /// <param name="tag">
@@ -614,7 +650,20 @@ namespace Hypertable.Persistence.Serialization
         /// </returns>
         protected T Deserialize<T>()
         {
-            return (T)this.Deserialize(typeof(T), Decoder.ReadTag(this.binaryReader));
+            return (T)this.Deserialize(typeof(T));
+        }
+
+        /// <summary>
+        /// Deserialize an object.
+        /// </summary>
+        /// <param name="destinationType">
+        /// The destination type.
+        /// </param>
+        /// <returns>
+        /// The deserialized object.
+        /// </returns>
+        protected object Deserialize(Type destinationType) {
+            return this.Deserialize(destinationType, Decoder.ReadTag(this.binaryReader));
         }
 
         /// <summary>
