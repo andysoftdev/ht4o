@@ -18,6 +18,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
+using Hypertable.Persistence.Collections.Concurrent;
+
 namespace Hypertable.Persistence.Serialization
 {
     using System;
@@ -29,6 +32,7 @@ namespace Hypertable.Persistence.Serialization
     using Hypertable.Persistence.Extensions;
     using Hypertable.Persistence.Reflection;
     using Hypertable.Persistence.Serialization.Delegates;
+    using Hypertable.Persistence.Collections;
 
     /// <summary>
     /// The entity serializer.
@@ -40,7 +44,7 @@ namespace Hypertable.Persistence.Serialization
         /// <summary>
         /// The type schema dictionary.
         /// </summary>
-        private static readonly ConcurrentDictionary<Type, TypeSchema> TypeSchemaDictionary = new ConcurrentDictionary<Type, TypeSchema>();
+        private static readonly ConcurrentTypeDictionary<TypeSchema> TypeSchemaDictionary = new ConcurrentTypeDictionary<TypeSchema>();
 
         #endregion
 

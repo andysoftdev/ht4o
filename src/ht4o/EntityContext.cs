@@ -18,6 +18,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
+using Hypertable.Persistence.Collections.Concurrent;
+
 namespace Hypertable.Persistence
 {
     using System;
@@ -30,8 +33,8 @@ namespace Hypertable.Persistence
     using Hypertable;
     using Hypertable.Persistence.Scanner;
 
-    using EntitySpecSet = Hypertable.Persistence.Collections.ConcurrentSet<Hypertable.Persistence.Scanner.EntitySpec>;
-    using TableMutatorDictionary = System.Collections.Concurrent.ConcurrentDictionary<string, ITableMutator>;
+    using EntitySpecSet = ConcurrentSet<Hypertable.Persistence.Scanner.EntitySpec>;
+    using TableMutatorDictionary = ConcurrentStringDictionary<ITableMutator>;
 
     /// <summary>
     /// The entity context.

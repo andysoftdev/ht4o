@@ -27,6 +27,8 @@ namespace Hypertable.Persistence.Reflection
     using System.Reflection;
     using System.Reflection.Emit;
 
+    using Hypertable.Persistence.Extensions;
+
     /// <summary>
     /// The delegate factory.
     /// </summary>
@@ -83,7 +85,7 @@ namespace Hypertable.Persistence.Reflection
                 return null;
             }
 
-            if (instanceType.IsValueType)
+            if (instanceType.IsValueType())
             {
                 var defaultExpression = Expression.Lambda<Func<object>>(Expression.Convert(Expression.Default(instanceType), typeof(object)));
                 return defaultExpression.Compile();
@@ -290,13 +292,13 @@ namespace Hypertable.Persistence.Reflection
                 var generator = method.GetILGenerator();
 
                 generator.Emit(OpCodes.Ldarg_0);
-                if (fieldInfo.DeclaringType.IsValueType)
+                if (fieldInfo.DeclaringType.IsValueType())
                 {
                     generator.Emit(OpCodes.Unbox, fieldInfo.DeclaringType);
                 }
 
                 generator.Emit(OpCodes.Ldarg_1);
-                if (fieldInfo.FieldType.IsValueType)
+                if (fieldInfo.FieldType.IsValueType())
                 {
                     generator.Emit(OpCodes.Unbox_Any, fieldInfo.FieldType);
                 }
@@ -372,7 +374,7 @@ namespace Hypertable.Persistence.Reflection
         /// </returns>
         private static UnaryExpression ConvertOrUnbox(Expression instance, Type instanceType)
         {
-            return instanceType.IsValueType ? Expression.Unbox(instance, instanceType) : Expression.Convert(instance, instanceType);
+            return instanceType.IsValueType() ? Expression.Unbox(instance, instanceType) : Expression.Convert(instance, instanceType);
         }
 
         #endregion

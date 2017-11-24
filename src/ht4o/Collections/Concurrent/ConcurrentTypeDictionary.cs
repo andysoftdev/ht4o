@@ -18,38 +18,50 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
-namespace Hypertable.Persistence.Collections
+
+namespace Hypertable.Persistence.Collections.Concurrent
 {
     using System;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// The concurrent type dictionary.
+    ///     The concurrent type dictionary.
     /// </summary>
     /// <typeparam name="TValue">
-    /// The value type.
+    ///     The value type.
     /// </typeparam>
     internal sealed class ConcurrentTypeDictionary<TValue> : ConcurrentDictionary<Type, TValue>
     {
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ConcurrentTypeDictionary{TValue}"/> class.
+        ///     Initializes a new instance of the <see cref="ConcurrentTypeDictionary{TValue}" /> class.
         /// </summary>
         internal ConcurrentTypeDictionary()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ConcurrentTypeDictionary{TValue}"/> class.
+        ///     Initializes a new instance of the <see cref="ConcurrentTypeDictionary{TValue}" /> class.
         /// </summary>
         /// <param name="other">
-        /// The other.
+        ///     The other.
         /// </param>
         internal ConcurrentTypeDictionary(ConcurrentTypeDictionary<TValue> other)
             : base(other)
+        {
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="ConcurrentTypeDictionary{TValue}" /> class.
+        /// </summary>
+        /// <param name="collection">
+        ///     The collection.
+        /// </param>
+        internal ConcurrentTypeDictionary(IEnumerable<KeyValuePair<Type, TValue>> collection)
+            : base(collection)
         {
         }
 
@@ -58,88 +70,71 @@ namespace Hypertable.Persistence.Collections
         #region Methods
 
         /// <summary>
-        /// Adds or updates a type/value pair.
+        ///     Adds or updates a type/value pair.
         /// </summary>
         /// <param name="type">
-        /// The type to be added.
+        ///     The type to be added.
         /// </param>
         /// <param name="value">
-        /// The value to be added.
+        ///     The value to be added.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the type/value pair was added to the dictionary successfully, <c>false</c> if the value has been updated.
+        ///     <c>true</c> if the type/value pair was added to the dictionary successfully, <c>false</c> if the value has been
+        ///     updated.
         /// </returns>
         internal bool AddOrUpdate(Type type, TValue value)
         {
             var added = true;
             base.AddOrUpdate(
-                type, 
-                value, 
+                type,
+                value,
                 (t, v) =>
-                    {
-                        added = false;
-                        return value;
-                    });
+                {
+                    added = false;
+                    return value;
+                });
 
             return added;
         }
 
         /// <summary>
-        /// Get the value for the type specified.
+        ///     Get the value for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The type to lookup.
+        ///     The type to lookup.
         /// </param>
         /// <returns>
-        /// The value found or default(TValue).
+        ///     The value found or default(TValue).
         /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal TValue GetValue(Type type)
         {
             TValue value;
-            if (!this.TryGetValue(type, out value))
-            {
+            if (!TryGetValue(type, out value))
                 return default(TValue);
-            }
 
             return value;
         }
 
         /// <summary>
-        /// Removes the type from the dictionary.
-        /// </summary>
-        /// <param name="type">
-        /// The type to remove.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if an object was removed successfully, otherwise <c>false</c>.
-        /// </returns>
-        internal bool Remove(Type type)
-        {
-            TValue value;
-            return this.TryRemove(type, out value);
-        }
-
-        /// <summary>
-        /// Removes all types specified from the dictionary.
+        ///     Removes all types specified from the dictionary.
         /// </summary>
         /// <param name="types">
-        /// The types to remove.
+        ///     The types to remove.
         /// </param>
         /// <returns>
-        /// The number of types removed successfully.
+        ///     The number of types removed successfully.
         /// </returns>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="types"/> is null.
+        ///     If <paramref name="types" /> is null.
         /// </exception>
         internal int Remove(IEnumerable<Type> types)
         {
             if (types == null)
-            {
                 throw new ArgumentNullException("types");
-            }
 
             TValue value;
-            return types.ToList().Count(key => this.TryRemove(key, out value)); // ToList is required
+            return types.ToList().Count(key => TryRemove(key, out value)); // ToList is required
         }
 
         #endregion

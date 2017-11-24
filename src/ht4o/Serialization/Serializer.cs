@@ -18,11 +18,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
+using Hypertable.Persistence.Collections.Concurrent;
+
 namespace Hypertable.Persistence.Serialization
 {
     using System;
     using System.Collections;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
@@ -45,7 +47,7 @@ namespace Hypertable.Persistence.Serialization
         /// <summary>
         /// The type schema dictionary.
         /// </summary>
-        private static readonly ConcurrentDictionary<Type, TypeSchema> TypeSchemaDictionary = new ConcurrentDictionary<Type, TypeSchema>();
+        private static readonly ConcurrentTypeDictionary<TypeSchema> TypeSchemaDictionary = new ConcurrentTypeDictionary<TypeSchema>();
 
         #endregion
 
@@ -59,27 +61,27 @@ namespace Hypertable.Persistence.Serialization
         /// <summary>
         /// The encoder info.
         /// </summary>
-        private readonly IDictionary<Type, EncoderInfo> encoderInfos = new Dictionary<Type, EncoderInfo>(256);
+        private readonly FastDictionary<Type, EncoderInfo> encoderInfos = new FastDictionary<Type, EncoderInfo>(256);
 
         /// <summary>
         /// The identity dictionary.
         /// </summary>
-        private readonly IdentityDictionary<int> identityDictionary = new IdentityDictionary<int>();
+        private readonly IdentityDictionary<int> identityDictionary = new IdentityDictionary<int>(256);
 
         /// <summary>
         /// The string dictionary.
         /// </summary>
-        private readonly IDictionary<string, int> stringDictionary = new Dictionary<string, int>(256);
+        private readonly StringDictionary<int> stringDictionary = new StringDictionary<int>(256);
 
         /// <summary>
         /// The type dictionary.
         /// </summary>
-        private readonly IDictionary<Type, int> typeDictionary = new Dictionary<Type, int>(256);
+        private readonly FastDictionary<Type, int> typeDictionary = new FastDictionary<Type, int>(256);
 
         /// <summary>
         /// The type schema reference dictionary.
         /// </summary>
-        private readonly IDictionary<Type, TypeSchemaRef> typeSchemaRefDictionary = new Dictionary<Type, TypeSchemaRef>(256);
+        private readonly FastDictionary<Type, TypeSchemaRef> typeSchemaRefDictionary = new FastDictionary<Type, TypeSchemaRef>(256);
 
         /// <summary>
         /// The binary writer.
@@ -655,7 +657,7 @@ namespace Hypertable.Persistence.Serialization
         protected bool WriteOrAddObjectRef(object value)
         {
             // Avoid extensive adding of value types to the identity dictionary
-            if (!value.GetType().IsValueType)
+            if (!value.GetType().IsValueType())
             {
                 if (this.WriteOrAddRef(this.identityDictionary, value, this.identityValue, Tags.ObjectRef))
                 {
@@ -865,14 +867,28 @@ namespace Hypertable.Persistence.Serialization
         /// </returns>
         private bool TryGetEncoder(Type type, out EncoderInfo encoderInfo)
         {
-            if (this.encoderInfos.TryGetValue(type, out encoderInfo))
-            {
+            /*if (this.encoderInfos.TryGetValue(type, out encoderInfo)) {
                 return true;
             }
 
-            if (Encoder.TryGetEncoder(type, out encoderInfo))
-            {
+            if (Encoder.TryGetEncoder(type, out encoderInfo)) {
                 this.encoderInfos.Add(type, encoderInfo);
+                return true;
+            }
+
+            return false;*/
+
+            int bucket;
+            FastDictionary<Type, EncoderInfo>.Entry entry;
+
+            if (this.encoderInfos.TryGetValue(type, out bucket, out entry)) {
+                encoderInfo = entry.Value;
+                return true;
+            }
+
+            if (Encoder.TryGetEncoder(type, out encoderInfo)) {
+                entry.Value = encoderInfo;
+                this.encoderInfos.Insert(bucket, ref entry);
                 return true;
             }
 
@@ -1432,9 +1448,12 @@ namespace Hypertable.Persistence.Serialization
         /// <typeparam name="TKey">
         /// The key type.
         /// </typeparam>
-        private bool WriteOrAddRef<TKey>(IDictionary<TKey, int> dictionary, TKey key, int value, Tags tag)
+        /// <typeparam name="TComparer">
+        /// The comparer type.
+        /// </typeparam>
+        private bool WriteOrAddRef<TKey, TComparer>(FastDictionary<TKey, int, TComparer> dictionary, TKey key, int value, Tags tag) where TComparer : struct, IEqualityComparer<TKey>
         {
-            int valueref;
+            /*int valueref;
             if (dictionary.TryGetValue(key, out valueref))
             {
                 Encoder.WriteTag(this.binaryWriter, tag);
@@ -1443,6 +1462,15 @@ namespace Hypertable.Persistence.Serialization
             }
 
             dictionary.Add(key, value);
+            return false;*/
+
+            int valueref;
+            if (dictionary.TryGetOrAddValue(key, out valueref, value)) {
+                Encoder.WriteTag(this.binaryWriter, tag);
+                Encoder.WriteCount(this.binaryWriter, valueref);
+                return true;
+            }
+
             return false;
         }
 
@@ -1512,9 +1540,8 @@ namespace Hypertable.Persistence.Serialization
         /// <returns>
         /// The type schema written.
         /// </returns>
-        private TypeSchema WriteTypeSchema(Type type, Inspector inspector)
-        {
-            TypeSchemaRef typeSchemaRef;
+        private TypeSchema WriteTypeSchema(Type type, Inspector inspector) {
+            /*TypeSchemaRef typeSchemaRef;
             if (this.typeSchemaRefDictionary.TryGetValue(type, out typeSchemaRef))
             {
                 Encoder.WriteTag(this.binaryWriter, Tags.TypeSchemaRef);
@@ -1528,7 +1555,24 @@ namespace Hypertable.Persistence.Serialization
             typeSchemaRef.TypeSchema = typeSchema;
             typeSchemaRef.Ref = this.typeSchemaRefDictionary.Count;
             this.typeSchemaRefDictionary.Add(type, typeSchemaRef);
-            return typeSchemaRef.TypeSchema;
+            return typeSchemaRef.TypeSchema;*/
+
+            int bucket;
+            FastDictionary<Type, TypeSchemaRef>.Entry entry;
+
+            if (this.typeSchemaRefDictionary.TryGetValue(type, out bucket, out entry)) {
+                Encoder.WriteTag(this.binaryWriter, Tags.TypeSchemaRef);
+                Encoder.WriteCount(this.binaryWriter, entry.Value.Ref);
+                return entry.Value.TypeSchema;
+            }
+
+            var typeSchema = this.GetTypeSchema(type, inspector);
+            this.binaryWriter.Write(typeSchema.SerializedSchema);
+
+            entry.Value.TypeSchema = typeSchema;
+            entry.Value.Ref = this.typeSchemaRefDictionary.Count - 1; // The count have been already incremented by the TryGetValue
+            this.typeSchemaRefDictionary.Insert(bucket, ref entry);
+            return entry.Value.TypeSchema;
         }
 
         #endregion

@@ -20,30 +20,22 @@
  */
 namespace Hypertable.Persistence.Collections
 {
+    using System.Collections.Generic;
+    using System.Runtime.CompilerServices;
+
     /// <summary>
-    /// The identity dictionary.
+    /// The default equality comparer.
     /// </summary>
-    /// <typeparam name="T">
-    /// The value type.
-    /// </typeparam>
-    internal sealed class IdentityDictionary<T> : FastDictionary<object, T, IdentityComparer>
+    internal struct EqualityComparer<T> : IEqualityComparer<T>
     {
-        #region Constructors and Destructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="IdentityDictionary{T}"/> class.
-        /// </summary>
-        internal IdentityDictionary()
-        {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Equals(T x, T y) {
+            return x.Equals(y);
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="IdentityDictionary{T}"/> class.
-        /// </summary>
-        internal IdentityDictionary(int initialBucketCount)
-            : base(initialBucketCount) {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int GetHashCode(T obj) {
+            return obj.GetHashCode();
         }
-
-        #endregion
     }
 }

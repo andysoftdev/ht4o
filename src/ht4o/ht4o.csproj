@@ -109,8 +109,15 @@
     <Compile Include="Bindings\DefaultTableBinding.cs" />
     <Compile Include="Bindings\KeyPropertyKeyBinding.cs" />
     <Compile Include="Collections\ChunkedCollection.cs" />
-    <Compile Include="Collections\ConcurrentSet.cs" />
-    <Compile Include="Collections\ConcurrentTypeDictionary.cs" />
+    <Compile Include="Collections\Concurrent\ConcurrentSet.cs" />
+    <Compile Include="Collections\Concurrent\ConcurrentTypeDictionary.cs" />
+    <Compile Include="Collections\Concurrent\ConcurrentDictionary.cs" />
+    <Compile Include="Collections\Concurrent\ConcurrentStringDictionary.cs" />
+    <Compile Include="Collections\FastDictionary.cs" />
+    <Compile Include="Collections\EqualityComparer.cs" />
+    <Compile Include="Collections\StringComparerOrdinalIgnoreCase.cs" />
+    <Compile Include="Collections\StringDictionary.cs" />
+    <Compile Include="Collections\StringComparer.cs" />
     <Compile Include="Collections\IdentityComparer.cs" />
     <Compile Include="Collections\IdentitySet.cs" />
     <Compile Include="Collections\Map.cs" />
@@ -191,6 +198,7 @@
   <ItemGroup>
     <None Include="Settings.StyleCop" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

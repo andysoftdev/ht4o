@@ -39,9 +39,9 @@ namespace Hypertable.Persistence.Collections
         #region Fields
 
         /// <summary>
-        /// The dictionary.
+        /// The inner dictionary.
         /// </summary>
-        private readonly IDictionary<TKey, TValue> dictionary = new Dictionary<TKey, TValue>();
+        private readonly FastDictionary<TKey, TValue> dictionary = new FastDictionary<TKey, TValue>(256);
 
         /// <summary>
         /// The recent key.
@@ -101,20 +101,13 @@ namespace Hypertable.Persistence.Collections
         /// </returns>
         internal TValue GetOrAdd(TKey key, Func<TKey, TValue> valueFactory)
         {
-            TValue value;
             if (key.Equals(this.recentKey))
             {
                 return this.recentValue;
             }
 
-            if (!this.dictionary.TryGetValue(key, out value))
-            {
-                this.dictionary.Add(key, value = valueFactory(key));
-            }
-
             this.recentKey = key;
-            this.recentValue = value;
-            return value;
+            return this.recentValue = this.dictionary.GetOrAdd(key, valueFactory);
         }
 
         #endregion

@@ -393,7 +393,6 @@ namespace Hypertable.Persistence.Scanner
         /// </returns>
         private ITableScan CreateTableScanAndFilter()
         {
-            ////TODO compare ConcurrentTableScanAndFilter against LockedTableScanAndFilter
             return this.useAsyncTableScanner ? (ITableScan)new ConcurrentTableScanAndFilter() : new TableScanAndFilter();
         }
 

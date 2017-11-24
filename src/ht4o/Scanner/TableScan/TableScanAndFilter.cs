@@ -21,8 +21,8 @@
 namespace Hypertable.Persistence.Scanner.TableScan
 {
     using System;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Collections.Concurrent;
     using System.Linq;
     using System.Text;
 
@@ -34,11 +34,7 @@ namespace Hypertable.Persistence.Scanner.TableScan
     /// <summary>
     /// The table scan and filter.
     /// </summary>
-    /// <typeparam name="T">
-    /// The dictionary type.
-    /// </typeparam>
-    internal abstract class TableScanAndFilter<T> : ITableScan
-        where T : IDictionary<Key, EntityScanTarget>
+    internal abstract class TableScanAndFilterBase : ITableScan
     {
         #region Public Properties
 
@@ -155,18 +151,20 @@ namespace Hypertable.Persistence.Scanner.TableScan
     /// <summary>
     /// The table scan and filter.
     /// </summary>
-    internal sealed class TableScanAndFilter : TableScanAndFilter<Dictionary<Key, EntityScanTarget>>
+    internal sealed class TableScanAndFilter : TableScanAndFilterBase
     {
         #region Fields
 
         /// <summary>
         /// The entity keys.
         /// </summary>
+        ///TODO(THAN) Chnage to FastDictionary once the KeyComparer is a struct
         private readonly IDictionary<Key, EntityScanTarget> keys = new Dictionary<Key, EntityScanTarget>(new KeyComparer());
-        
+
         /// <summary>
         /// The unqualified entity keys.
         /// </summary>
+        ///TODO(THAN) Chnage to FastDictionary once the RowComparer is a struct
         private readonly IDictionary<Key, EntityScanTarget> unqualifiedKeys = new Dictionary<Key, EntityScanTarget>(new RowComparer());
 
         #endregion
@@ -272,18 +270,20 @@ namespace Hypertable.Persistence.Scanner.TableScan
     /// <summary>
     /// The concurrent table scan and filter.
     /// </summary>
-    internal sealed class ConcurrentTableScanAndFilter : TableScanAndFilter<ConcurrentDictionary<Key, EntityScanTarget>>
+    internal sealed class ConcurrentTableScanAndFilter : TableScanAndFilterBase
     {
         #region Fields
 
         /// <summary>
         /// The entity keys.
         /// </summary>
+        ///TODO(THAN) Chnage to FastDictionary once the KeyComparer is a struct
         private readonly ConcurrentDictionary<Key, EntityScanTarget> keys = new ConcurrentDictionary<Key, EntityScanTarget>(new KeyComparer());
 
         /// <summary>
         /// The unqualified entity keys.
         /// </summary>
+        ///TODO(THAN) Chnage to FastDictionary once the KeyComparer is a struct
         private readonly ConcurrentDictionary<Key, EntityScanTarget> unqualifiedKeys = new ConcurrentDictionary<Key, EntityScanTarget>(new RowComparer());
 
         #endregion
@@ -384,136 +384,6 @@ namespace Hypertable.Persistence.Scanner.TableScan
                     });
 
             return added;
-        }
-
-        #endregion
-    }
-
-    /// <summary>
-    /// The async table scan and filter.
-    /// </summary>
-    internal sealed class LockedTableScanAndFilter : TableScanAndFilter<Dictionary<Key, EntityScanTarget>>
-    {
-        #region Fields
-
-        /// <summary>
-        /// The entity keys.
-        /// </summary>
-        private readonly IDictionary<Key, EntityScanTarget> keys = new Dictionary<Key, EntityScanTarget>(new KeyComparer());
-
-        /// <summary>
-        /// The unqualified entity keys.
-        /// </summary>
-        private readonly IDictionary<Key, EntityScanTarget> unqualifiedKeys = new Dictionary<Key, EntityScanTarget>(new RowComparer());
-
-        #endregion
-
-        #region Public Properties
-
-        /// <summary>
-        /// Gets the entity scan targets.
-        /// </summary>
-        /// <value>
-        /// The entity scan targets.
-        /// </value>
-        public override IEnumerable<EntityScanTarget> EntityScanTargets
-        {
-            get
-            {
-                lock (this.keys)
-                {
-                    return this.keys.Values.Concat(this.unqualifiedKeys.Values).ToList();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether there is something to scan or not.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if there is something to scan, otherwise <c>false</c>.
-        /// </value>
-        public override bool? IsEmpty
-        {
-            get
-            {
-                lock (this.keys)
-                {
-                    if (this.unqualifiedKeys.Count == 0)
-                    {
-                        return this.keys.Count == 0;
-                    }
-
-                    return null;
-                }
-            }
-        }
-
-        #endregion
-
-        #region Public Methods and Operators
-
-        /// <summary>
-        /// Try get a scan target for the entity key specified.
-        /// </summary>
-        /// <param name="key">
-        /// The entity key.
-        /// </param>
-        /// <param name="entityScanTarget">
-        /// The entity scan target.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if a scan target as been found for the entity key specified, otherwise <c>false</c>.
-        /// </returns>
-        public override bool TryRemoveScanTarget(Key key, out EntityScanTarget entityScanTarget)
-        {
-            lock (this.keys)
-            {
-                if (this.keys.TryGetValue(key, out entityScanTarget))
-                {
-                    this.keys.Remove(key);
-                    return true;
-                }
-
-                return this.unqualifiedKeys.TryGetValue(key, out entityScanTarget);
-            }
-        }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Gets or adds an entity scan target.
-        /// </summary>
-        /// <param name="entityScanTarget">
-        /// The entity scan target.
-        /// </param>
-        /// <param name="entityScanTargetExisting">
-        /// The existing entity scan target.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if a scan target has been added, otherwise <c>false</c>.
-        /// </returns>
-        protected override bool GetOrAdd(EntityScanTarget entityScanTarget, out EntityScanTarget entityScanTargetExisting)
-        {
-            if (entityScanTarget == null)
-            {
-                throw new ArgumentNullException("entityScanTarget");
-            }
-
-            var d = string.IsNullOrEmpty(entityScanTarget.Key.ColumnFamily) ? this.unqualifiedKeys : this.keys;
-
-            lock (this.keys)
-            {
-                if (d.TryGetValue(entityScanTarget.Key, out entityScanTargetExisting))
-                {
-                    return false;
-                }
-
-                d.Add(entityScanTarget.Key, entityScanTarget);
-                return true;
-            }
         }
 
         #endregion

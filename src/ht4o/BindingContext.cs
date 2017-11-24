@@ -19,6 +19,8 @@
  * 02110-1301, USA.
  */
 
+using Hypertable.Persistence.Collections.Concurrent;
+
 namespace Hypertable.Persistence
 {
     using System;
@@ -31,6 +33,7 @@ namespace Hypertable.Persistence
     using Hypertable;
     using Hypertable.Persistence.Bindings;
     using Hypertable.Persistence.Collections;
+    using Hypertable.Persistence.Extensions;
     using Hypertable.Persistence.Reflection;
 
     /// <summary>
@@ -78,7 +81,7 @@ namespace Hypertable.Persistence
         /// <summary>
         /// The registered column bindings.
         /// </summary>
-        private Lazy<IDictionary<Type, IColumnBinding>> registeredColumnBindings;
+        private Lazy<ConcurrentTypeDictionary<IColumnBinding>> registeredColumnBindings;
 
         /// <summary>
         /// The registered column names.
@@ -88,7 +91,7 @@ namespace Hypertable.Persistence
         /// <summary>
         /// The registered table bindings.
         /// </summary>
-        private Lazy<IDictionary<Type, ITableBinding>> registeredTableBindings;
+        private Lazy<ConcurrentTypeDictionary<ITableBinding>> registeredTableBindings;
 
         private string defaultColumnFamily;
 
@@ -1131,7 +1134,7 @@ namespace Hypertable.Persistence
             {
                 if (this.registeredColumnBindings == null || this.registeredColumnBindings.IsValueCreated)
                 {
-                    this.registeredColumnBindings = new Lazy<IDictionary<Type, IColumnBinding>>(
+                    this.registeredColumnBindings = new Lazy<ConcurrentTypeDictionary<IColumnBinding>>(
                         () =>
                         {
                             var bindings = new ConcurrentTypeDictionary<IColumnBinding>();
@@ -1165,7 +1168,7 @@ namespace Hypertable.Persistence
 
                 if (this.registeredTableBindings == null || this.registeredTableBindings.IsValueCreated)
                 {
-                    this.registeredTableBindings = new Lazy<IDictionary<Type, ITableBinding>>(
+                    this.registeredTableBindings = new Lazy<ConcurrentTypeDictionary<ITableBinding>>(
                         () =>
                         {
                             var bindings = new ConcurrentTypeDictionary<ITableBinding>();

@@ -34,12 +34,11 @@ namespace Hypertable.Persistence.Serialization
     using Hypertable.Persistence.Reflection;
 #if !HT4O_SERIALIZATION
     using Hypertable.Persistence.Scanner;
-
 #endif
 
-    /// <summary>
+   /// <summary>
     /// The deserializer.
-    /// </summary>
+    /// </summary> 
     public class Deserializer : SerializationBase
     {
         #region Constants
@@ -61,7 +60,7 @@ namespace Hypertable.Persistence.Serialization
         /// <summary>
         /// The decoder infos.
         /// </summary>
-        private readonly IDictionary<Tags, DecoderInfo> decoderInfos = new Dictionary<Tags, DecoderInfo>(256);
+        private readonly FastDictionary<Tags, DecoderInfo> decoderInfos = new FastDictionary<Tags, DecoderInfo>(256);
 
         /// <summary>
         /// The object references.
@@ -561,7 +560,7 @@ namespace Hypertable.Persistence.Serialization
         /// </returns>
         internal bool TryGetDecoder(Tags tag, out DecoderInfo decoderInfo)
         {
-            if (this.decoderInfos.TryGetValue(tag, out decoderInfo))
+            /*if (this.decoderInfos.TryGetValue(tag, out decoderInfo))
             {
                 return true;
             }
@@ -569,6 +568,22 @@ namespace Hypertable.Persistence.Serialization
             if (Decoder.TryGetDecoder(tag, out decoderInfo))
             {
                 this.decoderInfos.Add(tag, decoderInfo);
+                return true;
+            }
+
+            return false;*/
+
+            int bucket;
+            FastDictionary<Tags, DecoderInfo>.Entry entry;
+
+            if (this.decoderInfos.TryGetValue(tag, out bucket, out entry)) {
+                decoderInfo = entry.Value;
+                return true;
+            }
+
+            if (Decoder.TryGetDecoder(tag, out decoderInfo)) {
+                entry.Value = decoderInfo;
+                this.decoderInfos.Insert(bucket, ref entry);
                 return true;
             }
 

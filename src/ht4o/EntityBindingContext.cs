@@ -18,10 +18,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
+using Hypertable.Persistence.Collections.Concurrent;
+
 namespace Hypertable.Persistence
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Concurrent;
     using System.Linq;
     using System.Text;
 
@@ -79,7 +83,7 @@ namespace Hypertable.Persistence
             }
 
             var columnBindingComparer = new ColumnBindingComparer();
-            var columnFamilyBindings = new Dictionary<string, HashSet<IColumnBinding>>(StringComparer.Ordinal);
+            var columnFamilyBindings = new StringDictionary<HashSet<IColumnBinding>>();
 
             foreach (var binding in distinctColumnBindings)
             {

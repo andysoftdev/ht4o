@@ -21,10 +21,10 @@
 namespace Hypertable.Persistence.Reflection
 {
     using System;
-    using System.Collections.Concurrent;
     using System.IO;
 
     using Hypertable.Persistence.Serialization;
+    using Hypertable.Persistence.Collections.Concurrent;
 
     /// <summary>
     /// The type loader.
@@ -36,7 +36,7 @@ namespace Hypertable.Persistence.Reflection
         /// <summary>
         /// The types.
         /// </summary>
-        private static readonly ConcurrentDictionary<string, Type> Types = new ConcurrentDictionary<string, Type>(StringComparer.Ordinal);
+        private static readonly ConcurrentStringDictionary<Type> Types = new ConcurrentStringDictionary<Type>();
 
         #endregion
 

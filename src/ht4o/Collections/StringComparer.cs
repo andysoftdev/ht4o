@@ -20,48 +20,47 @@
  */
 namespace Hypertable.Persistence.Collections
 {
-    using System.Collections;
     using System.Collections.Generic;
     using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// The identity comparer.
+    /// The string comparer.
     /// </summary>
-    internal struct IdentityComparer : IEqualityComparer<object>, IEqualityComparer
+    internal struct StringComparer : IEqualityComparer<string>
     {
         #region Public Methods and Operators
 
         /// <summary>
-        /// Determines whether the specified objects are equal.
+        /// Determines whether the specified strings are equal.
         /// </summary>
         /// <param name="x">
-        /// The first object of type <see cref="object"/> to compare.
+        /// The first string of type <see cref="string"/> to compare.
         /// </param>
         /// <param name="y">
-        /// The second object of type <see cref="object"/> to compare.
+        /// The second string of type <see cref="string"/> to compare.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the specified objects are reference equal, otherwise <c>false</c>.
+        /// <c>true</c> if the specified strings are reference equal, otherwise <c>false</c>.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public new bool Equals(object x, object y)
+        public bool Equals(string x, string y)
         {
-            return ReferenceEquals(x, y);
+            return string.Equals(x, y);
         }
 
         /// <summary>
-        /// Returns the runtime hash code for the specified object.
+        /// Returns the runtime hash code for the specified string.
         /// </summary>
         /// <param name="obj">
-        /// The <see cref="object"/> for which a hash code is to be returned.
+        /// The <see cref="string"/> for which a hash code is to be returned.
         /// </param>
         /// <returns>
-        /// A runtime hash code for the specified object.
+        /// A runtime hash code for the specified string.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int GetHashCode(object obj)
+        public int GetHashCode(string obj)
         {
-            return RuntimeHelpers.GetHashCode(obj);
+            return obj.GetHashCode();
         }
 
         #endregion

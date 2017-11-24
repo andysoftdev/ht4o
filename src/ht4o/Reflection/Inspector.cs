@@ -19,6 +19,8 @@
  * 02110-1301, USA.
  */
 
+using Hypertable.Persistence.Collections.Concurrent;
+
 namespace Hypertable.Persistence.Reflection
 {
     using System;
@@ -45,11 +47,6 @@ namespace Hypertable.Persistence.Reflection
         /// The inspectors.
         /// </summary>
         private static readonly ConcurrentTypeDictionary<Inspector> Inspectors = new ConcurrentTypeDictionary<Inspector>();
-
-        /// <summary>
-        /// The property name comparer.
-        /// </summary>
-        private static readonly StringComparer PropertyNameComparer = StringComparer.OrdinalIgnoreCase;
 
         #endregion
 
@@ -88,7 +85,7 @@ namespace Hypertable.Persistence.Reflection
         /// <summary>
         /// The inspected property per regular expression.
         /// </summary>
-        private readonly ConcurrentDictionary<string, InspectedProperty> regexProperties = new ConcurrentDictionary<string, InspectedProperty>();
+        private readonly ConcurrentStringDictionary<InspectedProperty> regexProperties = new ConcurrentStringDictionary<InspectedProperty>();
 
         #endregion
 
@@ -524,7 +521,7 @@ namespace Hypertable.Persistence.Reflection
         /// </returns>
         private static IDictionary<string, InspectedProperty> InspectFields(Type type)
         {
-            var inspectedProperties = new Dictionary<string, InspectedProperty>(PropertyNameComparer);
+            var inspectedProperties = new StringDictionary<InspectedProperty, StringComparerOrdinalIgnoreCase>();
             for (var t = type; t != typeof(object) && t != null; t = t.BaseType)
             {
                 var fields = t.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
@@ -566,7 +563,7 @@ namespace Hypertable.Persistence.Reflection
         /// </returns>
         private static IDictionary<string, InspectedProperty> InspectProperties(Type type)
         {
-            var inspectedProperties = new Dictionary<string, InspectedProperty>(PropertyNameComparer);
+            var inspectedProperties = new StringDictionary<InspectedProperty, StringComparerOrdinalIgnoreCase>();
             for (var t = type; t != typeof(object) && t != null; t = t.BaseType)
             {
                 var properties = t.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);

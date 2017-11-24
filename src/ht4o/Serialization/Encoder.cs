@@ -18,6 +18,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
+using Hypertable.Persistence.Collections.Concurrent;
+
 namespace Hypertable.Persistence.Serialization
 {
     using System;
@@ -29,6 +32,7 @@ namespace Hypertable.Persistence.Serialization
     using System.Text;
 
     using Hypertable.Persistence.Serialization.Delegates;
+    using Hypertable.Persistence.Collections;
 
     /// <summary>
     /// The encoder.
@@ -50,17 +54,17 @@ namespace Hypertable.Persistence.Serialization
         /// <summary>
         /// The encoder info.
         /// </summary>
-        private static readonly ConcurrentDictionary<Type, EncoderInfo> EncoderInfos;
+        private static readonly ConcurrentTypeDictionary<EncoderInfo> EncoderInfos;
 
         /// <summary>
         /// The type codes.
         /// </summary>
-        private static readonly ConcurrentDictionary<Type, int> TypeCodes = new ConcurrentDictionary<Type, int>();
+        private static readonly ConcurrentTypeDictionary<int> TypeCodes = new ConcurrentTypeDictionary<int>();
 
         /// <summary>
         /// The type name cache.
         /// </summary>
-        private static readonly ConcurrentDictionary<Type, Tuple<string, string>> TypeNameCache = new ConcurrentDictionary<Type, Tuple<string, string>>();
+        private static readonly ConcurrentTypeDictionary<Tuple<string, string>> TypeNameCache = new ConcurrentTypeDictionary<Tuple<string, string>>();
 
         #endregion
 
@@ -99,7 +103,7 @@ namespace Hypertable.Persistence.Serialization
                     { typeof(Uri), new EncoderInfo(Tags.Uri, WriteUri) }
                 };
 
-            EncoderInfos = new ConcurrentDictionary<Type, EncoderInfo>(encoderInfos);
+            EncoderInfos = new ConcurrentTypeDictionary<EncoderInfo>(encoderInfos);
 
             RegisterInternalTypeCode((int)Tags.Object, typeof(object));
             foreach (var kv in encoderInfos)

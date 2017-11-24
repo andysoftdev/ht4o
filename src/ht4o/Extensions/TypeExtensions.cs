@@ -19,6 +19,8 @@
  * 02110-1301, USA.
  */
 
+using Hypertable.Persistence.Collections.Concurrent;
+
 namespace Hypertable.Persistence.Extensions
 {
     using System;
@@ -43,6 +45,11 @@ namespace Hypertable.Persistence.Extensions
         /// The complex types.
         /// </summary>
         private static readonly ConcurrentTypeDictionary<bool> ComplexTypes = new ConcurrentTypeDictionary<bool>();
+
+        /// <summary>
+        /// The value types.
+        /// </summary>
+        private static readonly ConcurrentTypeDictionary<bool> ValueTypes = new ConcurrentTypeDictionary<bool>();
 
         /// <summary>
         /// The complex types.
@@ -181,6 +188,7 @@ namespace Hypertable.Persistence.Extensions
         /// <returns>
         /// The attribute instance or null.
         /// </returns>
+
         internal static T GetAttribute<T>(this Type type, bool inherit = false) where T : Attribute
         {
             var attributes = type.GetCustomAttributes(typeof(T), inherit);
@@ -288,6 +296,19 @@ namespace Hypertable.Persistence.Extensions
         }
 
         /// <summary>
+        /// Gets a value indicating whether the type is a value type.
+        /// </summary>
+        /// <param name="type">
+        /// The type.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if the type is a value, otherwise <c>false</c>.
+        /// </returns>
+        internal static bool IsValueType(this Type type) {
+            return ValueTypes.GetOrAdd(type, t => type.IsValueType);
+        }
+
+        /// <summary>
         /// Gets a value indicating whether the type is a delegate.
         /// </summary>
         /// <param name="type">
@@ -332,7 +353,7 @@ namespace Hypertable.Persistence.Extensions
         /// </returns>
         internal static bool IsNotNullableValueType(this Type type)
         {
-            return type.IsValueType && !IsNullable(type);
+            return type.IsValueType() && !IsNullable(type);
         }
 
         /// <summary>

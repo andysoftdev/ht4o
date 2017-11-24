@@ -21,10 +21,10 @@
 namespace Hypertable.Persistence
 {
     using System;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
 
     using Hypertable;
+    using Hypertable.Persistence.Collections.Concurrent;
 
     /// <summary>
     /// The entity manager factory context.
@@ -56,12 +56,12 @@ namespace Hypertable.Persistence
         /// <summary>
         /// Maps namespace names to database namespace instances.
         /// </summary>
-        private readonly ConcurrentDictionary<string, INamespace> namespaces = new ConcurrentDictionary<string, INamespace>();
+        private readonly ConcurrentStringDictionary<INamespace> namespaces = new ConcurrentStringDictionary<INamespace>();
 
         /// <summary>
         /// Maps full table names to database table instances.
         /// </summary>
-        private readonly ConcurrentDictionary<string, ITable> tables = new ConcurrentDictionary<string, ITable>();
+        private readonly ConcurrentStringDictionary<ITable> tables = new ConcurrentStringDictionary<ITable>();
 
         /// <summary>
         /// Indicating whether this factory context has been disposed.

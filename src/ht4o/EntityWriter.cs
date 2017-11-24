@@ -18,6 +18,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
+using Hypertable.Persistence.Collections.Concurrent;
+
 namespace Hypertable.Persistence
 {
     using System;
@@ -28,7 +31,7 @@ namespace Hypertable.Persistence
     using Hypertable.Persistence.Scanner;
     using Hypertable.Persistence.Serialization;
 
-    using EntitySpecSet = Hypertable.Persistence.Collections.ConcurrentSet<Hypertable.Persistence.Scanner.EntitySpec>;
+    using EntitySpecSet = ConcurrentSet<Hypertable.Persistence.Scanner.EntitySpec>;
 
     /// <summary>
     /// The entity writer.

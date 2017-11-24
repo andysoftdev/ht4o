@@ -21,10 +21,10 @@
 namespace Hypertable.Persistence.Serialization
 {
     using System;
-    using System.Collections.Concurrent;
     using System.Globalization;
     using System.IO;
 
+    using Hypertable.Persistence.Collections.Concurrent;
     using Hypertable.Persistence.Serialization.Delegates;
 
     /// <summary>
