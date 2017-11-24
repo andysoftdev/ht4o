@@ -110,10 +110,7 @@ namespace Hypertable.Persistence.Collections.Concurrent
         internal TValue GetValue(Type type)
         {
             TValue value;
-            if (!TryGetValue(type, out value))
-                return default(TValue);
-
-            return value;
+            return TryGetValue(type, out value) ? value : default(TValue);
         }
 
         /// <summary>
