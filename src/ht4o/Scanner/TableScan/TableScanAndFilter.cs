@@ -22,11 +22,12 @@ namespace Hypertable.Persistence.Scanner.TableScan
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.Concurrent;
     using System.Linq;
     using System.Text;
 
     using Hypertable;
+    using Hypertable.Persistence.Collections;
+    using Hypertable.Persistence.Collections.Concurrent;
 
     //// TODO scan&filter depends on table row count vs query row count
     //// scan hints, track recent row count? Check if switch ScanAndFilter off....
@@ -158,14 +159,12 @@ namespace Hypertable.Persistence.Scanner.TableScan
         /// <summary>
         /// The entity keys.
         /// </summary>
-        ///TODO(THAN) Chnage to FastDictionary once the KeyComparer is a struct
-        private readonly IDictionary<Key, EntityScanTarget> keys = new Dictionary<Key, EntityScanTarget>(new KeyComparer());
+        private readonly FastDictionary<Key, EntityScanTarget, KeyComparer> keys = new FastDictionary<Key, EntityScanTarget, KeyComparer>(256);
 
         /// <summary>
         /// The unqualified entity keys.
         /// </summary>
-        ///TODO(THAN) Chnage to FastDictionary once the RowComparer is a struct
-        private readonly IDictionary<Key, EntityScanTarget> unqualifiedKeys = new Dictionary<Key, EntityScanTarget>(new RowComparer());
+        private readonly FastDictionary<Key, EntityScanTarget, RowComparer> unqualifiedKeys = new FastDictionary<Key, EntityScanTarget, RowComparer>(256);
 
         #endregion
 
@@ -222,9 +221,8 @@ namespace Hypertable.Persistence.Scanner.TableScan
         /// </returns>
         public override bool TryRemoveScanTarget(Key key, out EntityScanTarget entityScanTarget)
         {
-            if (this.keys.TryGetValue(key, out entityScanTarget))
+            if (this.keys.TryRemove(key, out entityScanTarget))
             {
-                this.keys.Remove(key);
                 return true;
             }
 
@@ -247,21 +245,31 @@ namespace Hypertable.Persistence.Scanner.TableScan
         /// <returns>
         /// <c>true</c> if a scan target has been added, otherwise <c>false</c>.
         /// </returns>
-        protected override bool GetOrAdd(EntityScanTarget entityScanTarget, out EntityScanTarget entityScanTargetExisting)
-        {
-            if (entityScanTarget == null)
-            {
+        protected override bool GetOrAdd(EntityScanTarget entityScanTarget, out EntityScanTarget entityScanTargetExisting) {
+            if (entityScanTarget == null) {
                 throw new ArgumentNullException("entityScanTarget");
             }
 
-            var d = string.IsNullOrEmpty(entityScanTarget.Key.ColumnFamily) ? this.unqualifiedKeys : this.keys;
-            if (d.TryGetValue(entityScanTarget.Key, out entityScanTargetExisting))
-            {
-                return false;
+            var added = false;
+
+            if (string.IsNullOrEmpty(entityScanTarget.Key.ColumnFamily)) {
+                entityScanTargetExisting = this.unqualifiedKeys.GetOrAdd(
+                    entityScanTarget.Key,
+                    key => {
+                        added = true;
+                        return entityScanTarget;
+                    });
+            }
+            else {
+                entityScanTargetExisting = this.keys.GetOrAdd(
+                                    entityScanTarget.Key,
+                                    key => {
+                                        added = true;
+                                        return entityScanTarget;
+                                    });
             }
 
-            d.Add(entityScanTarget.Key, entityScanTarget);
-            return true;
+            return added;
         }
 
         #endregion
@@ -277,14 +285,12 @@ namespace Hypertable.Persistence.Scanner.TableScan
         /// <summary>
         /// The entity keys.
         /// </summary>
-        ///TODO(THAN) Chnage to FastDictionary once the KeyComparer is a struct
-        private readonly ConcurrentDictionary<Key, EntityScanTarget> keys = new ConcurrentDictionary<Key, EntityScanTarget>(new KeyComparer());
+        private readonly ConcurrentDictionary<Key, EntityScanTarget, KeyComparer> keys = new ConcurrentDictionary<Key, EntityScanTarget, KeyComparer>(256);
 
         /// <summary>
         /// The unqualified entity keys.
         /// </summary>
-        ///TODO(THAN) Chnage to FastDictionary once the KeyComparer is a struct
-        private readonly ConcurrentDictionary<Key, EntityScanTarget> unqualifiedKeys = new ConcurrentDictionary<Key, EntityScanTarget>(new RowComparer());
+        private readonly ConcurrentDictionary<Key, EntityScanTarget, RowComparer> unqualifiedKeys = new ConcurrentDictionary<Key, EntityScanTarget, RowComparer>(256);
 
         #endregion
 
@@ -372,16 +378,24 @@ namespace Hypertable.Persistence.Scanner.TableScan
                 throw new ArgumentNullException("entityScanTarget");
             }
 
-            var d = string.IsNullOrEmpty(entityScanTarget.Key.ColumnFamily) ? this.unqualifiedKeys : this.keys;
-
             var added = false;
-            entityScanTargetExisting = d.GetOrAdd(
-                entityScanTarget.Key, 
-                key =>
-                    {
+
+            if (string.IsNullOrEmpty(entityScanTarget.Key.ColumnFamily)) {
+                entityScanTargetExisting = this.unqualifiedKeys.GetOrAdd(
+                    entityScanTarget.Key,
+                    key => {
                         added = true;
                         return entityScanTarget;
                     });
+            }
+            else {
+                entityScanTargetExisting = this.keys.GetOrAdd(
+                                    entityScanTarget.Key,
+                                    key => {
+                                        added = true;
+                                        return entityScanTarget;
+                                    });
+            }
 
             return added;
         }
