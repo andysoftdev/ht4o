@@ -1570,7 +1570,7 @@ namespace Hypertable.Persistence.Serialization
             this.binaryWriter.Write(typeSchema.SerializedSchema);
 
             entry.Value.TypeSchema = typeSchema;
-            entry.Value.Ref = this.typeSchemaRefDictionary.Count - 1; // The count have been already incremented by the TryGetValue
+            entry.Value.Ref = this.typeSchemaRefDictionary.Count;
             this.typeSchemaRefDictionary.Insert(bucket, ref entry);
             return entry.Value.TypeSchema;
         }

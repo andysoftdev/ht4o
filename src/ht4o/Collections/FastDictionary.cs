@@ -652,6 +652,26 @@
             return true;
         }
 
+        public bool TryRemove(TKey key, out TValue value) {
+            Contract.Ensures(this.numberOfUsed < this.capacity);
+
+            if (key == null) {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            var bucket = this.Lookup(key);
+            if (bucket == InvalidNodePosition) {
+                value = default(TValue);
+                return false;
+            }
+
+            value = this.entries[bucket].Value;
+
+            this.SetDeleted(bucket);
+
+            return true;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGetValue(TKey key, out TValue value) {
             Contract.Requires(key != null);
@@ -699,17 +719,7 @@
             do {
                 uint nHash = this.entries[bucket].Hash;
 
-                if (nHash == UnusedHash) {
-                    this.numberOfUsed++;
-                    this.size++;
-
-                    break;
-                }
-
-                if (nHash == DeletedHash) {
-                    this.numberOfDeleted--;
-                    this.size++;
-
+                if (nHash == UnusedHash || nHash == DeletedHash) {
                     break;
                 }
 
@@ -731,6 +741,20 @@
         }
 
         public void Insert(int bucket, ref Entry entry) {
+            uint nHash = this.entries[bucket].Hash;
+
+            if (nHash == UnusedHash) {
+                this.numberOfUsed++;
+                this.size++;
+            }
+            else if (nHash == DeletedHash) {
+                this.numberOfDeleted--;
+                this.size++;
+            }
+            else {
+                throw new InvalidOperationException();
+            }
+
             this.entries[bucket].Hash = entry.Hash;
             this.entries[bucket].Key = entry.Key;
             this.entries[bucket].Value = entry.Value;
