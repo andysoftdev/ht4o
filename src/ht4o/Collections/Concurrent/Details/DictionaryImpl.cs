@@ -1,0 +1,146 @@
+﻿// Copyright (c) Vladimir Sadov. All rights reserved.
+//
+// This file is distributed under the MIT License. See LICENSE.md for details.
+
+namespace Hypertable.Persistence.Collections.Concurrent.Details
+{
+    using System.Collections.Generic;
+    using System.Runtime.CompilerServices;
+
+    internal abstract class DictionaryImpl
+    {
+        #region Constants
+
+        // all regular hashes have these bits set
+        // to be different from 0, TOMBPRIMEHASH or ZEROHASH
+        protected const int REGULAR_HASH_BITS = TOMBPRIMEHASH | ZEROHASH;
+
+        protected const int REPROBE_LIMIT = 4;
+        protected const int REPROBE_LIMIT_SHIFT = 1;
+
+        // represents forcefully dead entry 
+        // we insert it in old table during rehashing
+        // to reduce chances that more entries are added
+        protected const int TOMBPRIMEHASH = 1 << 31;
+
+        // we cannot distigush zero keys from uninitialized state
+        // so we force them to have this special hash instead
+        protected const int ZEROHASH = 1 << 30;
+
+        #endregion
+
+        #region Static Fields
+
+        internal static readonly object NULLVALUE = new object();
+        internal static readonly object TOMBSTONE = new object();
+        internal static readonly Prime TOMBPRIME = new Prime(TOMBSTONE);
+
+        #endregion
+
+        internal enum ValueMatch
+        {
+            Any, // sets new value unconditionally, used by index set
+            NullOrDead, // set value if original value is null or dead, used by Add/TryAdd
+            NotNullOrDead, // set value if original value is alive, used by Remove
+            OldValue // sets new value if old value matches
+        }
+
+        #region Methods
+
+        internal static DictionaryImpl<int, TValue, TComparer> CreateInt<TValue, TComparer>(
+            ConcurrentDictionary<int, TValue, TComparer> topDict, int capacity)
+            where TComparer : struct, IEqualityComparer<int>
+        {
+            var result = new DictionaryImplInt<TValue, TComparer>(capacity, topDict);
+            return result;
+        }
+
+        internal static DictionaryImpl<long, TValue, TComparer> CreateLong<TValue, TComparer>(
+            ConcurrentDictionary<long, TValue, TComparer> topDict, int capacity)
+            where TComparer : struct, IEqualityComparer<long>
+        {
+            var result = new DictionaryImplLong<TValue, TComparer>(capacity, topDict);
+            return result;
+        }
+
+        internal static DictionaryImpl<TKey, TValue, TComparer> CreateRef<TKey, TValue, TComparer>(
+            ConcurrentDictionary<TKey, TValue, TComparer> topDict, int capacity)
+            where TKey : class where TComparer : struct, IEqualityComparer<TKey>
+        {
+            var result = new DictionaryImplRef<TKey, TKey, TValue, TComparer>(capacity, topDict);
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static object ToObjectValue<TValue>(TValue value)
+        {
+            if (default(TValue) == null)
+                return (object) value ?? NULLVALUE;
+
+            return value;
+        }
+
+        protected static bool EntryValueNullOrDead(object entryValue)
+        {
+            return entryValue == null || entryValue == TOMBSTONE;
+        }
+
+        protected static int ReduceHashToIndex(int fullHash, int lenMask)
+        {
+            fullHash = fullHash & ~REGULAR_HASH_BITS;
+            var h2 = fullHash << 1;
+            if ((uint) h2 <= (uint) lenMask)
+                return h2;
+
+            return MixAndMask((uint) fullHash, lenMask);
+        }
+
+        // Heuristic to decide if we have reprobed toooo many times.  Running over
+        // the reprobe limit on a 'get' call acts as a 'miss'; on a 'put' call it
+        // can trigger a table resize.  Several places must have exact agreement on
+        // what the reprobe_limit is, so we share it here.
+        // NOTE: Not static for perf reasons    
+        //       (some JITs insert useless code related to generics if this is a static)
+        protected static int ReprobeLimit(int lenMask)
+        {
+            // 1/2 of table with some extra
+            return REPROBE_LIMIT + (lenMask >> REPROBE_LIMIT_SHIFT);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int MixAndMask(uint h, int lenMask)
+        {
+            // smudge the bits a little
+            // using algo from: http://burtleburtle.net/bob/hash/integer.html
+            h ^= h >> 4;
+            h += h << 5;
+            h ^= h >> 11;
+
+            return (int) h & lenMask;
+        }
+
+        #endregion
+
+        #region Nested Types
+
+        internal sealed class Prime
+        {
+            #region Fields
+
+            internal object originalValue;
+
+            #endregion
+
+            #region Constructors and Destructors
+
+            public Prime(object originalValue)
+            {
+                this.originalValue = originalValue;
+            }
+
+            #endregion
+        }
+
+        #endregion
+    }
+}

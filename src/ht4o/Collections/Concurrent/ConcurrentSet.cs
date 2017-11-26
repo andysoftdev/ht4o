@@ -24,6 +24,7 @@ namespace Hypertable.Persistence.Collections.Concurrent
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Runtime.CompilerServices;
 
     /// <summary>
     ///     The concurrent set.
@@ -90,6 +91,7 @@ namespace Hypertable.Persistence.Collections.Concurrent
         ///     <c>true</c> if the element was added to the set successfully. If the element already exists, this method returns
         ///     <c>false</c>.
         /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Add(T item)
         {
             return dictionary.TryAdd(item, null);
@@ -112,6 +114,7 @@ namespace Hypertable.Persistence.Collections.Concurrent
         /// <returns>
         ///     <c>true</c> if item is found in the set, otherwise <c>false</c>.
         /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(T item)
         {
             return dictionary.ContainsKey(item);
@@ -138,6 +141,7 @@ namespace Hypertable.Persistence.Collections.Concurrent
         /// <returns>
         ///     <c>true</c> if the element is successfully found and removed, otherwise <c>false</c>.
         /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Remove(T item)
         {
             object value;
@@ -218,8 +222,5 @@ namespace Hypertable.Persistence.Collections.Concurrent
 
     internal sealed class ConcurrentSet<T> : ConcurrentSet<T, Collections.EqualityComparer<T>>
     {
-        #region Constructors and Destructors
-
-        #endregion
     }
 }

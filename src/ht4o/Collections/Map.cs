@@ -23,6 +23,7 @@ namespace Hypertable.Persistence.Collections
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Runtime.CompilerServices;
 
     /// <summary>
     /// Represents a collection of key-value pairs.
@@ -99,6 +100,7 @@ namespace Hypertable.Persistence.Collections
         /// <returns>
         /// The value for the key.
         /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal TValue GetOrAdd(TKey key, Func<TKey, TValue> valueFactory)
         {
             if (key.Equals(this.recentKey))

@@ -40,6 +40,7 @@ namespace Hypertable.Persistence.Collections.Concurrent
         ///     Initializes a new instance of the <see cref="ConcurrentTypeDictionary{TValue}" /> class.
         /// </summary>
         internal ConcurrentTypeDictionary()
+            : base(256)
         {
         }
 
@@ -68,34 +69,6 @@ namespace Hypertable.Persistence.Collections.Concurrent
         #endregion
 
         #region Methods
-
-        /// <summary>
-        ///     Adds or updates a type/value pair.
-        /// </summary>
-        /// <param name="type">
-        ///     The type to be added.
-        /// </param>
-        /// <param name="value">
-        ///     The value to be added.
-        /// </param>
-        /// <returns>
-        ///     <c>true</c> if the type/value pair was added to the dictionary successfully, <c>false</c> if the value has been
-        ///     updated.
-        /// </returns>
-        internal bool AddOrUpdate(Type type, TValue value)
-        {
-            var added = true;
-            base.AddOrUpdate(
-                type,
-                value,
-                (t, v) =>
-                {
-                    added = false;
-                    return value;
-                });
-
-            return added;
-        }
 
         /// <summary>
         ///     Get the value for the type specified.

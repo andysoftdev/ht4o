@@ -71,6 +71,7 @@
             : this(initialBucketCount) {
             Contract.Requires(src != null);
             Contract.Ensures(this.capacity >= initialBucketCount);
+            Contract.EndContractBlock();
 
             foreach (var item in src) {
                 this[item.Key] = item.Value;
@@ -81,6 +82,7 @@
             IEnumerable<KeyValuePair<TKey, TValue>> src)
             : this(DictionaryHelper.InitialCapacity) {
             Contract.Requires(src != null);
+            Contract.EndContractBlock();
 
             foreach (var item in src) {
                 this[item.Key] = item.Value;
@@ -91,6 +93,7 @@
             ICollection<KeyValuePair<TKey, TValue>> src)
             : this(src.Count * 3 / 2) {
             Contract.Requires(src != null);
+            Contract.EndContractBlock();
 
             foreach (var item in src) {
                 this[item.Key] = item.Value;
@@ -109,6 +112,7 @@
             Contract.Requires(src != null);
             Contract.Ensures(this.capacity >= initialBucketCount);
             Contract.Ensures(this.capacity >= src.capacity);
+            Contract.EndContractBlock();
 
             this.initialCapacity = DictionaryHelper.NextPowerOf2(initialBucketCount);
             this.capacity = Math.Max(src.capacity, initialBucketCount);
@@ -145,6 +149,7 @@
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public FastDictionary(int initialBucketCount) {
             Contract.Ensures(this.capacity >= initialBucketCount);
+            Contract.EndContractBlock();
 
             // Calculate the next power of 2.
             var newCapacity = initialBucketCount >= DictionaryHelper.MinBuckets
@@ -176,6 +181,7 @@
             get {
                 Contract.Requires(key != null);
                 Contract.Ensures(this.numberOfUsed <= this.capacity);
+                Contract.EndContractBlock();
 
                 var hash = this.GetInternalHashCode(key);
                 var bucket = hash % this.capacity;
@@ -202,6 +208,7 @@
             set {
                 Contract.Requires(key != null);
                 Contract.Ensures(this.numberOfUsed <= this.capacity);
+                Contract.EndContractBlock();
 
                 this.ResizeIfNeeded();
 
@@ -263,11 +270,8 @@
 
         public void Add(TKey key, TValue value) {
             Contract.Ensures(this.numberOfUsed <= this.capacity);
+            Contract.Requires(key != null);
             Contract.EndContractBlock();
-
-            if (key == null) {
-                throw new ArgumentNullException(nameof(key));
-            }
 
             this.ResizeIfNeeded();
 
@@ -308,11 +312,8 @@
 
         public bool TryAdd(TKey key, TValue value) {
             Contract.Ensures(this.numberOfUsed <= this.capacity);
+            Contract.Requires(key != null);
             Contract.EndContractBlock();
-
-            if (key == null) {
-                throw new ArgumentNullException(nameof(key));
-            }
 
             this.ResizeIfNeeded();
 
@@ -353,15 +354,11 @@
             return true;
         }
 
+        /// <returns><c>true</c> if the value have been updated; otherwise <c>false</c>.</returns>
         public bool AddOrUpdate(TKey key, TValue value) {
             Contract.Ensures(this.numberOfUsed <= this.capacity);
+            Contract.Requires(key != null);
             Contract.EndContractBlock();
-
-            if (key == null) {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            bool updated = false;
 
             this.ResizeIfNeeded();
 
@@ -387,8 +384,8 @@
                 }
 
                 if (nHash == uhash && this.comparer.Equals(this.entries[bucket].Key, key)) {
-                    updated = true;
-                    break;
+                    this.entries[bucket].Value = value;
+                    return true;
                 }
 
                 bucket = (bucket + numProbes) % this.capacity;
@@ -400,16 +397,55 @@
             this.entries[bucket].Key = key;
             this.entries[bucket].Value = value;
 
-            return updated;
+            return false;
+        }
+
+        public TValue AddOrUpdate(TKey key, TValue addValue, Func<TKey, TValue, TValue> updateValueFactory) {
+            Contract.Ensures(this.numberOfUsed <= this.capacity);
+            Contract.Requires(key != null);
+            Contract.EndContractBlock();
+
+            this.ResizeIfNeeded();
+
+            int hash = this.GetInternalHashCode(key);
+            int bucket = hash % this.capacity;
+
+            uint uhash = (uint)hash;
+            int numProbes = 1;
+            do {
+                uint nHash = this.entries[bucket].Hash;
+                if (nHash == UnusedHash) {
+                    this.numberOfUsed++;
+                    this.size++;
+
+                    break;
+                }
+
+                if (nHash == DeletedHash) {
+                    this.numberOfDeleted--;
+                    this.size++;
+
+                    break;
+                }
+
+                if (nHash == uhash && this.comparer.Equals(this.entries[bucket].Key, key)) {
+                    return this.entries[bucket].Value = updateValueFactory(this.entries[bucket].Key, this.entries[bucket].Value);
+                }
+
+                bucket = (bucket + numProbes) % this.capacity;
+                numProbes++;
+            }
+            while (true);
+
+            this.entries[bucket].Hash = uhash;
+            this.entries[bucket].Key = key;
+            return this.entries[bucket].Value = addValue;
         }
 
         public TValue GetOrAdd(TKey key, TValue value) {
             Contract.Ensures(this.numberOfUsed <= this.capacity);
+            Contract.Requires(key != null);
             Contract.EndContractBlock();
-
-            if (key == null) {
-                throw new ArgumentNullException(nameof(key));
-            }
 
             this.ResizeIfNeeded();
 
@@ -450,11 +486,8 @@
 
         public TValue GetOrAdd(TKey key, Func<TKey, TValue> factory) {
             Contract.Ensures(this.numberOfUsed <= this.capacity);
+            Contract.Requires(key != null);
             Contract.EndContractBlock();
-
-            if (key == null) {
-                throw new ArgumentNullException(nameof(key));
-            }
 
             this.ResizeIfNeeded();
 
@@ -495,11 +528,8 @@
 
         public bool TryGetOrAddValue(TKey key, out TValue value, TValue newValue) {
             Contract.Ensures(this.numberOfUsed <= this.capacity);
+            Contract.Requires(key != null);
             Contract.EndContractBlock();
-
-            if (key == null) {
-                throw new ArgumentNullException(nameof(key));
-            }
 
             this.ResizeIfNeeded();
 
@@ -542,6 +572,7 @@
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Add(KeyValuePair<TKey, TValue> item) {
             this.Add(item.Key, item.Value);
         }
@@ -565,16 +596,16 @@
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(TKey key) {
             Contract.Ensures(this.numberOfUsed <= this.capacity);
-
-            if (key == null) {
-                throw new ArgumentNullException(nameof(key));
-            }
+            Contract.Requires(key != null);
+            Contract.EndContractBlock();
 
             return this.Lookup(key) != InvalidNodePosition;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ContainsKey(TKey key) {
             return this.Contains(key);
         }
@@ -631,16 +662,15 @@
             return new Enumerator(this);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Remove(KeyValuePair<TKey, TValue> item) {
             return this.Remove(item.Key);
         }
 
         public bool Remove(TKey key) {
             Contract.Ensures(this.numberOfUsed < this.capacity);
-
-            if (key == null) {
-                throw new ArgumentNullException(nameof(key));
-            }
+            Contract.Requires(key != null);
+            Contract.EndContractBlock();
 
             var bucket = this.Lookup(key);
             if (bucket == InvalidNodePosition) {
@@ -654,10 +684,8 @@
 
         public bool TryRemove(TKey key, out TValue value) {
             Contract.Ensures(this.numberOfUsed < this.capacity);
-
-            if (key == null) {
-                throw new ArgumentNullException(nameof(key));
-            }
+            Contract.Requires(key != null);
+            Contract.EndContractBlock();
 
             var bucket = this.Lookup(key);
             if (bucket == InvalidNodePosition) {
@@ -672,10 +700,10 @@
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGetValue(TKey key, out TValue value) {
             Contract.Requires(key != null);
             Contract.Ensures(this.numberOfUsed <= this.capacity);
+            Contract.EndContractBlock();
 
             int hash = this.GetInternalHashCode(key);
             int bucket = hash % this.capacity;
@@ -703,11 +731,8 @@
 
         public bool TryGetValue(TKey key, out int bucket, out Entry entry) {
             Contract.Ensures(this.numberOfUsed <= this.capacity);
+            Contract.Requires(key != null);
             Contract.EndContractBlock();
-
-            if (key == null) {
-                throw new ArgumentNullException(nameof(key));
-            }
 
             this.ResizeIfNeeded();
 
@@ -740,6 +765,7 @@
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Insert(int bucket, ref Entry entry) {
             uint nHash = this.entries[bucket].Hash;
 
@@ -755,9 +781,7 @@
                 throw new InvalidOperationException();
             }
 
-            this.entries[bucket].Hash = entry.Hash;
-            this.entries[bucket].Key = entry.Key;
-            this.entries[bucket].Value = entry.Value;
+            this.entries[bucket] = entry;
         }
 
         #endregion
@@ -780,6 +804,7 @@
         private void Grow(int newCapacity) {
             Contract.Requires(newCapacity >= this.capacity);
             Contract.Ensures((this.capacity & (this.capacity - 1)) == 0);
+            Contract.EndContractBlock();
 
             var e = new Entry[newCapacity];
             BlockCopyMemoryHelper.Memset(e, new Entry(UnusedHash, default(TKey), default(TValue)));
@@ -831,9 +856,7 @@
                     bucket = (bucket + numProbes) % c;
                 }
 
-                newEntries[bucket].Hash = hash;
-                newEntries[bucket].Key = this.entries[it].Key;
-                newEntries[bucket].Value = this.entries[it].Value;
+                newEntries[bucket] = this.entries[it];
 
                 s++;
             }
@@ -880,6 +903,7 @@
         private void Shrink(int newCapacity) {
             Contract.Requires(newCapacity > this.size);
             Contract.Ensures(this.numberOfUsed < this.capacity);
+            Contract.EndContractBlock();
 
             // Calculate the next power of 2.
             newCapacity = Math.Max(DictionaryHelper.NextPowerOf2(newCapacity), this.initialCapacity);
@@ -960,6 +984,7 @@
 
             public KeyCollection(FastDictionary<TKey, TValue, TComparer> dictionary) {
                 Contract.Requires(dictionary != null);
+                Contract.EndContractBlock();
 
                 this.dictionary = dictionary;
             }
@@ -1094,6 +1119,7 @@
 
             public ValueCollection(FastDictionary<TKey, TValue, TComparer> dictionary) {
                 Contract.Requires(dictionary != null);
+                Contract.EndContractBlock();
 
                 this.dictionary = dictionary;
             }
@@ -1323,7 +1349,9 @@
 
     internal sealed class FastDictionary<TKey, TValue> : FastDictionary<TKey, TValue, EqualityComparer<TKey>>
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public FastDictionary() {
+        }
+
         public FastDictionary(int initialBucketCount) :
             base(initialBucketCount) {
         }
