@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Reflection
 {
     using System;
@@ -26,17 +27,17 @@ namespace Hypertable.Persistence.Reflection
     using System.Runtime.Serialization;
 
     /// <summary>
-    /// The inspected serializable.
+    ///     The inspected serializable.
     /// </summary>
     internal sealed class InspectedSerializable
     {
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="InspectedSerializable"/> class.
+        ///     Initializes a new instance of the <see cref="InspectedSerializable" /> class.
         /// </summary>
         /// <param name="type">
-        /// The type to inspect.
+        ///     The type to inspect.
         /// </param>
         internal InspectedSerializable(Type type)
         {
@@ -56,38 +57,39 @@ namespace Hypertable.Persistence.Reflection
         #region Properties
 
         /// <summary>
-        /// Gets the CreateInstance function.
+        ///     Gets the CreateInstance function.
         /// </summary>
         /// <value>
-        /// The CreateInstance function.
+        ///     The CreateInstance function.
         /// </value>
-        internal Func<SerializationInfo, StreamingContext, object> CreateInstance { get; private set; }
+        internal Func<SerializationInfo, StreamingContext, object> CreateInstance { get; }
 
         /// <summary>
-        /// Gets the inspected type.
+        ///     Gets the inspected type.
         /// </summary>
         /// <value>
-        /// The inspected type.
+        ///     The inspected type.
         /// </value>
-        internal Type InspectedType { get; private set; }
+        internal Type InspectedType { get; }
 
         #endregion
 
         #region Methods
 
         /// <summary>
-        /// Create the CreateInstance function for the type specified.
+        ///     Create the CreateInstance function for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <returns>
-        /// The newly created CreateInstance function or null.
+        ///     The newly created CreateInstance function or null.
         /// </returns>
         private static Func<SerializationInfo, StreamingContext, object> CreateCreateInstanceMethod(Type type)
         {
             var constructorInfo = type.GetConstructor(
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new[] { typeof(SerializationInfo), typeof(StreamingContext) }, null);
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null,
+                new[] {typeof(SerializationInfo), typeof(StreamingContext)}, null);
 
             if (constructorInfo == null)
             {
@@ -95,7 +97,8 @@ namespace Hypertable.Persistence.Reflection
             }
 
             var method = new DynamicMethod(
-                "Ctor" + constructorInfo.Name, typeof(object), new[] { typeof(SerializationInfo), typeof(StreamingContext) }, constructorInfo.Module, true);
+                "Ctor" + constructorInfo.Name, typeof(object),
+                new[] {typeof(SerializationInfo), typeof(StreamingContext)}, constructorInfo.Module, true);
             var generator = method.GetILGenerator();
 
             generator.Emit(OpCodes.Ldarg_0);
@@ -103,7 +106,8 @@ namespace Hypertable.Persistence.Reflection
             generator.Emit(OpCodes.Newobj, constructorInfo);
             generator.Emit(OpCodes.Ret);
 
-            return (Func<SerializationInfo, StreamingContext, object>)method.CreateDelegate(typeof(Func<SerializationInfo, StreamingContext, object>));
+            return (Func<SerializationInfo, StreamingContext, object>) method.CreateDelegate(
+                typeof(Func<SerializationInfo, StreamingContext, object>));
         }
 
         #endregion

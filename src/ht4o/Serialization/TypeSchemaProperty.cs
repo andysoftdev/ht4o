@@ -18,29 +18,30 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Serialization
 {
     using Hypertable.Persistence.Reflection;
 
     /// <summary>
-    /// The type schema property.
+    ///     The type schema property.
     /// </summary>
     internal sealed class TypeSchemaProperty
     {
         #region Fields
 
         /// <summary>
-        /// The encoder info.
+        ///     The encoder info.
         /// </summary>
         public EncoderInfo EncoderInfo;
 
         /// <summary>
-        /// The inspected property.
+        ///     The inspected property.
         /// </summary>
         public InspectedProperty InspectedProperty;
 
         /// <summary>
-        /// The property name.
+        ///     The property name.
         /// </summary>
         public string PropertyName;
 

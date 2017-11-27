@@ -18,33 +18,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Scanner.TableScan
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
 
-    using Hypertable;
-
     /// <summary>
-    /// The simple table scan.
+    ///     The simple table scan.
     /// </summary>
     internal sealed class TableScan : ITableScan
     {
         #region Fields
 
         /// <summary>
-        /// The scan spec.
+        ///     The scan spec.
         /// </summary>
         private readonly ScanSpec scanSpec;
 
         /// <summary>
-        /// The synchronization object.
+        ///     The synchronization object.
         /// </summary>
         private readonly object syncRoot = new object();
 
         /// <summary>
-        /// The entity scan result.
+        ///     The entity scan result.
         /// </summary>
         private EntityScanResult entityScanResult;
 
@@ -53,19 +52,19 @@ namespace Hypertable.Persistence.Scanner.TableScan
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TableScan"/> class.
+        ///     Initializes a new instance of the <see cref="TableScan" /> class.
         /// </summary>
         /// <param name="scanSpec">
-        /// The scan spec.
+        ///     The scan spec.
         /// </param>
         /// <exception cref="ArgumentNullException">
-        /// Id the <paramref name="scanSpec"/> is null.
+        ///     Id the <paramref name="scanSpec" /> is null.
         /// </exception>
         internal TableScan(ScanSpec scanSpec)
         {
             if (scanSpec == null)
             {
-                throw new ArgumentNullException("scanSpec");
+                throw new ArgumentNullException(nameof(scanSpec));
             }
 
             this.scanSpec = scanSpec;
@@ -76,49 +75,37 @@ namespace Hypertable.Persistence.Scanner.TableScan
         #region Public Properties
 
         /// <summary>
-        /// Gets the entity scan targets.
+        ///     Gets the entity scan targets.
         /// </summary>
         /// <value>
-        /// The entity scan targets.
+        ///     The entity scan targets.
         /// </value>
-        public IEnumerable<EntityScanTarget> EntityScanTargets
-        {
-            get
-            {
-                return Enumerable.Empty<EntityScanTarget>();
-            }
-        }
+        public IEnumerable<EntityScanTarget> EntityScanTargets => Enumerable.Empty<EntityScanTarget>();
 
         /// <summary>
-        /// Gets a value indicating whether there is something to scan or not.
+        ///     Gets a value indicating whether there is something to scan or not.
         /// </summary>
         /// <value>
-        /// <c>true</c> if there is something to scan, otherwise <c>false</c>.
+        ///     <c>true</c> if there is something to scan, otherwise <c>false</c>.
         /// </value>
-        public bool? IsEmpty
-        {
-            get
-            {
-                return null;
-            }
-        }
+        public bool? IsEmpty => null;
 
         #endregion
 
         #region Public Methods and Operators
 
         /// <summary>
-        /// Adds an entity specification to the scan.
+        ///     Adds an entity specification to the scan.
         /// </summary>
         /// <param name="entitySpec">
-        /// The entity specification to add.
+        ///     The entity specification to add.
         /// </param>
         public void Add(EntitySpec entitySpec)
         {
             var esr = entitySpec as EntityScanResult;
             if (esr == null)
             {
-                throw new ArgumentException(@"EntitySpec of type EntityScanResult expected", "entitySpec");
+                throw new ArgumentException(@"EntitySpec of type EntityScanResult expected", nameof(entitySpec));
             }
 
             lock (this.syncRoot)
@@ -128,10 +115,10 @@ namespace Hypertable.Persistence.Scanner.TableScan
         }
 
         /// <summary>
-        /// Creates the scan specification.
+        ///     Creates the scan specification.
         /// </summary>
         /// <returns>
-        /// The scan spec.
+        ///     The scan spec.
         /// </returns>
         public ScanSpec CreateScanSpec()
         {
@@ -139,22 +126,23 @@ namespace Hypertable.Persistence.Scanner.TableScan
         }
 
         /// <summary>
-        /// Try get a scan target for the entity key specified.
+        ///     Try get a scan target for the entity key specified.
         /// </summary>
         /// <param name="key">
-        /// The entity key.
+        ///     The entity key.
         /// </param>
         /// <param name="entityScanTarget">
-        /// The entity scan target.
+        ///     The entity scan target.
         /// </param>
         /// <returns>
-        /// <c>true</c> if a scan target as been found for the entity key specified, otherwise <c>false</c>.
+        ///     <c>true</c> if a scan target as been found for the entity key specified, otherwise <c>false</c>.
         /// </returns>
         public bool TryRemoveScanTarget(Key key, out EntityScanTarget entityScanTarget)
         {
             lock (this.syncRoot)
             {
-                entityScanTarget = new EntityQueryScanTarget(this.entityScanResult.EntityType, this.entityScanResult, key, this.entityScanResult.ValueSink);
+                entityScanTarget = new EntityQueryScanTarget(this.entityScanResult.EntityType, this.entityScanResult,
+                    key, this.entityScanResult.ValueSink);
             }
 
             return true;

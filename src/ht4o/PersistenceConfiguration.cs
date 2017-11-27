@@ -18,26 +18,31 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence
 {
     using System;
 
-    using Hypertable;
-
     /// <summary>
-    /// The persistence configuration.
+    ///     The persistence configuration.
     /// </summary>
     public sealed class PersistenceConfiguration
     {
         #region Fields
 
         /// <summary>
-        /// The default mutator specification.
+        ///     The default mutator specification.
         /// </summary>
-        private MutatorSpec mutatorSpec = new MutatorSpec(MutatorKind.Chunked) { Queued = true, MaxChunkSize = 32 * 1024 * 1024, FlushEachChunk = true, Capacity = 32768 };
+        private MutatorSpec mutatorSpec = new MutatorSpec(MutatorKind.Chunked)
+        {
+            Queued = true,
+            MaxChunkSize = 32 * 1024 * 1024,
+            FlushEachChunk = true,
+            Capacity = 32768
+        };
 
         /// <summary>
-        /// The root namespace.
+        ///     The root namespace.
         /// </summary>
         private string rootNamespace = "/";
 
@@ -46,7 +51,7 @@ namespace Hypertable.Persistence
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PersistenceConfiguration"/> class.
+        ///     Initializes a new instance of the <see cref="PersistenceConfiguration" /> class.
         /// </summary>
         public PersistenceConfiguration()
         {
@@ -57,19 +62,19 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PersistenceConfiguration"/> class.
+        ///     Initializes a new instance of the <see cref="PersistenceConfiguration" /> class.
         /// </summary>
         /// <param name="configuration">
-        /// The configuration.
+        ///     The configuration.
         /// </param>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="configuration"/> is null.
+        ///     If <paramref name="configuration" /> is null.
         /// </exception>
         public PersistenceConfiguration(PersistenceConfiguration configuration)
         {
             if (configuration == null)
             {
-                throw new ArgumentNullException("configuration");
+                throw new ArgumentNullException(nameof(configuration));
             }
 
             this.rootNamespace = configuration.RootNamespace;
@@ -80,30 +85,30 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PersistenceConfiguration"/> class.
+        ///     Initializes a new instance of the <see cref="PersistenceConfiguration" /> class.
         /// </summary>
         /// <param name="configuration">
-        /// The configuration.
+        ///     The configuration.
         /// </param>
         /// <param name="bindingContext">
-        /// The binding context.
+        ///     The binding context.
         /// </param>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="configuration"/> is null.
+        ///     If <paramref name="configuration" /> is null.
         /// </exception>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="bindingContext"/> is null.
+        ///     If <paramref name="bindingContext" /> is null.
         /// </exception>
         internal PersistenceConfiguration(PersistenceConfiguration configuration, BindingContext bindingContext)
         {
             if (configuration == null)
             {
-                throw new ArgumentNullException("configuration");
+                throw new ArgumentNullException(nameof(configuration));
             }
 
             if (bindingContext == null)
             {
-                throw new ArgumentNullException("bindingContext");
+                throw new ArgumentNullException(nameof(bindingContext));
             }
 
             this.rootNamespace = configuration.RootNamespace;
@@ -118,34 +123,31 @@ namespace Hypertable.Persistence
         #region Public Properties
 
         /// <summary>
-        /// Gets binding context.
+        ///     Gets binding context.
         /// </summary>
         /// <value>
-        /// The binding context.
+        ///     The binding context.
         /// </value>
-        public BindingContext Binding { get; private set; }
+        public BindingContext Binding { get; }
 
         /// <summary>
-        /// Gets or sets mutator specification.
+        ///     Gets or sets mutator specification.
         /// </summary>
         /// <value>
-        /// The mutator specification.
+        ///     The mutator specification.
         /// </value>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="value"/> is null.
+        ///     If <paramref name="value" /> is null.
         /// </exception>
         public MutatorSpec MutatorSpec
         {
-            get
-            {
-                return this.mutatorSpec;
-            }
+            get { return this.mutatorSpec; }
 
             set
             {
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value");
+                    throw new ArgumentNullException(nameof(value));
                 }
 
                 this.mutatorSpec = value;
@@ -153,40 +155,34 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets or sets the review scan spec action, if set the action is called before any scan.
+        ///     Gets or sets the review scan spec action, if set the action is called before any scan.
         /// </summary>
         /// <value>
-        /// The scanner callback.
+        ///     The scanner callback.
         /// </value>
         /// <remarks>
-        /// Allows scan spec updates right before a table scan starts.
+        ///     Allows scan spec updates right before a table scan starts.
         /// </remarks>
         public Action<ITable, ScanSpec> ReviewScanSpec { get; set; }
 
         /// <summary>
-        /// Gets or sets the root namespace.
+        ///     Gets or sets the root namespace.
         /// </summary>
         /// <value>
-        /// The root namespace.
+        ///     The root namespace.
         /// </value>
         public string RootNamespace
         {
-            get
-            {
-                return this.rootNamespace;
-            }
+            get { return this.rootNamespace; }
 
-            set
-            {
-                this.rootNamespace = NormalizeNamespace(value);
-            }
+            set { this.rootNamespace = NormalizeNamespace(value); }
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to use an async table scanner.
+        ///     Gets or sets a value indicating whether to use an async table scanner.
         /// </summary>
         /// <value>
-        /// If <c>true</c> the entity scanner uses an async table scanner, otherwise <c>false</c>.
+        ///     If <c>true</c> the entity scanner uses an async table scanner, otherwise <c>false</c>.
         /// </value>
         public bool UseAsyncTableScanner { get; set; }
 
@@ -195,19 +191,19 @@ namespace Hypertable.Persistence
         #region Public Methods and Operators
 
         /// <summary>
-        /// Normalizes the root namespace.
+        ///     Normalizes the root namespace.
         /// </summary>
         /// <param name="ns">
-        /// The root namespace.
+        ///     The root namespace.
         /// </param>
         /// <returns>
-        /// The normalized root namespace.
+        ///     The normalized root namespace.
         /// </returns>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="ns"/> is null.
+        ///     If <paramref name="ns" /> is null.
         /// </exception>
         /// <exception cref="ArgumentException">
-        /// If the trimed <paramref name="ns"/> is empty.
+        ///     If the trimed <paramref name="ns" /> is empty.
         /// </exception>
         public static string NormalizeNamespace(string ns)
         {
@@ -219,7 +215,7 @@ namespace Hypertable.Persistence
             ns = ns.Trim();
             if (string.IsNullOrEmpty(ns))
             {
-                throw new ArgumentException(@"Invalid root namespace name", "ns");
+                throw new ArgumentException(@"Invalid root namespace name", nameof(ns));
             }
 
             if (ns != "/")

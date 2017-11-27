@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Collections
 {
     using System.Collections;
@@ -25,23 +26,23 @@ namespace Hypertable.Persistence.Collections
     using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// The identity comparer.
+    ///     The identity comparer.
     /// </summary>
     internal struct IdentityComparer : IEqualityComparer<object>, IEqualityComparer
     {
         #region Public Methods and Operators
 
         /// <summary>
-        /// Determines whether the specified objects are equal.
+        ///     Determines whether the specified objects are equal.
         /// </summary>
         /// <param name="x">
-        /// The first object of type <see cref="object"/> to compare.
+        ///     The first object of type <see cref="object" /> to compare.
         /// </param>
         /// <param name="y">
-        /// The second object of type <see cref="object"/> to compare.
+        ///     The second object of type <see cref="object" /> to compare.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the specified objects are reference equal, otherwise <c>false</c>.
+        ///     <c>true</c> if the specified objects are reference equal, otherwise <c>false</c>.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public new bool Equals(object x, object y)
@@ -50,13 +51,13 @@ namespace Hypertable.Persistence.Collections
         }
 
         /// <summary>
-        /// Returns the runtime hash code for the specified object.
+        ///     Returns the runtime hash code for the specified object.
         /// </summary>
         /// <param name="obj">
-        /// The <see cref="object"/> for which a hash code is to be returned.
+        ///     The <see cref="object" /> for which a hash code is to be returned.
         /// </param>
         /// <returns>
-        /// A runtime hash code for the specified object.
+        ///     A runtime hash code for the specified object.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetHashCode(object obj)

@@ -19,49 +19,44 @@
  * 02110-1301, USA.
  */
 
-using Hypertable.Persistence.Collections.Concurrent;
-
 namespace Hypertable.Persistence.Serialization
 {
     using System;
-    using System.Collections.Concurrent;
     using System.Globalization;
     using System.IO;
-
-    using Hypertable;
-    using Hypertable.Persistence.Extensions;
+    using Hypertable.Persistence.Collections.Concurrent;
     using Hypertable.Persistence.Reflection;
     using Hypertable.Persistence.Serialization.Delegates;
-    using Hypertable.Persistence.Collections;
 
     /// <summary>
-    /// The entity serializer.
+    ///     The entity serializer.
     /// </summary>
     internal sealed class EntitySerializer : Serializer
     {
         #region Static Fields
 
         /// <summary>
-        /// The type schema dictionary.
+        ///     The type schema dictionary.
         /// </summary>
-        private static readonly ConcurrentTypeDictionary<TypeSchema> TypeSchemaDictionary = new ConcurrentTypeDictionary<TypeSchema>();
+        private static readonly ConcurrentTypeDictionary<TypeSchema> TypeSchemaDictionary =
+            new ConcurrentTypeDictionary<TypeSchema>();
 
         #endregion
 
         #region Fields
 
         /// <summary>
-        /// The entity context.
+        ///     The entity context.
         /// </summary>
         private readonly EntityContext entityContext;
 
         /// <summary>
-        /// The root object.
+        ///     The root object.
         /// </summary>
         private readonly object root;
 
         /// <summary>
-        /// The serializing entity delegate.
+        ///     The serializing entity delegate.
         /// </summary>
         private readonly SerializingEntity serializingEntity;
 
@@ -70,21 +65,22 @@ namespace Hypertable.Persistence.Serialization
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntitySerializer"/> class.
+        ///     Initializes a new instance of the <see cref="EntitySerializer" /> class.
         /// </summary>
         /// <param name="entityContext">
-        /// The entity context.
+        ///     The entity context.
         /// </param>
         /// <param name="binaryWriter">
-        /// The binary writer.
+        ///     The binary writer.
         /// </param>
         /// <param name="root">
-        /// The root object.
+        ///     The root object.
         /// </param>
         /// <param name="serializingEntity">
-        /// The serializing entity delegate.
+        ///     The serializing entity delegate.
         /// </param>
-        private EntitySerializer(EntityContext entityContext, BinaryWriter binaryWriter, object root, SerializingEntity serializingEntity)
+        private EntitySerializer(EntityContext entityContext, BinaryWriter binaryWriter, object root,
+            SerializingEntity serializingEntity)
             : base(binaryWriter)
         {
             this.entityContext = entityContext;
@@ -97,33 +93,35 @@ namespace Hypertable.Persistence.Serialization
         #region Methods
 
         /// <summary>
-        /// Serialize an object.
+        ///     Serialize an object.
         /// </summary>
         /// <param name="entityContext">
-        /// The entity context.
+        ///     The entity context.
         /// </param>
         /// <param name="serializeType">
-        /// The serialize type.
+        ///     The serialize type.
         /// </param>
         /// <param name="value">
-        /// The object to serialize.
+        ///     The object to serialize.
         /// </param>
         /// <param name="capacity">
-        /// The internal memory stream intial capacity.
+        ///     The internal memory stream intial capacity.
         /// </param>
         /// <param name="serializingEntity">
-        /// The serializing entity delegate.
+        ///     The serializing entity delegate.
         /// </param>
         /// <returns>
-        /// The serialized object.
+        ///     The serialized object.
         /// </returns>
-        internal static byte[] Serialize(EntityContext entityContext, Type serializeType, object value, int capacity, SerializingEntity serializingEntity)
+        internal static byte[] Serialize(EntityContext entityContext, Type serializeType, object value, int capacity,
+            SerializingEntity serializingEntity)
         {
             using (var memoryStream = new MemoryStream(capacity))
             {
                 using (var binaryWriter = new BufferedBinaryWriter(memoryStream))
                 {
-                    new EntitySerializer(entityContext, binaryWriter, value, serializingEntity).Write(serializeType, value);
+                    new EntitySerializer(entityContext, binaryWriter, value, serializingEntity).Write(serializeType,
+                        value);
                 }
 
                 return memoryStream.ToArray();
@@ -131,16 +129,16 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Encodes the object specified.
+        ///     Encodes the object specified.
         /// </summary>
         /// <param name="encoderInfo">
-        /// The encoder info.
+        ///     The encoder info.
         /// </param>
         /// <param name="value">
-        /// The object to encode.
+        ///     The object to encode.
         /// </param>
         /// <param name="writeTag">
-        /// If <c>true</c> the encoder writes the leading type tag, otherwise <c>false</c>.
+        ///     If <c>true</c> the encoder writes the leading type tag, otherwise <c>false</c>.
         /// </param>
         internal override void Encode(EncoderInfo encoderInfo, object value, bool writeTag)
         {
@@ -169,16 +167,16 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Gets the type schema.
+        ///     Gets the type schema.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <param name="inspector">
-        /// The inspector.
+        ///     The inspector.
         /// </param>
         /// <returns>
-        /// The type schema.
+        ///     The type schema.
         /// </returns>
         internal override TypeSchema GetTypeSchema(Type type, Inspector inspector)
         {
@@ -186,19 +184,19 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Writes an object.
+        ///     Writes an object.
         /// </summary>
         /// <param name="inspector">
-        /// The inspector.
+        ///     The inspector.
         /// </param>
         /// <param name="serializeType">
-        /// The serialize type.
+        ///     The serialize type.
         /// </param>
         /// <param name="type">
-        /// The object type.
+        ///     The object type.
         /// </param>
         /// <param name="value">
-        /// The object to write.
+        ///     The object to write.
         /// </param>
         internal override void WriteObject(Inspector inspector, Type serializeType, Type type, object value)
         {
@@ -219,19 +217,19 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Serializes an entity reference.
+        ///     Serializes an entity reference.
         /// </summary>
         /// <param name="entityReference">
-        /// The entity reference.
+        ///     The entity reference.
         /// </param>
         /// <param name="entityType">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <returns>
-        /// <c>true</c> if no further encoding is required, otherwise <c>false</c>.
+        ///     <c>true</c> if no further encoding is required, otherwise <c>false</c>.
         /// </returns>
         private bool SerializeEntityReference(EntityReference entityReference, Type entityType, object entity)
         {
@@ -245,7 +243,8 @@ namespace Hypertable.Persistence.Serialization
                     key = entityReference.GetKeyFromEntity(entity, out generated);
                     if (generated)
                     {
-                        throw new SerializationException(string.Format(CultureInfo.InvariantCulture, @"Entity key has not been set for type {0}", entityType));
+                        throw new SerializationException(string.Format(CultureInfo.InvariantCulture,
+                            @"Entity key has not been set for type {0}", entityType));
                     }
                 }
 
@@ -272,13 +271,13 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Writes an entity key.
+        ///     Writes an entity key.
         /// </summary>
         /// <param name="entityReference">
-        /// The entity reference.
+        ///     The entity reference.
         /// </param>
         /// <param name="key">
-        /// The entity key.
+        ///     The entity key.
         /// </param>
         private void WriteEntityKey(EntityReference entityReference, Key key)
         {
@@ -291,13 +290,13 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Writes an entity reference.
+        ///     Writes an entity reference.
         /// </summary>
         /// <param name="entityReference">
-        /// The entity reference.
+        ///     The entity reference.
         /// </param>
         /// <param name="key">
-        /// The entity key.
+        ///     The entity key.
         /// </param>
         private void WriteEntityReference(EntityReference entityReference, Key key)
         {
@@ -312,13 +311,13 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Writes an entity row.
+        ///     Writes an entity row.
         /// </summary>
         /// <param name="entityReference">
-        /// The entity reference.
+        ///     The entity reference.
         /// </param>
         /// <param name="key">
-        /// The entity key.
+        ///     The entity key.
         /// </param>
         private void WriteEntityRow(EntityReference entityReference, Key key)
         {

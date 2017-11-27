@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence
 {
     using System;
@@ -25,19 +26,17 @@ namespace Hypertable.Persistence
     using System.Diagnostics;
     using System.Globalization;
     using System.Reflection;
-
-    using Hypertable;
-    using Hypertable.Persistence.Reflection;
+    using Hypertable.Persistence.Extensions;
 
     /// <summary>
-    /// The entity manager factory.
+    ///     The entity manager factory.
     /// </summary>
     public sealed class EntityManagerFactory : IDisposable
     {
         #region Static Fields
 
         /// <summary>
-        /// The default persistence configuration.
+        ///     The default persistence configuration.
         /// </summary>
         private static readonly PersistenceConfiguration DefaultConfigurationInstance = new PersistenceConfiguration();
 
@@ -46,12 +45,12 @@ namespace Hypertable.Persistence
         #region Fields
 
         /// <summary>
-        /// The entity manager factory context.
+        ///     The entity manager factory context.
         /// </summary>
         private readonly FactoryContext factoryContext;
 
         /// <summary>
-        /// Indicating whether this factory context has been disposed.
+        ///     Indicating whether this factory context has been disposed.
         /// </summary>
         private bool disposed;
 
@@ -60,60 +59,61 @@ namespace Hypertable.Persistence
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes static members of the <see cref="EntityManagerFactory"/> class.
+        ///     Initializes static members of the <see cref="EntityManagerFactory" /> class.
         /// </summary>
         static EntityManagerFactory()
         {
             Logging.TraceEvent(
-                TraceEventType.Information, 
+                TraceEventType.Information,
                 () =>
-                    {
-                        var assembly = Assembly.GetAssembly(typeof(EntityManagerFactory));
-                        return string.Format(
-                            CultureInfo.InvariantCulture, 
-                            @"{0} v{1} ({2}, {3})", 
-                            assembly.GetName().Name, 
-                            assembly.GetName().Version, 
-                            GetAssemblyAttribute<AssemblyCompanyAttribute>().Company, 
-                            GetAssemblyAttribute<AssemblyCopyrightAttribute>().Copyright);
-                    });
+                {
+                    var assembly = Assembly.GetAssembly(typeof(EntityManagerFactory));
+                    return string.Format(
+                        CultureInfo.InvariantCulture,
+                        @"{0} v{1} ({2}, {3})",
+                        assembly.GetName().Name,
+                        assembly.GetName().Version,
+                        GetAssemblyAttribute<AssemblyCompanyAttribute>().Company,
+                        GetAssemblyAttribute<AssemblyCopyrightAttribute>().Copyright);
+                });
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityManagerFactory"/> class.
+        ///     Initializes a new instance of the <see cref="EntityManagerFactory" /> class.
         /// </summary>
         /// <param name="configuration">
-        /// The persistence configuration.
+        ///     The persistence configuration.
         /// </param>
         /// <param name="context">
-        /// The context.
+        ///     The context.
         /// </param>
         /// <param name="disposeContext">
-        /// Indicating whether this entity manager factory owns the database context.
+        ///     Indicating whether this entity manager factory owns the database context.
         /// </param>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="configuration"/> is null.
+        ///     If <paramref name="configuration" /> is null.
         /// </exception>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="context"/> is null.
+        ///     If <paramref name="context" /> is null.
         /// </exception>
-        private EntityManagerFactory(PersistenceConfiguration configuration, IContext context, bool disposeContext = true)
+        private EntityManagerFactory(PersistenceConfiguration configuration, IContext context,
+            bool disposeContext = true)
         {
             if (configuration == null)
             {
-                throw new ArgumentNullException("configuration");
+                throw new ArgumentNullException(nameof(configuration));
             }
 
             if (context == null)
             {
-                throw new ArgumentNullException("context");
+                throw new ArgumentNullException(nameof(context));
             }
 
             this.factoryContext = new FactoryContext(configuration, context, disposeContext);
         }
 
         /// <summary>
-        /// Finalizes an instance of the <see cref="EntityManagerFactory"/> class.
+        ///     Finalizes an instance of the <see cref="EntityManagerFactory" /> class.
         /// </summary>
         ~EntityManagerFactory()
         {
@@ -125,27 +125,21 @@ namespace Hypertable.Persistence
         #region Public Properties
 
         /// <summary>
-        /// Gets the default persistence configuration.
+        ///     Gets the default persistence configuration.
         /// </summary>
         /// <value>
-        /// The default persistence configuration.
+        ///     The default persistence configuration.
         /// </value>
-        public static PersistenceConfiguration DefaultConfiguration
-        {
-            get
-            {
-                return DefaultConfigurationInstance;
-            }
-        }
+        public static PersistenceConfiguration DefaultConfiguration => DefaultConfigurationInstance;
 
         /// <summary>
-        /// Gets the database client.
+        ///     Gets the database client.
         /// </summary>
         /// <value>
-        /// The database client.
+        ///     The database client.
         /// </value>
         /// <remarks>
-        /// Do not dispose the returned database client, it's owned by the factory context.
+        ///     Do not dispose the returned database client, it's owned by the factory context.
         /// </remarks>
         public IClient Client
         {
@@ -157,24 +151,18 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets the persistence configuration.
+        ///     Gets the persistence configuration.
         /// </summary>
         /// <value>
-        /// The configuration.
+        ///     The configuration.
         /// </value>
-        public PersistenceConfiguration Configuration
-        {
-            get
-            {
-                return this.factoryContext.Configuration;
-            }
-        }
+        public PersistenceConfiguration Configuration => this.factoryContext.Configuration;
 
         /// <summary>
-        /// Gets the database context properties.
+        ///     Gets the database context properties.
         /// </summary>
         /// <value>
-        /// The database context properties.
+        ///     The database context properties.
         /// </value>
         public IDictionary<string, object> Properties
         {
@@ -186,10 +174,10 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets the database root namespace.
+        ///     Gets the database root namespace.
         /// </summary>
         /// <value>
-        /// The database root namespace.
+        ///     The database root namespace.
         /// </value>
         public INamespace RootNamespace
         {
@@ -205,13 +193,13 @@ namespace Hypertable.Persistence
         #region Public Methods and Operators
 
         /// <summary>
-        /// Create a new entity manager factory using the configuration properties specified.
+        ///     Create a new entity manager factory using the configuration properties specified.
         /// </summary>
         /// <param name="properties">
-        /// The configuration properties.
+        ///     The configuration properties.
         /// </param>
         /// <returns>
-        /// The newly created entity manager factory.
+        ///     The newly created entity manager factory.
         /// </returns>
         public static EntityManagerFactory CreateEntityManagerFactory(IDictionary<string, object> properties)
         {
@@ -219,13 +207,13 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Create a new entity manager factory using the connection string specified.
+        ///     Create a new entity manager factory using the connection string specified.
         /// </summary>
         /// <param name="connectionString">
-        /// The connection string.
+        ///     The connection string.
         /// </param>
         /// <returns>
-        /// The newly created entity manager factory.
+        ///     The newly created entity manager factory.
         /// </returns>
         public static EntityManagerFactory CreateEntityManagerFactory(string connectionString)
         {
@@ -233,33 +221,35 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Create a new entity manager factory using the connection string and the configuration properties specified.
+        ///     Create a new entity manager factory using the connection string and the configuration properties specified.
         /// </summary>
         /// <param name="connectionString">
-        /// The connection string.
+        ///     The connection string.
         /// </param>
         /// <param name="properties">
-        /// The configuration properties.
+        ///     The configuration properties.
         /// </param>
         /// <returns>
-        /// The newly created entity manager factory.
+        ///     The newly created entity manager factory.
         /// </returns>
-        public static EntityManagerFactory CreateEntityManagerFactory(string connectionString, IDictionary<string, object> properties)
+        public static EntityManagerFactory CreateEntityManagerFactory(string connectionString,
+            IDictionary<string, object> properties)
         {
-            return CreateEntityManagerFactory(Context.Create(connectionString, properties), true, DefaultConfigurationInstance);
+            return CreateEntityManagerFactory(Context.Create(connectionString, properties), true,
+                DefaultConfigurationInstance);
         }
 
         /// <summary>
-        /// Create a new entity manager factory using the database context specified.
+        ///     Create a new entity manager factory using the database context specified.
         /// </summary>
         /// <param name="ctx">
-        /// The existing database context.
+        ///     The existing database context.
         /// </param>
         /// <returns>
-        /// The newly created entity manager factory.
+        ///     The newly created entity manager factory.
         /// </returns>
         /// <remarks>
-        /// The entity manager does not take ownership of the database context specified.
+        ///     The entity manager does not take ownership of the database context specified.
         /// </remarks>
         public static EntityManagerFactory CreateEntityManagerFactory(IContext ctx)
         {
@@ -267,81 +257,87 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Create a new entity manager factory using the configuration properties and the persistence configuration specified.
+        ///     Create a new entity manager factory using the configuration properties and the persistence configuration specified.
         /// </summary>
         /// <param name="properties">
-        /// The configuration properties.
+        ///     The configuration properties.
         /// </param>
         /// <param name="configuration">
-        /// The persistence configuration.
+        ///     The persistence configuration.
         /// </param>
         /// <returns>
-        /// The newly created entity manager factory.
+        ///     The newly created entity manager factory.
         /// </returns>
-        public static EntityManagerFactory CreateEntityManagerFactory(IDictionary<string, object> properties, PersistenceConfiguration configuration)
+        public static EntityManagerFactory CreateEntityManagerFactory(IDictionary<string, object> properties,
+            PersistenceConfiguration configuration)
         {
             return CreateEntityManagerFactory(Context.Create(properties), true, configuration);
         }
 
         /// <summary>
-        /// Create a new entity manager factory using the connection string specified and the persistence configuration specified.
+        ///     Create a new entity manager factory using the connection string specified and the persistence configuration
+        ///     specified.
         /// </summary>
         /// <param name="connectionString">
-        /// The connection string.
+        ///     The connection string.
         /// </param>
         /// <param name="configuration">
-        /// The persistence configuration.
+        ///     The persistence configuration.
         /// </param>
         /// <returns>
-        /// The newly created entity manager factory.
+        ///     The newly created entity manager factory.
         /// </returns>
-        public static EntityManagerFactory CreateEntityManagerFactory(string connectionString, PersistenceConfiguration configuration)
+        public static EntityManagerFactory CreateEntityManagerFactory(string connectionString,
+            PersistenceConfiguration configuration)
         {
             return CreateEntityManagerFactory(Context.Create(connectionString), true, configuration);
         }
 
         /// <summary>
-        /// Create a new entity manager factory using the connection string, the configuration properties and the persistence configuration specified.
+        ///     Create a new entity manager factory using the connection string, the configuration properties and the persistence
+        ///     configuration specified.
         /// </summary>
         /// <param name="connectionString">
-        /// The connection string.
+        ///     The connection string.
         /// </param>
         /// <param name="properties">
-        /// The configuration properties.
+        ///     The configuration properties.
         /// </param>
         /// <param name="configuration">
-        /// The persistence configuration.
+        ///     The persistence configuration.
         /// </param>
         /// <returns>
-        /// The newly created entity manager factory.
+        ///     The newly created entity manager factory.
         /// </returns>
-        public static EntityManagerFactory CreateEntityManagerFactory(string connectionString, IDictionary<string, object> properties, PersistenceConfiguration configuration)
+        public static EntityManagerFactory CreateEntityManagerFactory(string connectionString,
+            IDictionary<string, object> properties, PersistenceConfiguration configuration)
         {
             return CreateEntityManagerFactory(Context.Create(connectionString, properties), true, configuration);
         }
 
         /// <summary>
-        /// Create a new entity manager factory using the database context and the persistence configuration specified.
+        ///     Create a new entity manager factory using the database context and the persistence configuration specified.
         /// </summary>
         /// <param name="ctx">
-        /// The existing database context.
+        ///     The existing database context.
         /// </param>
         /// <param name="configuration">
-        /// The persistence configuration.
+        ///     The persistence configuration.
         /// </param>
         /// <returns>
-        /// The newly created entity manager factory.
+        ///     The newly created entity manager factory.
         /// </returns>
         /// <remarks>
-        /// The entity manager does not take ownership of the database context specified.
+        ///     The entity manager does not take ownership of the database context specified.
         /// </remarks>
-        public static EntityManagerFactory CreateEntityManagerFactory(IContext ctx, PersistenceConfiguration configuration)
+        public static EntityManagerFactory CreateEntityManagerFactory(IContext ctx,
+            PersistenceConfiguration configuration)
         {
             return CreateEntityManagerFactory(ctx, false, configuration);
         }
 
         /// <summary>
-        /// Clears the entire entity manager factory context.
+        ///     Clears the entire entity manager factory context.
         /// </summary>
         public void Clear()
         {
@@ -350,10 +346,10 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Create a new entity manager using the default binding context.
+        ///     Create a new entity manager using the default binding context.
         /// </summary>
         /// <returns>
-        /// The newly created entity manager.
+        ///     The newly created entity manager.
         /// </returns>
         public EntityManager CreateEntityManager()
         {
@@ -362,13 +358,13 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Create a new entity manager using the binding context specified.
+        ///     Create a new entity manager using the binding context specified.
         /// </summary>
         /// <param name="bindingContext">
-        /// The binding context.
+        ///     The binding context.
         /// </param>
         /// <returns>
-        /// The newly created entity manager.
+        ///     The newly created entity manager.
         /// </returns>
         public EntityManager CreateEntityManager(BindingContext bindingContext)
         {
@@ -377,7 +373,7 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// The dispose.
+        ///     The dispose.
         /// </summary>
         public void Dispose()
         {
@@ -390,13 +386,13 @@ namespace Hypertable.Persistence
         #region Methods
 
         /// <summary>
-        /// Checks if the database context supports the feature specified.
+        ///     Checks if the database context supports the feature specified.
         /// </summary>
         /// <param name="contextFeature">
-        /// The context feature.
+        ///     The context feature.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the database context supports the feature specified, otherwise <c>false</c>.
+        ///     <c>true</c> if the database context supports the feature specified, otherwise <c>false</c>.
         /// </returns>
         internal bool HasFeature(ContextFeature contextFeature)
         {
@@ -404,36 +400,40 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Create a new entity manager factory using the database context and the persistence configuration specified.
+        ///     Create a new entity manager factory using the database context and the persistence configuration specified.
         /// </summary>
         /// <param name="ctx">
-        /// The existing database context.
+        ///     The existing database context.
         /// </param>
         /// <param name="disposeContext">
-        /// Indicating whether this factory context owns the database context.
+        ///     Indicating whether this factory context owns the database context.
         /// </param>
         /// <param name="configuration">
-        /// The persistence configuration.
+        ///     The persistence configuration.
         /// </param>
         /// <returns>
-        /// The newly created entity manager factory.
+        ///     The newly created entity manager factory.
         /// </returns>
         /// <remarks>
-        /// The entity manager does not take ownership of the database context specified.
+        ///     The entity manager does not take ownership of the database context specified.
         /// </remarks>
-        private static EntityManagerFactory CreateEntityManagerFactory(IContext ctx, bool disposeContext, PersistenceConfiguration configuration)
+        private static EntityManagerFactory CreateEntityManagerFactory(IContext ctx, bool disposeContext,
+            PersistenceConfiguration configuration)
         {
-            return new EntityManagerFactory(DefaultConfigurationInstance != configuration ? configuration : new PersistenceConfiguration(DefaultConfigurationInstance), ctx, disposeContext);
+            return new EntityManagerFactory(
+                DefaultConfigurationInstance != configuration
+                    ? configuration
+                    : new PersistenceConfiguration(DefaultConfigurationInstance), ctx, disposeContext);
         }
 
         /// <summary>
-        /// Gets an assembly attribute.
+        ///     Gets an assembly attribute.
         /// </summary>
         /// <typeparam name="T">
-        /// The type of the assembly attribute to query.
+        ///     The type of the assembly attribute to query.
         /// </typeparam>
         /// <returns>
-        /// The assembly attribute of type T or null otherwise.
+        ///     The assembly attribute of type T or null otherwise.
         /// </returns>
         private static T GetAssemblyAttribute<T>() where T : Attribute
         {
@@ -441,10 +441,10 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// The dispose.
+        ///     The dispose.
         /// </summary>
         /// <param name="disposing">
-        /// The disposing.
+        ///     The disposing.
         /// </param>
         private void Dispose(bool disposing)
         {
@@ -460,10 +460,10 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// The throw if the object has been disposed.
+        ///     The throw if the object has been disposed.
         /// </summary>
         /// <exception cref="ObjectDisposedException">
-        /// If the object has been already disposed.
+        ///     If the object has been already disposed.
         /// </exception>
         private void ThrowIfDisposed()
         {

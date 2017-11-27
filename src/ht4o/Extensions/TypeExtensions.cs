@@ -19,8 +19,6 @@
  * 02110-1301, USA.
  */
 
-using Hypertable.Persistence.Collections.Concurrent;
-
 namespace Hypertable.Persistence.Extensions
 {
     using System;
@@ -31,51 +29,53 @@ namespace Hypertable.Persistence.Extensions
     using System.Linq.Expressions;
     using System.Reflection;
     using System.Text;
-
-    using Hypertable.Persistence.Collections;
+    using Hypertable.Persistence.Collections.Concurrent;
 
     /// <summary>
-    /// The type extensions.
+    ///     The type extensions.
     /// </summary>
     internal static class TypeExtensions
     {
         #region Static Fields
 
         /// <summary>
-        /// The complex types.
+        ///     The complex types.
         /// </summary>
         private static readonly ConcurrentTypeDictionary<bool> ComplexTypes = new ConcurrentTypeDictionary<bool>();
 
         /// <summary>
-        /// The value types.
+        ///     The complex types.
+        /// </summary>
+        private static readonly ConcurrentTypeDictionary<Func<object, object>> EnumToObject =
+            new ConcurrentTypeDictionary<Func<object, object>>();
+
+        /// <summary>
+        ///     The ITuple type.
+        /// </summary>
+        private static readonly Type TypeITuple =
+            typeof(Tuple<int>).GetInterface("System.Runtime.CompilerServices.ITuple") ??
+            typeof(Tuple<int>).GetInterface("System.ITuple");
+
+        /// <summary>
+        ///     The value types.
         /// </summary>
         private static readonly ConcurrentTypeDictionary<bool> ValueTypes = new ConcurrentTypeDictionary<bool>();
-
-        /// <summary>
-        /// The complex types.
-        /// </summary>
-        private static readonly ConcurrentTypeDictionary<Func<object, object>> EnumToObject = new ConcurrentTypeDictionary<Func<object, object>>();
-
-        /// <summary>
-        /// The ITuple type.
-        /// </summary>
-        private static readonly Type TypeITuple = typeof(Tuple<int>).GetInterface("System.Runtime.CompilerServices.ITuple") ?? typeof(Tuple<int>).GetInterface("System.ITuple");
 
         #endregion
 
         #region Methods
 
         /// <summary>
-        /// Converts a value to the type specified.
+        ///     Converts a value to the type specified.
         /// </summary>
         /// <param name="destinationType">
-        /// The destination type.
+        ///     The destination type.
         /// </param>
         /// <param name="value">
-        /// The value to convert.
+        ///     The value to convert.
         /// </param>
         /// <returns>
-        /// The converted value.
+        ///     The converted value.
         /// </returns>
         internal static object Convert(this Type destinationType, object value)
         {
@@ -93,28 +93,28 @@ namespace Hypertable.Persistence.Extensions
                         switch (System.Convert.GetTypeCode(value))
                         {
                             case TypeCode.Int32:
-                                return (v => Enum.ToObject(type, (int)v));
+                                return (v => Enum.ToObject(type, (int) v));
 
                             case TypeCode.SByte:
-                                return (v => Enum.ToObject(type, (sbyte)v));
+                                return (v => Enum.ToObject(type, (sbyte) v));
 
                             case TypeCode.Int16:
-                                return (v => Enum.ToObject(type, (short)v));
+                                return (v => Enum.ToObject(type, (short) v));
 
                             case TypeCode.Int64:
-                                return (v => Enum.ToObject(type, (long)v));
+                                return (v => Enum.ToObject(type, (long) v));
 
                             case TypeCode.UInt32:
-                                return (v => Enum.ToObject(type, (uint)v));
+                                return (v => Enum.ToObject(type, (uint) v));
 
                             case TypeCode.Byte:
-                                return (v => Enum.ToObject(type, (byte)v));
+                                return (v => Enum.ToObject(type, (byte) v));
 
                             case TypeCode.UInt16:
-                                return (v => Enum.ToObject(type, (ushort)v));
+                                return (v => Enum.ToObject(type, (ushort) v));
 
                             case TypeCode.UInt64:
-                                return (v => Enum.ToObject(type, (ulong)v));
+                                return (v => Enum.ToObject(type, (ulong) v));
 
                             default:
                                 throw new ArgumentException("Invalid type code");
@@ -147,7 +147,9 @@ namespace Hypertable.Persistence.Extensions
             var s = value as string;
             if (s != null)
             {
-                return destinationType == typeof(StringBuilder) ? new StringBuilder(s) : System.Convert.ChangeType(s, destinationType, CultureInfo.CurrentCulture);
+                return destinationType == typeof(StringBuilder)
+                    ? new StringBuilder(s)
+                    : System.Convert.ChangeType(s, destinationType, CultureInfo.CurrentCulture);
             }
 
             if (destinationType.IsPrimitive)
@@ -165,8 +167,9 @@ namespace Hypertable.Persistence.Extensions
 
             if (typeof(IList).IsAssignableFrom(destinationType))
             {
-                var list = (IList)Activator.CreateInstance(destinationType, true);
-                list.Add(Convert(destinationType.IsGenericType ? destinationType.GetGenericArguments()[0] : typeof(object), value));
+                var list = (IList) Activator.CreateInstance(destinationType, true);
+                list.Add(Convert(
+                    destinationType.IsGenericType ? destinationType.GetGenericArguments()[0] : typeof(object), value));
                 return list;
             }
 
@@ -174,38 +177,37 @@ namespace Hypertable.Persistence.Extensions
         }
 
         /// <summary>
-        /// Gets a single attribute from the type specified.
+        ///     Gets a single attribute from the type specified.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <param name="inherit">
-        /// <c>true</c> to search this member's inheritance chain to find the attributes, otherwise <C>False</C>.
+        ///     <c>true</c> to search this member's inheritance chain to find the attributes, otherwise <C>False</C>.
         /// </param>
         /// <typeparam name="T">
-        /// The attribute type.
+        ///     The attribute type.
         /// </typeparam>
         /// <returns>
-        /// The attribute instance or null.
+        ///     The attribute instance or null.
         /// </returns>
-
         internal static T GetAttribute<T>(this Type type, bool inherit = false) where T : Attribute
         {
             var attributes = type.GetCustomAttributes(typeof(T), inherit);
-            return attributes.Length > 0 ? (T)attributes[0] : null;
+            return attributes.Length > 0 ? (T) attributes[0] : null;
         }
 
         /// <summary>
-        /// Get all methods with attribute specified.
+        ///     Get all methods with attribute specified.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <typeparam name="T">
-        /// The attribute type.
+        ///     The attribute type.
         /// </typeparam>
         /// <returns>
-        /// The method list or null.
+        ///     The method list or null.
         /// </returns>
         internal static List<MethodInfo> GetMethodsWithAttribute<T>(this Type type) where T : Attribute
         {
@@ -213,16 +215,16 @@ namespace Hypertable.Persistence.Extensions
         }
 
         /// <summary>
-        /// Get all methods with attribute specified.
+        ///     Get all methods with attribute specified.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <param name="attribute">
-        /// The attribute type.
+        ///     The attribute type.
         /// </param>
         /// <returns>
-        /// The method list or null.
+        ///     The method list or null.
         /// </returns>
         internal static List<MethodInfo> GetMethodsWithAttribute(this Type type, Type attribute)
         {
@@ -230,7 +232,8 @@ namespace Hypertable.Persistence.Extensions
             var t = type;
             while (t != null && t != typeof(object))
             {
-                var methods = t.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                var methods = t.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic |
+                                           BindingFlags.Public);
                 methodInfos.AddRange(methods.Where(methodInfo => methodInfo.IsDefined(attribute, false)));
                 t = t.BaseType;
             }
@@ -240,19 +243,19 @@ namespace Hypertable.Persistence.Extensions
         }
 
         /// <summary>
-        /// Returns a value indicating whether the type has the attribute declared.
+        ///     Returns a value indicating whether the type has the attribute declared.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <param name="inherit">
-        /// <c>true</c> to search this member's inheritance chain to find the attributes, otherwise <C>False</C>.
+        ///     <c>true</c> to search this member's inheritance chain to find the attributes, otherwise <C>False</C>.
         /// </param>
         /// <typeparam name="T">
-        /// The attribute type.
+        ///     The attribute type.
         /// </typeparam>
         /// <returns>
-        /// <c>true</c> if the type has the attribute declared, otherwise <c>false</c>.
+        ///     <c>true</c> if the type has the attribute declared, otherwise <c>false</c>.
         /// </returns>
         internal static bool HasAttribute<T>(this Type type, bool inherit = false) where T : Attribute
         {
@@ -260,16 +263,16 @@ namespace Hypertable.Persistence.Extensions
         }
 
         /// <summary>
-        /// Returns a value indicating whether the type implements the interface specified.
+        ///     Returns a value indicating whether the type implements the interface specified.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <param name="typeInterface">
-        /// The interface type.
+        ///     The interface type.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the type implements the interface specified, otherwise <c>false</c>.
+        ///     <c>true</c> if the type implements the interface specified, otherwise <c>false</c>.
         /// </returns>
         internal static bool HasInterface(this Type type, Type typeInterface)
         {
@@ -282,60 +285,49 @@ namespace Hypertable.Persistence.Extensions
         }
 
         /// <summary>
-        /// Gets a value indicating whether the type is complex.
+        ///     Gets a value indicating whether the type is complex.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the type is complex, otherwise <c>false</c>.
+        ///     <c>true</c> if the type is complex, otherwise <c>false</c>.
         /// </returns>
         internal static bool IsComplex(this Type type)
         {
-            return ComplexTypes.GetOrAdd(type, t => type != typeof(string) && type != typeof(Type).GetType() && type.IsClass);
+            return ComplexTypes.GetOrAdd(type,
+                t => type != typeof(string) && type != typeof(Type).GetType() && type.IsClass);
         }
 
         /// <summary>
-        /// Gets a value indicating whether the type is a value type.
+        ///     Gets a value indicating whether the type is a delegate.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the type is a value, otherwise <c>false</c>.
-        /// </returns>
-        internal static bool IsValueType(this Type type) {
-            return ValueTypes.GetOrAdd(type, t => type.IsValueType);
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether the type is a delegate.
-        /// </summary>
-        /// <param name="type">
-        /// The type.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if the type is a delegate, otherwise <c>false</c>.
+        ///     <c>true</c> if the type is a delegate, otherwise <c>false</c>.
         /// </returns>
         internal static bool IsDelegate(this Type type)
         {
             return typeof(Delegate).IsAssignableFrom(type)
                    || (type.IsGenericType
-                       && (type.GetGenericTypeDefinition() == typeof(Action<>) || type.GetGenericTypeDefinition() == typeof(Func<>)
+                       && (type.GetGenericTypeDefinition() == typeof(Action<>) ||
+                           type.GetGenericTypeDefinition() == typeof(Func<>)
                            || type.GetGenericTypeDefinition() == typeof(Expression<>)));
         }
 
         /// <summary>
-        /// Gets a value indicating whether the type is the generic type definition specified.
+        ///     Gets a value indicating whether the type is the generic type definition specified.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <param name="genericTypeDefinition">
-        /// The generic type definition.
+        ///     The generic type definition.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the type is the generic type definition specified, otherwise <c>false</c>.
+        ///     <c>true</c> if the type is the generic type definition specified, otherwise <c>false</c>.
         /// </returns>
         internal static bool IsGenericTypeDefinition(this Type type, Type genericTypeDefinition)
         {
@@ -343,13 +335,13 @@ namespace Hypertable.Persistence.Extensions
         }
 
         /// <summary>
-        /// Gets a value indicating whether the type is not nullable value type.
+        ///     Gets a value indicating whether the type is not nullable value type.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the type is not nullable value type, otherwise <c>false</c>.
+        ///     <c>true</c> if the type is not nullable value type, otherwise <c>false</c>.
         /// </returns>
         internal static bool IsNotNullableValueType(this Type type)
         {
@@ -357,13 +349,13 @@ namespace Hypertable.Persistence.Extensions
         }
 
         /// <summary>
-        /// Gets a value indicating whether the type is a nullable type.
+        ///     Gets a value indicating whether the type is a nullable type.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the type is a nullable type, otherwise <c>false</c>.
+        ///     <c>true</c> if the type is a nullable type, otherwise <c>false</c>.
         /// </returns>
         internal static bool IsNullable(this Type type)
         {
@@ -371,13 +363,13 @@ namespace Hypertable.Persistence.Extensions
         }
 
         /// <summary>
-        /// Gets a value indicating whether the type is transient.
+        ///     Gets a value indicating whether the type is transient.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the type is transient, otherwise <c>false</c>.
+        ///     <c>true</c> if the type is transient, otherwise <c>false</c>.
         /// </returns>
         internal static bool IsTransient(this Type type)
         {
@@ -385,13 +377,13 @@ namespace Hypertable.Persistence.Extensions
         }
 
         /// <summary>
-        /// Gets a value indicating whether the type is a tuple.
+        ///     Gets a value indicating whether the type is a tuple.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the type is a tuple, otherwise <c>false</c>.
+        ///     <c>true</c> if the type is a tuple, otherwise <c>false</c>.
         /// </returns>
         internal static bool IsTuple(this Type type)
         {
@@ -399,16 +391,30 @@ namespace Hypertable.Persistence.Extensions
         }
 
         /// <summary>
-        /// Gets a value indicating whether the member info have the same metadata token.
+        ///     Gets a value indicating whether the type is a value type.
         /// </summary>
-        /// <param name="x">
-        /// The first member info.
-        /// </param>
-        /// <param name="y">
-        /// The second member info.
+        /// <param name="type">
+        ///     The type.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the member info have the same metadata token, otherwise <c>false</c>.
+        ///     <c>true</c> if the type is a value, otherwise <c>false</c>.
+        /// </returns>
+        internal static bool IsValueType(this Type type)
+        {
+            return ValueTypes.GetOrAdd(type, t => type.IsValueType);
+        }
+
+        /// <summary>
+        ///     Gets a value indicating whether the member info have the same metadata token.
+        /// </summary>
+        /// <param name="x">
+        ///     The first member info.
+        /// </param>
+        /// <param name="y">
+        ///     The second member info.
+        /// </param>
+        /// <returns>
+        ///     <c>true</c> if the member info have the same metadata token, otherwise <c>false</c>.
         /// </returns>
         private static bool SameMetadataToken(MemberInfo x, MemberInfo y)
         {

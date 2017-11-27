@@ -18,58 +18,57 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence
 {
-    using Hypertable;
-
     /// <summary>
-    /// Defines a key binding.
+    ///     Defines a key binding.
     /// </summary>
     public interface IKeyBinding
     {
         #region Public Methods and Operators
 
         /// <summary>
-        /// Creates a database key for the entity specified.
+        ///     Creates a database key for the entity specified.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <returns>
-        /// The database key.
+        ///     The database key.
         /// </returns>
         Key CreateKey(object entity);
 
         /// <summary>
-        /// Gets the database key from the entity specified.
+        ///     Gets the database key from the entity specified.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <returns>
-        /// The database key.
+        ///     The database key.
         /// </returns>
         Key KeyFromEntity(object entity);
 
         /// <summary>
-        /// Gets the database key from the value specified.
+        ///     Gets the database key from the value specified.
         /// </summary>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
         /// <returns>
-        /// The database key.
+        ///     The database key.
         /// </returns>
         Key KeyFromValue(object value);
 
         /// <summary>
-        /// Updates the entity using the database key specified.
+        ///     Updates the entity using the database key specified.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <param name="key">
-        /// The database key.
+        ///     The database key.
         /// </param>
         void SetKey(object entity, Key key);
 

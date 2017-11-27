@@ -19,51 +19,49 @@
  * 02110-1301, USA.
  */
 
-using Hypertable.Persistence.Collections.Concurrent;
-
 namespace Hypertable.Persistence
 {
     using System;
     using System.Collections;
     using System.Linq;
-
-    using Hypertable;
     using Hypertable.Persistence.Collections;
     using Hypertable.Persistence.Scanner;
     using Hypertable.Persistence.Serialization;
-
-    using EntitySpecDictionary = ConcurrentDictionary<Hypertable.Persistence.Scanner.EntitySpec, object>;
-    using EntitySpecSet = ConcurrentSet<Hypertable.Persistence.Scanner.EntitySpec>;
+    using EntitySpecDictionary =
+        Hypertable.Persistence.Collections.Concurrent.ConcurrentDictionary<Hypertable.Persistence.Scanner.EntitySpec,
+            object>;
+    using EntitySpecSet =
+        Hypertable.Persistence.Collections.Concurrent.ConcurrentSet<Hypertable.Persistence.Scanner.EntitySpec>;
 
     /// <summary>
-    /// The entity reader.
+    ///     The entity reader.
     /// </summary>
     internal sealed class EntityReader
     {
         #region Fields
 
         /// <summary>
-        /// The behaviors.
+        ///     The behaviors.
         /// </summary>
         private readonly Behaviors behaviors;
 
         /// <summary>
-        /// The entities fetched.
+        ///     The entities fetched.
         /// </summary>
         private readonly EntitySpecDictionary entitiesFetched = new EntitySpecDictionary();
 
         /// <summary>
-        /// The entity scanner.
+        ///     The entity scanner.
         /// </summary>
         private readonly EntityScanner entityScanner;
 
         /// <summary>
-        /// The entity specs fetched.
+        ///     The entity specs fetched.
         /// </summary>
         private readonly EntitySpecSet entitySpecsFetched;
 
         /// <summary>
-        /// The fetched cell.
+        ///     The fetched cell.
         /// </summary>
         private FetchedCell fetchedCell;
 
@@ -72,13 +70,13 @@ namespace Hypertable.Persistence
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityReader"/> class.
+        ///     Initializes a new instance of the <see cref="EntityReader" /> class.
         /// </summary>
         /// <param name="entityScanner">
-        /// The entity scanner.
+        ///     The entity scanner.
         /// </param>
         /// <param name="behaviors">
-        /// The behaviors.
+        ///     The behaviors.
         /// </param>
         private EntityReader(EntityScanner entityScanner, Behaviors behaviors)
         {
@@ -92,42 +90,37 @@ namespace Hypertable.Persistence
         #region Properties
 
         /// <summary>
-        /// Gets the entity scanner.
+        ///     Gets the entity scanner.
         /// </summary>
         /// <value>
-        /// The entity scanner.
+        ///     The entity scanner.
         /// </value>
-        internal EntityScanner EntityScanner
-        {
-            get
-            {
-                return this.entityScanner;
-            }
-        }
+        internal EntityScanner EntityScanner => this.entityScanner;
 
         #endregion
 
         #region Methods
 
         /// <summary>
-        /// Reads an entity which belongs to the given database key from the database.
+        ///     Reads an entity which belongs to the given database key from the database.
         /// </summary>
         /// <param name="entityContext">
-        /// The entity context.
+        ///     The entity context.
         /// </param>
         /// <param name="entityReference">
-        /// The entity reference.
+        ///     The entity reference.
         /// </param>
         /// <param name="key">
-        /// The database key.
+        ///     The database key.
         /// </param>
         /// <param name="behaviors">
-        /// The behaviors.
+        ///     The behaviors.
         /// </param>
         /// <returns>
-        /// The entity.
+        ///     The entity.
         /// </returns>
-        internal static object Read(EntityContext entityContext, EntityReference entityReference, object key, Behaviors behaviors)
+        internal static object Read(EntityContext entityContext, EntityReference entityReference, object key,
+            Behaviors behaviors)
         {
             var entityScanTarget = new EntityScanTarget(entityReference, key);
             var entityScanner = new EntityScanner(entityContext);
@@ -137,24 +130,25 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Reads all entities which belongs to the given database keys from the database.
+        ///     Reads all entities which belongs to the given database keys from the database.
         /// </summary>
         /// <param name="entityContext">
-        /// The entity context.
+        ///     The entity context.
         /// </param>
         /// <param name="entityReference">
-        /// The entity reference.
+        ///     The entity reference.
         /// </param>
         /// <param name="keys">
-        /// The entity keys.
+        ///     The entity keys.
         /// </param>
         /// <param name="behaviors">
-        /// The behaviors.
+        ///     The behaviors.
         /// </param>
         /// <returns>
-        /// The entities.
+        ///     The entities.
         /// </returns>
-        internal static IEnumerable Read(EntityContext entityContext, EntityReference entityReference, IEnumerable keys, Behaviors behaviors)
+        internal static IEnumerable Read(EntityContext entityContext, EntityReference entityReference, IEnumerable keys,
+            Behaviors behaviors)
         {
             var entityScanner = new EntityScanner(entityContext);
             var entityScanTargets = new ChunkedCollection<EntityScanTarget>();
@@ -162,7 +156,8 @@ namespace Hypertable.Persistence
             {
                 if (key != null)
                 {
-                    var entityScanTarget = new EntityScanTarget(entityReference, entityReference.GetKeyFromObject(key, false));
+                    var entityScanTarget =
+                        new EntityScanTarget(entityReference, entityReference.GetKeyFromObject(key, false));
                     entityScanTargets.Add(entityScanTarget);
                     entityScanner.Add(entityScanTarget);
                 }
@@ -173,24 +168,25 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Reads all entities which belongs to the given database keys from the database.
+        ///     Reads all entities which belongs to the given database keys from the database.
         /// </summary>
         /// <param name="entityContext">
-        /// The entity context.
+        ///     The entity context.
         /// </param>
         /// <param name="entityReference">
-        /// The entity reference.
+        ///     The entity reference.
         /// </param>
         /// <param name="keys">
-        /// The entity keys.
+        ///     The entity keys.
         /// </param>
         /// <param name="entitySink">
-        /// The entity sink, receives the entities fetched.
+        ///     The entity sink, receives the entities fetched.
         /// </param>
         /// <param name="behaviors">
-        /// The behaviors.
+        ///     The behaviors.
         /// </param>
-        internal static void Read(EntityContext entityContext, EntityReference entityReference, IEnumerable keys, Action<object> entitySink, Behaviors behaviors)
+        internal static void Read(EntityContext entityContext, EntityReference entityReference, IEnumerable keys,
+            Action<object> entitySink, Behaviors behaviors)
         {
             var entityScanner = new EntityScanner(entityContext);
             var entityScanTargets = new ChunkedCollection<EntityScanTarget>();
@@ -198,7 +194,8 @@ namespace Hypertable.Persistence
             {
                 if (key != null)
                 {
-                    var entityScanTarget = new EntityScanTarget(entityReference, entityReference.GetKeyFromObject(key, false), entitySink);
+                    var entityScanTarget = new EntityScanTarget(entityReference,
+                        entityReference.GetKeyFromObject(key, false), entitySink);
                     entityScanTargets.Add(entityScanTarget);
                     entityScanner.Add(entityScanTarget);
                 }
@@ -208,24 +205,25 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Reads all entities which belongs to the given scan specification from the database.
+        ///     Reads all entities which belongs to the given scan specification from the database.
         /// </summary>
         /// <param name="entityContext">
-        /// The entity context.
+        ///     The entity context.
         /// </param>
         /// <param name="entityReference">
-        /// The entity reference.
+        ///     The entity reference.
         /// </param>
         /// <param name="scanSpec">
-        /// The scan spec.
+        ///     The scan spec.
         /// </param>
         /// <param name="behaviors">
-        /// The behaviors.
+        ///     The behaviors.
         /// </param>
         /// <returns>
-        /// The entities.
+        ///     The entities.
         /// </returns>
-        internal static IEnumerable Read(EntityContext entityContext, EntityReference entityReference, ScanSpec scanSpec, Behaviors behaviors)
+        internal static IEnumerable Read(EntityContext entityContext, EntityReference entityReference,
+            ScanSpec scanSpec, Behaviors behaviors)
         {
             var entityScanResult = new EntityScanResult(entityReference);
             var entityScanner = new EntityScanner(entityContext);
@@ -236,24 +234,25 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Reads all entities which belongs to the given scan specification from the database.
+        ///     Reads all entities which belongs to the given scan specification from the database.
         /// </summary>
         /// <param name="entityContext">
-        /// The entity context.
+        ///     The entity context.
         /// </param>
         /// <param name="entityReference">
-        /// The entity reference.
+        ///     The entity reference.
         /// </param>
         /// <param name="scanSpec">
-        /// The scan spec.
+        ///     The scan spec.
         /// </param>
         /// <param name="entitySink">
-        /// The entity sink, receives the entities fetched.
+        ///     The entity sink, receives the entities fetched.
         /// </param>
         /// <param name="behaviors">
-        /// The behaviors.
+        ///     The behaviors.
         /// </param>
-        internal static void Read(EntityContext entityContext, EntityReference entityReference, ScanSpec scanSpec, Action<object> entitySink, Behaviors behaviors)
+        internal static void Read(EntityContext entityContext, EntityReference entityReference, ScanSpec scanSpec,
+            Action<object> entitySink, Behaviors behaviors)
         {
             var entityScanResult = new EntityScanResult(entityReference, entitySink);
             var entityScanner = new EntityScanner(entityContext);
@@ -263,33 +262,33 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-    /// Attempts to get an already fetched entity from the cache.
-    /// </summary>
-    /// <param name="entitySpec">
-    /// The entity spec.
-    /// </param>
-    /// <param name="entity">
-    /// The entity.
-    /// </param>
-    /// <returns>
-    /// <c>true</c> if the cache contains an element with the specified entity spec, otherwise <c>false</c>.
-    /// </returns>
+        ///     Attempts to get an already fetched entity from the cache.
+        /// </summary>
+        /// <param name="entitySpec">
+        ///     The entity spec.
+        /// </param>
+        /// <param name="entity">
+        ///     The entity.
+        /// </param>
+        /// <returns>
+        ///     <c>true</c> if the cache contains an element with the specified entity spec, otherwise <c>false</c>.
+        /// </returns>
         internal bool TryGetFetchedEntity(EntitySpec entitySpec, out object entity)
         {
             return this.entitiesFetched.TryGetValue(entitySpec, out entity);
         }
 
         /// <summary>
-        /// The deserializing entity callback.
+        ///     The deserializing entity callback.
         /// </summary>
         /// <param name="entityReference">
-        /// The entity reference.
+        ///     The entity reference.
         /// </param>
         /// <param name="destinationType">
-        /// The destination type.
+        ///     The destination type.
         /// </param>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         private void DeserializingEntity(EntityReference entityReference, Type destinationType, object entity)
         {
@@ -298,16 +297,17 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// The entity fetched callback.
+        ///     The entity fetched callback.
         /// </summary>
         /// <param name="fc">
-        /// The fetched cell.
+        ///     The fetched cell.
         /// </param>
         private void EntityFetched(ref FetchedCell fc)
         {
             this.fetchedCell = fc;
             var entityScanTarget = fc.EntityScanTarget;
-            var entity = EntityDeserializer.Deserialize(this, typeof(object)/*TODO REMOVE ?? entityScanTarget.EntityType*/, fc.Cell.Value, this.DeserializingEntity);
+            var entity = EntityDeserializer.Deserialize(this,
+                typeof(object) /*TODO REMOVE ?? entityScanTarget.EntityType*/, fc.Cell.Value, this.DeserializingEntity);
 
             if (!this.behaviors.DoNotCache())
             {
@@ -321,11 +321,11 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Reads all entities from the entity scanner.
+        ///     Reads all entities from the entity scanner.
         /// </summary>
         private void Read()
         {
-           while (!this.entityScanner.IsEmpty)
+            while (!this.entityScanner.IsEmpty)
             {
                 this.entityScanner.Fetch(this.TryGetFetchedEntity, this.EntityFetched);
             }

@@ -18,30 +18,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Collections
 {
     /// <summary>
-    /// The identity dictionary.
+    ///     The identity dictionary.
     /// </summary>
     /// <typeparam name="T">
-    /// The value type.
+    ///     The value type.
     /// </typeparam>
     internal sealed class IdentityDictionary<T> : FastDictionary<object, T, IdentityComparer>
     {
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="IdentityDictionary{T}"/> class.
+        ///     Initializes a new instance of the <see cref="IdentityDictionary{T}" /> class.
         /// </summary>
         internal IdentityDictionary()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="IdentityDictionary{T}"/> class.
+        ///     Initializes a new instance of the <see cref="IdentityDictionary{T}" /> class.
         /// </summary>
         internal IdentityDictionary(int initialBucketCount)
-            : base(initialBucketCount) {
+            : base(initialBucketCount)
+        {
         }
 
         #endregion

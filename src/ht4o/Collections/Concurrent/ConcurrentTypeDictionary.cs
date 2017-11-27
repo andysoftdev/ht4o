@@ -83,7 +83,7 @@ namespace Hypertable.Persistence.Collections.Concurrent
         internal TValue GetValue(Type type)
         {
             TValue value;
-            return TryGetValue(type, out value) ? value : default(TValue);
+            return this.TryGetValue(type, out value) ? value : default(TValue);
         }
 
         /// <summary>
@@ -101,7 +101,9 @@ namespace Hypertable.Persistence.Collections.Concurrent
         internal int Remove(IEnumerable<Type> types)
         {
             if (types == null)
-                throw new ArgumentNullException("types");
+            {
+                throw new ArgumentNullException(nameof(types));
+            }
 
             TValue value;
             return types.ToList().Count(key => TryRemove(key, out value)); // ToList is required

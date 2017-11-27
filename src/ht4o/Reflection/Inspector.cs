@@ -19,83 +19,82 @@
  * 02110-1301, USA.
  */
 
-using Hypertable.Persistence.Collections.Concurrent;
-
 namespace Hypertable.Persistence.Reflection
 {
     using System;
     using System.Collections;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
     using System.Runtime.Serialization;
     using System.Text.RegularExpressions;
-
     using Hypertable.Persistence.Collections;
+    using Hypertable.Persistence.Collections.Concurrent;
     using Hypertable.Persistence.Extensions;
 
     /// <summary>
-    /// The inspector.
+    ///     The inspector.
     /// </summary>
     internal sealed class Inspector
     {
         #region Static Fields
 
         /// <summary>
-        /// The inspectors.
+        ///     The inspectors.
         /// </summary>
-        private static readonly ConcurrentTypeDictionary<Inspector> Inspectors = new ConcurrentTypeDictionary<Inspector>();
+        private static readonly ConcurrentTypeDictionary<Inspector> Inspectors =
+            new ConcurrentTypeDictionary<Inspector>();
 
         #endregion
 
         #region Fields
 
         /// <summary>
-        /// Indicating whether the inspected type has a default constructor.
+        ///     Indicating whether the inspected type has a default constructor.
         /// </summary>
         private readonly Func<object> constructor;
 
         /// <summary>
-        /// The enumerable.
+        ///     The enumerable.
         /// </summary>
         private readonly InspectedEnumerable enumerable;
 
         /// <summary>
-        /// Indicating whether the inspected type has a serialization handlers.
+        ///     Indicating whether the inspected type has a serialization handlers.
         /// </summary>
         private readonly bool hasSerializationHandlers;
 
         /// <summary>
-        /// The inspected properties dictionary.
+        ///     The inspected properties dictionary.
         /// </summary>
         private readonly IDictionary<string, InspectedProperty> inspectedProperties;
 
         /// <summary>
-        /// The inspected properties positional.
+        ///     The inspected properties positional.
         /// </summary>
         private readonly KeyValuePair<string, InspectedProperty>[] inspectedPropertiesPositional;
 
         /// <summary>
-        /// The serializable.
+        ///     The inspected property per regular expression.
         /// </summary>
-        private readonly InspectedSerializable serializable;
+        private readonly ConcurrentStringDictionary<InspectedProperty> regexProperties =
+            new ConcurrentStringDictionary<InspectedProperty>();
 
         /// <summary>
-        /// The inspected property per regular expression.
+        ///     The serializable.
         /// </summary>
-        private readonly ConcurrentStringDictionary<InspectedProperty> regexProperties = new ConcurrentStringDictionary<InspectedProperty>();
+        private readonly InspectedSerializable serializable;
 
         #endregion
 
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Inspector"/> class.
+        ///     Initializes a new instance of the <see cref="Inspector" /> class.
         /// </summary>
         /// <param name="type">
-        /// The type to inspect.
+        ///     The type to inspect.
         /// </param>
         private Inspector(Type type)
         {
@@ -127,7 +126,9 @@ namespace Hypertable.Persistence.Reflection
                 this.constructor = DelegateFactory.CreateConstructor(type);
 
                 ////TODO control isSerializable/ISerializable by settings fields or props?
-                this.inspectedProperties = type.HasAttribute<SerializableAttribute>() ? InspectFields(type) : InspectProperties(type);
+                this.inspectedProperties = ReflectionExtensions.HasAttribute<SerializableAttribute>(type)
+                    ? InspectFields(type)
+                    : InspectProperties(type);
                 this.inspectedPropertiesPositional = this.inspectedProperties.ToArray();
 
                 if (typeof(IDictionary).IsAssignableFrom(type))
@@ -151,7 +152,8 @@ namespace Hypertable.Persistence.Reflection
                 this.OnSerialized = CreateHandler<OnSerializedAttribute>(type);
                 this.OnDeserializing = CreateHandler<OnDeserializingAttribute>(type);
                 this.OnDeserialized = CreateHandler<OnDeserializedAttribute>(type);
-                this.hasSerializationHandlers = this.OnSerializing != null || this.OnSerialized != null || this.OnDeserializing != null || this.OnDeserialized != null;
+                this.hasSerializationHandlers = this.OnSerializing != null || this.OnSerialized != null ||
+                                                this.OnDeserializing != null || this.OnDeserialized != null;
             }
             else
             {
@@ -164,209 +166,161 @@ namespace Hypertable.Persistence.Reflection
         #region Properties
 
         /// <summary>
-        /// Gets the enum type if the inspected type is an enumeration.
+        ///     Gets the inspected enumerable.
         /// </summary>
         /// <value>
-        /// The enum type.
+        ///     The inspected enumerable.
         /// </value>
-        internal Type EnumType { get; private set; }
+        internal InspectedEnumerable Enumerable => this.enumerable;
 
         /// <summary>
-        /// Gets the inspected enumerable.
+        ///     Gets the enum type if the inspected type is an enumeration.
         /// </summary>
         /// <value>
-        /// The inspected enumerable.
+        ///     The enum type.
         /// </value>
-        internal InspectedEnumerable Enumerable
-        {
-            get
-            {
-                return this.enumerable;
-            }
-        }
+        internal Type EnumType { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the inspector has properties.
+        ///     Gets a value indicating whether the inspector has properties.
         /// </summary>
         /// <value>
-        /// <c>true</c> if the inspector has properties, otherwise <c>false</c>.
+        ///     <c>true</c> if the inspector has properties, otherwise <c>false</c>.
         /// </value>
-        internal bool HasProperties
-        {
-            get
-            {
-                return this.inspectedProperties.Count > 0;
-            }
-        }
+        internal bool HasProperties => this.inspectedProperties.Count > 0;
 
         /// <summary>
-        /// Gets a value indicating whether the inspected type has a serialization handlers.
+        ///     Gets a value indicating whether the inspected type has a serialization handlers.
         /// </summary>
         /// <value>
-        /// <c>true</c> if the inspected type has a serialization handlers, otherwise <c>false</c>.
+        ///     <c>true</c> if the inspected type has a serialization handlers, otherwise <c>false</c>.
         /// </value>
-        internal bool HasSerializationHandlers
-        {
-            get
-            {
-                return this.hasSerializationHandlers;
-            }
-        }
+        internal bool HasSerializationHandlers => this.hasSerializationHandlers;
 
         /// <summary>
-        /// Gets the inspected type.
+        ///     Gets the inspected type.
         /// </summary>
         /// <value>
-        /// The inspected type.
+        ///     The inspected type.
         /// </value>
-        internal Type InspectedType { get; private set; }
+        internal Type InspectedType { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the inspected type is an array.
+        ///     Gets a value indicating whether the inspected type is an array.
         /// </summary>
         /// <value>
-        /// <c>true</c> if the inspected type is an array, otherwise <c>false</c>.
+        ///     <c>true</c> if the inspected type is an array, otherwise <c>false</c>.
         /// </value>
-        internal bool IsArray { get; private set; }
+        internal bool IsArray { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the inspector is a collection.
+        ///     Gets a value indicating whether the inspector is a collection.
         /// </summary>
         /// <value>
-        /// <c>true</c> if the inspector is a collection, otherwise <c>false</c>.
+        ///     <c>true</c> if the inspector is a collection, otherwise <c>false</c>.
         /// </value>
-        internal bool IsCollection
-        {
-            get
-            {
-                return this.enumerable != null && this.enumerable.HasAdd;
-            }
-        }
+        internal bool IsCollection => this.enumerable != null && this.enumerable.HasAdd;
 
         /// <summary>
-        /// Gets a value indicating whether the inspected type is an enum.
+        ///     Gets a value indicating whether the inspected type is an enum.
         /// </summary>
         /// <value>
-        /// <c>true</c> if the inspected type is an enum, otherwise <c>false</c>.
+        ///     <c>true</c> if the inspected type is an enum, otherwise <c>false</c>.
         /// </value>
-        internal bool IsEnum { get; private set; }
+        internal bool IsEnum { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the inspector is an enumerable.
+        ///     Gets a value indicating whether the inspector is an enumerable.
         /// </summary>
         /// <value>
-        /// <c>true</c> if the inspector is an enumerable, otherwise <c>false</c>.
+        ///     <c>true</c> if the inspector is an enumerable, otherwise <c>false</c>.
         /// </value>
-        internal bool IsEnumerable
-        {
-            get
-            {
-                return this.enumerable != null;
-            }
-        }
+        internal bool IsEnumerable => this.enumerable != null;
 
         /// <summary>
-        /// Gets a value indicating whether the inspected type is a key value pair.
+        ///     Gets a value indicating whether the inspected type is a key value pair.
         /// </summary>
         /// <value>
-        /// <c>true</c> if the inspected type is key value pair, otherwise <c>false</c>.
+        ///     <c>true</c> if the inspected type is key value pair, otherwise <c>false</c>.
         /// </value>
-        internal bool IsKeyValuePair { get; private set; }
+        internal bool IsKeyValuePair { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the inspector is a serializable.
+        ///     Gets a value indicating whether the inspector is a serializable.
         /// </summary>
         /// <value>
-        /// <c>true</c> if the inspector is a serializable, otherwise <c>false</c>.
+        ///     <c>true</c> if the inspector is a serializable, otherwise <c>false</c>.
         /// </value>
-        internal bool IsSerializable
-        {
-            get
-            {
-                return this.serializable != null;
-            }
-        }
+        internal bool IsSerializable => this.serializable != null;
 
         /// <summary>
-        /// Gets a value indicating whether the inspected type is a tuple.
+        ///     Gets a value indicating whether the inspected type is a tuple.
         /// </summary>
         /// <value>
-        /// <c>true</c> if the inspected type is a tuple, otherwise <c>false</c>.
+        ///     <c>true</c> if the inspected type is a tuple, otherwise <c>false</c>.
         /// </value>
-        internal bool IsTuple { get; private set; }
+        internal bool IsTuple { get; }
 
         /// <summary>
-        /// Gets the OnDeserialized handler.
+        ///     Gets the OnDeserialized handler.
         /// </summary>
         /// <value>
-        /// The OnDeserialized handler or null.
+        ///     The OnDeserialized handler or null.
         /// </value>
-        internal Action<object, StreamingContext> OnDeserialized { get; private set; }
+        internal Action<object, StreamingContext> OnDeserialized { get; }
 
         /// <summary>
-        /// Gets the OnDeserializing handler.
+        ///     Gets the OnDeserializing handler.
         /// </summary>
         /// <value>
-        /// The OnDeserializing handler or null.
+        ///     The OnDeserializing handler or null.
         /// </value>
-        internal Action<object, StreamingContext> OnDeserializing { get; private set; }
+        internal Action<object, StreamingContext> OnDeserializing { get; }
 
         /// <summary>
-        /// Gets the OnSerialized handler.
+        ///     Gets the OnSerialized handler.
         /// </summary>
         /// <value>
-        /// The OnSerialized handler or null.
+        ///     The OnSerialized handler or null.
         /// </value>
-        internal Action<object, StreamingContext> OnSerialized { get; private set; }
+        internal Action<object, StreamingContext> OnSerialized { get; }
 
         /// <summary>
-        /// Gets the OnSerializing handler.
+        ///     Gets the OnSerializing handler.
         /// </summary>
         /// <value>
-        /// The OnSerializing handler or null.
+        ///     The OnSerializing handler or null.
         /// </value>
-        internal Action<object, StreamingContext> OnSerializing { get; private set; }
+        internal Action<object, StreamingContext> OnSerializing { get; }
 
         /// <summary>
-        /// Gets the inspected properties.
+        ///     Gets the inspected properties.
         /// </summary>
         /// <value>
-        /// The inspected properties.
+        ///     The inspected properties.
         /// </value>
-        internal ICollection<InspectedProperty> Properties
-        {
-            get
-            {
-                return this.inspectedProperties.Values;
-            }
-        }
+        internal ICollection<InspectedProperty> Properties => this.inspectedProperties.Values;
 
         /// <summary>
-        /// Gets the inspected enumerable.
+        ///     Gets the inspected enumerable.
         /// </summary>
         /// <value>
-        /// The inspected enumerable.
+        ///     The inspected enumerable.
         /// </value>
-        internal InspectedSerializable Serializable
-        {
-            get
-            {
-                return this.serializable;
-            }
-        }
+        internal InspectedSerializable Serializable => this.serializable;
 
         #endregion
 
         #region Methods
 
         /// <summary>
-        /// Gets the inspector for the type specified.
+        ///     Gets the inspector for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The type to inspect.
+        ///     The type to inspect.
         /// </param>
         /// <returns>
-        /// The inspector.
+        ///     The inspector.
         /// </returns>
         internal static Inspector InspectorForType(Type type)
         {
@@ -374,32 +328,34 @@ namespace Hypertable.Persistence.Reflection
         }
 
         /// <summary>
-        /// Creates an instance of the inspected type.
+        ///     Creates an instance of the inspected type.
         /// </summary>
         /// <returns>
-        /// The newly created instance.
+        ///     The newly created instance.
         /// </returns>
         internal object CreateInstance()
         {
             if (!this.InspectedType.IsInterface && !this.InspectedType.IsAbstract)
             {
-                return this.constructor != null ? this.constructor() : FormatterServices.GetUninitializedObject(this.InspectedType);
+                return this.constructor != null
+                    ? this.constructor()
+                    : FormatterServices.GetUninitializedObject(this.InspectedType);
             }
 
             return null;
         }
 
         /// <summary>
-        /// Gets the inspected property by the name specified.
+        ///     Gets the inspected property by the name specified.
         /// </summary>
         /// <param name="name">
-        /// The property name.
+        ///     The property name.
         /// </param>
         /// <param name="positionalHint">
-        /// The positional hint.
+        ///     The positional hint.
         /// </param>
         /// <returns>
-        /// The inspected property or null.
+        ///     The inspected property or null.
         /// </returns>
         internal InspectedProperty GetProperty(string name, int positionalHint)
         {
@@ -419,21 +375,22 @@ namespace Hypertable.Persistence.Reflection
         }
 
         /// <summary>
-        /// Gets the inspected property by the alternate name.
-        /// </summary> 
+        ///     Gets the inspected property by the alternate name.
+        /// </summary>
         /// <param name="name">
-        /// The property name.
+        ///     The property name.
         /// </param>
         /// <param name="alternateName">
-        /// The alternate property name.
+        ///     The alternate property name.
         /// </param>
         /// <returns>
-        /// The inspected property or null.
+        ///     The inspected property or null.
         /// </returns>
         internal InspectedProperty GetProperty(string name, string alternateName)
         {
             InspectedProperty inspectedProperty = null;
-            if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(alternateName)) {
+            if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(alternateName))
+            {
                 this.inspectedProperties.TryGetValue(name, out inspectedProperty);
                 if (inspectedProperty != null && !this.inspectedProperties.ContainsKey(alternateName))
                 {
@@ -444,41 +401,42 @@ namespace Hypertable.Persistence.Reflection
         }
 
         /// <summary>
-        /// Gets the inspected property by the regex specified.
+        ///     Gets the inspected property by the regex specified.
         /// </summary>
         /// <param name="regex">
-        /// The regular expression to match.
+        ///     The regular expression to match.
         /// </param>
         /// <returns>
-        /// The inspected property or null.
+        ///     The inspected property or null.
         /// </returns>
         internal InspectedProperty GetProperty(Regex regex)
         {
             return regex == null
-                       ? null
-                       : this.regexProperties.GetOrAdd(
-                           regex.ToString(),
-                           _ => this.Properties.FirstOrDefault(p => regex.Match(p.Name).Success));
+                ? null
+                : this.regexProperties.GetOrAdd(
+                    regex.ToString(),
+                    _ => this.Properties.FirstOrDefault(p => regex.Match(p.Name).Success));
         }
 
         /// <summary>
-        /// Create a handler for serialization attribute specified.
+        ///     Create a handler for serialization attribute specified.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <typeparam name="T">
-        /// The serialization attribute.
+        ///     The serialization attribute.
         /// </typeparam>
         /// <returns>
-        /// The newly created handler or null.
+        ///     The newly created handler or null.
         /// </returns>
         private static Action<object, StreamingContext> CreateHandler<T>(Type type) where T : Attribute
         {
             var methods = type.GetMethodsWithAttribute<T>();
             if (methods != null)
             {
-                var handler = new DynamicMethod("Handler" + methods[0].Name, typeof(void), new[] { typeof(object), typeof(StreamingContext) }, methods[0].Module, true);
+                var handler = new DynamicMethod("Handler" + methods[0].Name, typeof(void),
+                    new[] {typeof(object), typeof(StreamingContext)}, methods[0].Module, true);
                 var generator = handler.GetILGenerator();
 
                 foreach (var m in methods)
@@ -490,20 +448,21 @@ namespace Hypertable.Persistence.Reflection
 
                 generator.Emit(OpCodes.Ret);
 
-                return (Action<object, StreamingContext>)handler.CreateDelegate(typeof(Action<object, StreamingContext>));
+                return (Action<object, StreamingContext>) handler.CreateDelegate(
+                    typeof(Action<object, StreamingContext>));
             }
 
             return null;
         }
 
         /// <summary>
-        /// Inspects enumerable for the type specified.
+        ///     Inspects enumerable for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The type to inspect.
+        ///     The type to inspect.
         /// </param>
         /// <returns>
-        /// The inspected enumerable.
+        ///     The inspected enumerable.
         /// </returns>
         private static InspectedEnumerable InspectEnumerable(Type type)
         {
@@ -511,20 +470,21 @@ namespace Hypertable.Persistence.Reflection
         }
 
         /// <summary>
-        /// Inspects the fields for the type specified.
+        ///     Inspects the fields for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The type to inspect.
+        ///     The type to inspect.
         /// </param>
         /// <returns>
-        /// The inspected fields.
+        ///     The inspected fields.
         /// </returns>
         private static IDictionary<string, InspectedProperty> InspectFields(Type type)
         {
             var inspectedProperties = new StringDictionary<InspectedProperty, StringComparerOrdinalIgnoreCase>();
             for (var t = type; t != typeof(object) && t != null; t = t.BaseType)
             {
-                var fields = t.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+                var fields = t.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic |
+                                         BindingFlags.FlattenHierarchy);
 
                 //// TODO correct flattening (duplicated private field names)
                 //// TODO add any filter if required
@@ -536,7 +496,8 @@ namespace Hypertable.Persistence.Reflection
                         if (!inspectedProperties.ContainsKey(name))
                         {
                             var inspectedProperty = new InspectedProperty(type, field);
-                            if (inspectedProperty.HasSetter && inspectedProperty.HasGetter && !inspectedProperty.IsTransient)
+                            if (inspectedProperty.HasSetter && inspectedProperty.HasGetter &&
+                                !inspectedProperty.IsTransient)
                             {
                                 inspectedProperties.Add(name, inspectedProperty);
                             }
@@ -553,20 +514,21 @@ namespace Hypertable.Persistence.Reflection
         }
 
         /// <summary>
-        /// Inspects the properties for the type specified.
+        ///     Inspects the properties for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The type to inspect.
+        ///     The type to inspect.
         /// </param>
         /// <returns>
-        /// The inspected properties.
+        ///     The inspected properties.
         /// </returns>
         private static IDictionary<string, InspectedProperty> InspectProperties(Type type)
         {
             var inspectedProperties = new StringDictionary<InspectedProperty, StringComparerOrdinalIgnoreCase>();
             for (var t = type; t != typeof(object) && t != null; t = t.BaseType)
             {
-                var properties = t.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+                var properties = t.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic |
+                                                 BindingFlags.FlattenHierarchy);
 
                 //// TODO correct flattening (duplicated private property names)
                 //// TODO add any filter if required
@@ -581,7 +543,8 @@ namespace Hypertable.Persistence.Reflection
                             if (property.GetIndexParameters().Length == 0)
                             {
                                 var inspectedProperty = new InspectedProperty(type, property);
-                                if (inspectedProperty.HasSetter && inspectedProperty.HasGetter && !inspectedProperty.IsTransient)
+                                if (inspectedProperty.HasSetter && inspectedProperty.HasGetter &&
+                                    !inspectedProperty.IsTransient)
                                 {
                                     inspectedProperties.Add(name, inspectedProperty);
                                 }
@@ -599,13 +562,13 @@ namespace Hypertable.Persistence.Reflection
         }
 
         /// <summary>
-        /// Inspects serializable for the type specified.
+        ///     Inspects serializable for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The type to inspect.
+        ///     The type to inspect.
         /// </param>
         /// <returns>
-        /// The inspected serializable.
+        ///     The inspected serializable.
         /// </returns>
         private static InspectedSerializable InspectSerializable(Type type)
         {

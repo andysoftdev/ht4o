@@ -1,5 +1,4 @@
 ﻿
-using System.Collections.Generic;
 /** -*- C# -*-
 * Copyright (C) 2010-2016 Thalmann Software & Consulting, http://www.softdev.ch
 *
@@ -22,30 +21,35 @@ using System.Collections.Generic;
 */
 namespace Hypertable.Persistence.Collections
 {
+    using System.Collections.Generic;
+
     /// <summary>
-    /// The string dictionary.
+    ///     The string dictionary.
     /// </summary>
     /// <typeparam name="T">
-    /// The value type.
+    ///     The value type.
     /// </typeparam>
     /// <typeparam name="TComparer">
-    /// The comparer type.
+    ///     The comparer type.
     /// </typeparam>
-    internal class StringDictionary<T, TComparer> : FastDictionary<string, T, TComparer> where TComparer : struct, IEqualityComparer<string>
+    internal class StringDictionary<T, TComparer> : FastDictionary<string, T, TComparer>
+        where TComparer : struct, IEqualityComparer<string>
     {
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="StringDictionary{T}"/> class.
+        ///     Initializes a new instance of the <see cref="StringDictionary{T}" /> class.
         /// </summary>
-        internal StringDictionary() {
+        internal StringDictionary()
+        {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="StringDictionary{T}"/> class.
+        ///     Initializes a new instance of the <see cref="StringDictionary{T}" /> class.
         /// </summary>
         internal StringDictionary(int initialBucketCount)
-            : base(initialBucketCount) {
+            : base(initialBucketCount)
+        {
         }
 
         #endregion
@@ -53,17 +57,23 @@ namespace Hypertable.Persistence.Collections
 
     internal sealed class StringDictionary<T> : StringDictionary<T, StringComparer>
     {
+        #region Constructors and Destructors
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="StringDictionary{T}"/> class.
+        ///     Initializes a new instance of the <see cref="StringDictionary{T}" /> class.
         /// </summary>
-        internal StringDictionary() {
+        internal StringDictionary()
+        {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="StringDictionary{T}"/> class.
+        ///     Initializes a new instance of the <see cref="StringDictionary{T}" /> class.
         /// </summary>
         internal StringDictionary(int initialBucketCount)
-            : base(initialBucketCount) {
+            : base(initialBucketCount)
+        {
         }
+
+        #endregion
     }
 }

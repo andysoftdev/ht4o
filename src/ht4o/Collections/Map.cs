@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Collections
 {
     using System;
@@ -26,13 +27,13 @@ namespace Hypertable.Persistence.Collections
     using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// Represents a collection of key-value pairs.
+    ///     Represents a collection of key-value pairs.
     /// </summary>
     /// <typeparam name="TKey">
-    /// The key type.
+    ///     The key type.
     /// </typeparam>
     /// <typeparam name="TValue">
-    /// The value type.
+    ///     The value type.
     /// </typeparam>
     internal sealed class Map<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
         where TKey : IEquatable<TKey>
@@ -40,17 +41,17 @@ namespace Hypertable.Persistence.Collections
         #region Fields
 
         /// <summary>
-        /// The inner dictionary.
+        ///     The inner dictionary.
         /// </summary>
         private readonly FastDictionary<TKey, TValue> dictionary = new FastDictionary<TKey, TValue>(256);
 
         /// <summary>
-        /// The recent key.
+        ///     The recent key.
         /// </summary>
         private TKey recentKey;
 
         /// <summary>
-        /// The recent value.
+        ///     The recent value.
         /// </summary>
         private TValue recentValue;
 
@@ -59,10 +60,10 @@ namespace Hypertable.Persistence.Collections
         #region Public Methods and Operators
 
         /// <summary>
-        /// Returns an enumerator that iterates through the map.
+        ///     Returns an enumerator that iterates through the map.
         /// </summary>
         /// <returns>
-        /// An enumerator for the map.
+        ///     An enumerator for the map.
         /// </returns>
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
@@ -74,10 +75,10 @@ namespace Hypertable.Persistence.Collections
         #region Explicit Interface Methods
 
         /// <summary>
-        /// Returns an enumerator that iterates through the map.
+        ///     Returns an enumerator that iterates through the map.
         /// </summary>
         /// <returns>
-        /// An enumerator for the map.
+        ///     An enumerator for the map.
         /// </returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
@@ -89,16 +90,16 @@ namespace Hypertable.Persistence.Collections
         #region Methods
 
         /// <summary>
-        /// Adds a key/value pair to the map if the key does not already exist.
+        ///     Adds a key/value pair to the map if the key does not already exist.
         /// </summary>
         /// <param name="key">
-        /// The key of the element to add.
+        ///     The key of the element to add.
         /// </param>
         /// <param name="valueFactory">
-        /// The function used to generate a value for the key.
+        ///     The function used to generate a value for the key.
         /// </param>
         /// <returns>
-        /// The value for the key.
+        ///     The value for the key.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal TValue GetOrAdd(TKey key, Func<TKey, TValue> valueFactory)

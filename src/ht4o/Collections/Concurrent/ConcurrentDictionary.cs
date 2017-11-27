@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Vladimir Sadov. All rights reserved.
 //
 // This file is distributed under the MIT License. See LICENSE.md for details.
+
 #define LOCKFREE
 namespace Hypertable.Persistence.Collections.Concurrent
 {
@@ -9,37 +10,44 @@ namespace Hypertable.Persistence.Collections.Concurrent
 
 #if LOCKFREE
 
-    internal class ConcurrentDictionary<TKey, TValue, TComparer> : Details.ConcurrentDictionary<TKey, TValue, TComparer> where TComparer : struct, IEqualityComparer<TKey>
+    internal class ConcurrentDictionary<TKey, TValue, TComparer> : Details.ConcurrentDictionary<TKey, TValue, TComparer>
+        where TComparer : struct, IEqualityComparer<TKey>
     {
         #region Constructors and Destructors
 
-        public ConcurrentDictionary() {
+        public ConcurrentDictionary()
+        {
         }
 
         public ConcurrentDictionary(int capacity)
-            : base(capacity) {
+            : base(capacity)
+        {
         }
 
         public ConcurrentDictionary(ConcurrentDictionary<TKey, TValue, TComparer> other)
-            : base(other) {
+            : base(other)
+        {
         }
 
         public ConcurrentDictionary(IEnumerable<KeyValuePair<TKey, TValue>> src)
-            : base(src) {
+            : base(src)
+        {
         }
 
         #endregion
 
-        #region Methods
+        #region Public Methods and Operators
 
         /// <returns><c>true</c> if the value have been updated; otherwise <c>false</c>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool AddOrUpdate(TKey key, TValue value) {
+        public bool AddOrUpdate(TKey key, TValue value)
+        {
             var added = true;
             base.AddOrUpdate(
                 key,
                 value,
-                (t, v) => {
+                (t, v) =>
+                {
                     added = false;
                     return value;
                 });
@@ -50,26 +58,31 @@ namespace Hypertable.Persistence.Collections.Concurrent
         #endregion
     }
 
-    internal class ConcurrentDictionary<TKey, TValue> : ConcurrentDictionary<TKey, TValue, Collections.EqualityComparer<TKey>>
+    internal class
+        ConcurrentDictionary<TKey, TValue> : ConcurrentDictionary<TKey, TValue, Collections.EqualityComparer<TKey>>
     {
         #region Constructors and Destructors
 
-        public ConcurrentDictionary() {
+        public ConcurrentDictionary()
+        {
         }
 
         public ConcurrentDictionary(int capacity)
-            : base(capacity) {
+            : base(capacity)
+        {
         }
 
         public ConcurrentDictionary(ConcurrentDictionary<TKey, TValue> other)
-            : base(other) {
+            : base(other)
+        {
         }
 
         public ConcurrentDictionary(IEnumerable<KeyValuePair<TKey, TValue>> src)
-            : base(src) {
+            : base(src)
+        {
         }
 
-    #endregion
+        #endregion
     }
 
 #else
@@ -119,5 +132,4 @@ namespace Hypertable.Persistence.Collections.Concurrent
     }
 
 #endif
-
 }

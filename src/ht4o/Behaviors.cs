@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence
 {
     using System;
@@ -25,48 +26,48 @@ namespace Hypertable.Persistence
     ////TODO review behaviors naming
 
     /// <summary>
-    /// The entity manager behaviors.
+    ///     The entity manager behaviors.
     /// </summary>
     [Flags]
     public enum Behaviors
     {
         /// <summary>
-        /// Use the entity manager default behaviors.
+        ///     Use the entity manager default behaviors.
         /// </summary>
-        Default = 0, 
+        Default = 0,
 
         /// <summary>
-        /// Creates always a new entity key for each entity in the object graph.
+        ///     Creates always a new entity key for each entity in the object graph.
         /// </summary>
-        CreateAlways = 1, 
+        CreateAlways = 1,
 
         /// <summary>
-        /// Creates new entity keys for new entities and those which are not part of the current EntityManager context.
+        ///     Creates new entity keys for new entities and those which are not part of the current EntityManager context.
         /// </summary>
-        CreateLazy = 2, 
+        CreateLazy = 2,
 
         /// <summary>
-        /// Creates new entity keys only for new entities.
+        ///     Creates new entity keys only for new entities.
         /// </summary>
-        CreateNew = 3, 
+        CreateNew = 3,
 
         /// <summary>
-        /// Masks for all create behaviors.
+        ///     Masks for all create behaviors.
         /// </summary>
-        CreateBehaviors = CreateAlways | CreateLazy | CreateNew, 
+        CreateBehaviors = CreateAlways | CreateLazy | CreateNew,
 
         /// <summary>
-        /// Don't cache entities written nor entities read.
+        ///     Don't cache entities written nor entities read.
         /// </summary>
-        DoNotCache = 1 << 8, 
+        DoNotCache = 1 << 8,
 
         /// <summary>
-        /// Bypasses the entity keys written cache, cannot be combined with Behaviors.CreateLazy.
+        ///     Bypasses the entity keys written cache, cannot be combined with Behaviors.CreateLazy.
         /// </summary>
-        BypassWriteCache = 1 << 9, 
+        BypassWriteCache = 1 << 9,
 
         /// <summary>
-        /// Bypasses the entity read cache. If set fetched entities won't be insert into the read cache.
+        ///     Bypasses the entity read cache. If set fetched entities won't be insert into the read cache.
         /// </summary>
         BypassReadCache = 1 << 10
     }

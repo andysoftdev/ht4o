@@ -18,21 +18,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Scanner
 {
-    using Hypertable;
-
     /// <summary>
-    /// The try get fetched entity delegate.
+    ///     The try get fetched entity delegate.
     /// </summary>
     /// <param name="entitySpec">
-    /// The entity spec.
+    ///     The entity spec.
     /// </param>
     /// <param name="entity">
-    /// The entity.
+    ///     The entity.
     /// </param>
     /// <returns>
-    /// <c>true</c> if the entity has been found; otherwise <c>false</c>.
+    ///     <c>true</c> if the entity has been found; otherwise <c>false</c>.
     /// </returns>
     internal delegate bool TryGetFetchedEntity(EntitySpec entitySpec, out object entity);
 }

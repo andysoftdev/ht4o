@@ -43,9 +43,9 @@ namespace Hypertable.Persistence.Serialization
 
         private readonly Encoding encoding;
 
-        private readonly int readCharByteCount;
-
         private readonly int offset;
+
+        private readonly int readCharByteCount;
 
         private GCHandle bufferHandle;
 
@@ -73,17 +73,17 @@ namespace Hypertable.Persistence.Serialization
         {
             if (buffer == null)
             {
-                throw new ArgumentNullException("buffer");
+                throw new ArgumentNullException(nameof(buffer));
             }
 
             if (index < 0)
             {
-                throw new ArgumentOutOfRangeException("index");
+                throw new ArgumentOutOfRangeException(nameof(index));
             }
 
             if (count < 0)
             {
-                throw new ArgumentOutOfRangeException("count");
+                throw new ArgumentOutOfRangeException(nameof(count));
             }
 
             if (buffer.Length - index < count)
@@ -99,7 +99,7 @@ namespace Hypertable.Persistence.Serialization
             this.readCharByteCount = encoding is UnicodeEncoding ? 2 : 1;
 
             this.bufferHandle = GCHandle.Alloc(this.buffer, GCHandleType.Pinned);
-            this.basePtr = (byte*)this.bufferHandle.AddrOfPinnedObject() + index;
+            this.basePtr = (byte*) this.bufferHandle.AddrOfPinnedObject() + index;
             this.endPtr = this.basePtr + count;
 
             this.ptr = this.basePtr;
@@ -109,13 +109,7 @@ namespace Hypertable.Persistence.Serialization
 
         #region Public Properties
 
-        public override Stream BaseStream
-        {
-            get
-            {
-                return null;
-            }
-        }
+        public override Stream BaseStream => null;
 
         #endregion
 
@@ -159,22 +153,22 @@ namespace Hypertable.Persistence.Serialization
         {
             if (buffer == null)
             {
-                throw new ArgumentNullException("buffer");
+                throw new ArgumentNullException(nameof(buffer));
             }
 
             if (index < 0)
             {
-                throw new ArgumentOutOfRangeException("index");
+                throw new ArgumentOutOfRangeException(nameof(index));
             }
 
             if (count < 0)
             {
-                throw new ArgumentOutOfRangeException("count");
+                throw new ArgumentOutOfRangeException(nameof(count));
             }
 
             if (buffer.Length - index < count)
             {
-                throw new ArgumentException("The buffer length minus index is less than count.");
+                throw new ArgumentException("The buffer length minus index is less than count.", nameof(buffer));
             }
 
             var byteCount = this.Truncate(count);
@@ -182,7 +176,7 @@ namespace Hypertable.Persistence.Serialization
             {
                 fixed (byte* p = &buffer[index])
                 {
-                    memcpy(p, this.ptr, new UIntPtr((uint)byteCount));
+                    memcpy(p, this.ptr, new UIntPtr((uint) byteCount));
                 }
 
                 this.ptr += byteCount;
@@ -208,7 +202,7 @@ namespace Hypertable.Persistence.Serialization
         {
             if (count < 0)
             {
-                throw new ArgumentOutOfRangeException("count");
+                throw new ArgumentOutOfRangeException(nameof(count));
             }
 
             var byteCount = this.Truncate(count);
@@ -217,7 +211,7 @@ namespace Hypertable.Persistence.Serialization
             {
                 fixed (byte* p = &result[0])
                 {
-                    memcpy(p, this.ptr, new UIntPtr((uint)byteCount));
+                    memcpy(p, this.ptr, new UIntPtr((uint) byteCount));
                 }
 
                 this.ptr += byteCount;
@@ -234,14 +228,14 @@ namespace Hypertable.Persistence.Serialization
                 throw new EndOfStreamException();
             }
 
-            return (char)value;
+            return (char) value;
         }
 
         public override char[] ReadChars(int count)
         {
             if (count < 0)
             {
-                throw new ArgumentOutOfRangeException("count");
+                throw new ArgumentOutOfRangeException(nameof(count));
             }
 
             var chars = new char[count];
@@ -260,22 +254,22 @@ namespace Hypertable.Persistence.Serialization
             {
                 this.ThrowIfEndOfStream(16);
 
-                var lo = ((int)this.ptr[0]) | ((int)this.ptr[1] << 8) | ((int)this.ptr[2] << 16)
-                         | ((int)this.ptr[3] << 24);
-                var mid = ((int)this.ptr[4]) | ((int)this.ptr[5] << 8) | ((int)this.ptr[6] << 16)
-                          | ((int)this.ptr[7] << 24);
-                var hi = ((int)this.ptr[8]) | ((int)this.ptr[9] << 8) | ((int)this.ptr[10] << 16)
-                         | ((int)this.ptr[11] << 24);
-                var flags = ((int)this.ptr[12]) | ((int)this.ptr[13] << 8) | ((int)this.ptr[14] << 16)
-                            | ((int)this.ptr[15] << 24);
+                var lo = ((int) this.ptr[0]) | ((int) this.ptr[1] << 8) | ((int) this.ptr[2] << 16)
+                         | ((int) this.ptr[3] << 24);
+                var mid = ((int) this.ptr[4]) | ((int) this.ptr[5] << 8) | ((int) this.ptr[6] << 16)
+                          | ((int) this.ptr[7] << 24);
+                var hi = ((int) this.ptr[8]) | ((int) this.ptr[9] << 8) | ((int) this.ptr[10] << 16)
+                         | ((int) this.ptr[11] << 24);
+                var flags = ((int) this.ptr[12]) | ((int) this.ptr[13] << 8) | ((int) this.ptr[14] << 16)
+                            | ((int) this.ptr[15] << 24);
 
                 this.ptr += 16;
 
                 try
                 {
-                    const int SignMask = unchecked((int)0x80000000);
+                    const int SignMask = unchecked((int) 0x80000000);
                     const int ScaleShift = 16;
-                    return new Decimal(lo, mid, hi, (flags & SignMask) > 0, (byte)(flags >> ScaleShift));
+                    return new Decimal(lo, mid, hi, (flags & SignMask) > 0, (byte) (flags >> ScaleShift));
                 }
                 catch (ArgumentException)
                 {
@@ -291,13 +285,13 @@ namespace Hypertable.Persistence.Serialization
             {
                 this.ThrowIfEndOfStream(8);
 
-                var lo = (uint)(this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
-                var hi = (uint)(this.ptr[4] | this.ptr[5] << 8 | this.ptr[6] << 16 | this.ptr[7] << 24);
+                var lo = (uint) (this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
+                var hi = (uint) (this.ptr[4] | this.ptr[5] << 8 | this.ptr[6] << 16 | this.ptr[7] << 24);
 
                 this.ptr += 8;
 
-                var v = ((ulong)hi) << 32 | lo;
-                return *((double*)&v);
+                var v = ((ulong) hi) << 32 | lo;
+                return *((double*) &v);
             }
         }
 
@@ -308,7 +302,7 @@ namespace Hypertable.Persistence.Serialization
                 this.ThrowIfEndOfStream(2);
 
                 this.ptr += 2;
-                return (short)(this.ptr[0] | this.ptr[1] << 8);
+                return (short) (this.ptr[0] | this.ptr[1] << 8);
             }
         }
 
@@ -317,7 +311,7 @@ namespace Hypertable.Persistence.Serialization
             this.ThrowIfEndOfStream(4);
 
             this.ptr += 4;
-            return (int)(this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
+            return (int) (this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
         }
 
         public override unsafe long ReadInt64()
@@ -326,12 +320,12 @@ namespace Hypertable.Persistence.Serialization
             {
                 this.ThrowIfEndOfStream(8);
 
-                var lo = (uint)(this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
-                var hi = (uint)(this.ptr[4] | this.ptr[5] << 8 | this.ptr[6] << 16 | this.ptr[7] << 24);
+                var lo = (uint) (this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
+                var hi = (uint) (this.ptr[4] | this.ptr[5] << 8 | this.ptr[6] << 16 | this.ptr[7] << 24);
 
                 this.ptr += 8;
 
-                return (long)((ulong)hi) << 32 | lo;
+                return (long) ((ulong) hi) << 32 | lo;
             }
         }
 
@@ -340,7 +334,7 @@ namespace Hypertable.Persistence.Serialization
             unchecked
             {
                 this.ThrowIfEndOfStream(1);
-                return (sbyte)*this.ptr++;
+                return (sbyte) *this.ptr++;
             }
         }
 
@@ -350,11 +344,11 @@ namespace Hypertable.Persistence.Serialization
             {
                 this.ThrowIfEndOfStream(4);
 
-                var v = (uint)(this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
+                var v = (uint) (this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
 
                 this.ptr += 4;
 
-                return *((float*)&v);
+                return *((float*) &v);
             }
         }
 
@@ -364,7 +358,7 @@ namespace Hypertable.Persistence.Serialization
             {
                 var byteCount = this.ReadStringLength();
                 this.ThrowIfEndOfStream(byteCount);
-                var index = (int)(this.ptr - this.basePtr) + this.offset;
+                var index = (int) (this.ptr - this.basePtr) + this.offset;
                 this.ptr += byteCount;
                 return byteCount > 0 ? this.encoding.GetString(this.buffer, index, byteCount) : string.Empty;
             }
@@ -377,7 +371,7 @@ namespace Hypertable.Persistence.Serialization
                 this.ThrowIfEndOfStream(2);
 
                 this.ptr += 2;
-                return (ushort)(this.ptr[0] | this.ptr[1] << 8);
+                return (ushort) (this.ptr[0] | this.ptr[1] << 8);
             }
         }
 
@@ -388,7 +382,7 @@ namespace Hypertable.Persistence.Serialization
                 this.ThrowIfEndOfStream(4);
 
                 this.ptr += 4;
-                return (uint)(this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
+                return (uint) (this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
             }
         }
 
@@ -398,12 +392,12 @@ namespace Hypertable.Persistence.Serialization
             {
                 this.ThrowIfEndOfStream(8);
 
-                var lo = (uint)(this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
-                var hi = (uint)(this.ptr[4] | this.ptr[5] << 8 | this.ptr[6] << 16 | this.ptr[7] << 24);
+                var lo = (uint) (this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
+                var hi = (uint) (this.ptr[4] | this.ptr[5] << 8 | this.ptr[6] << 16 | this.ptr[7] << 24);
 
                 this.ptr += 8;
 
-                return ((ulong)hi) << 32 | lo;
+                return ((ulong) hi) << 32 | lo;
             }
         }
 
@@ -417,7 +411,8 @@ namespace Hypertable.Persistence.Serialization
             base.Dispose(disposing);
         }
 
-        [DllImport("msvcrt.dll", EntryPoint = "memcpy", CallingConvention = CallingConvention.Cdecl, SetLastError = false)]
+        [DllImport("msvcrt.dll", EntryPoint = "memcpy", CallingConvention = CallingConvention.Cdecl,
+            SetLastError = false)]
         private static extern unsafe IntPtr memcpy(byte* dest, byte* src, UIntPtr count);
 
         private unsafe int ReadStringLength()
@@ -433,8 +428,7 @@ namespace Hypertable.Persistence.Serialization
                     b = *this.ptr++;
                     count |= (b & 0x7F) << shift;
                     shift += 7;
-                }
-                while ((b & 0x80) != 0);
+                } while ((b & 0x80) != 0);
                 return count;
             }
         }
@@ -452,7 +446,7 @@ namespace Hypertable.Persistence.Serialization
         {
             unchecked
             {
-                var remainigBytes = (int)(this.endPtr - this.ptr);
+                var remainigBytes = (int) (this.endPtr - this.ptr);
                 if (remainigBytes < requiredBytes)
                 {
                     requiredBytes = remainigBytes;

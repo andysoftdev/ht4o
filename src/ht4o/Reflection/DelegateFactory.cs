@@ -18,36 +18,35 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Reflection
 {
     using System;
-    using System.Collections.Generic;
-    using System.Globalization;
     using System.Linq.Expressions;
     using System.Reflection;
     using System.Reflection.Emit;
-
     using Hypertable.Persistence.Extensions;
 
     /// <summary>
-    /// The delegate factory.
+    ///     The delegate factory.
     /// </summary>
     internal static class DelegateFactory
     {
         #region Public Methods and Operators
 
         /// <summary>
-        /// Create an action for the method info specified.
+        ///     Create an action for the method info specified.
         /// </summary>
         /// <param name="methodInfo">
-        /// The method info. 
+        ///     The method info.
         /// </param>
         /// <returns>
-        /// The action created or null. 
+        ///     The action created or null.
         /// </returns>
         public static Action<object, object> CreateAction(MethodInfo methodInfo)
         {
-            if (methodInfo == null || methodInfo.GetParameters().Length != 1 || methodInfo.ReturnType != typeof(void) || methodInfo.DeclaringType == null)
+            if (methodInfo == null || methodInfo.GetParameters().Length != 1 || methodInfo.ReturnType != typeof(void) ||
+                methodInfo.DeclaringType == null)
             {
                 return null;
             }
@@ -59,25 +58,27 @@ namespace Hypertable.Persistence.Reflection
             var argument = Expression.Parameter(typeof(object));
             var createExpression =
                 Expression.Lambda<Action<object, object>>(
-                    Expression.Call(ConvertOrUnbox(instance, instanceType), methodInfo, ConvertOrUnbox(argument, argumentType)), instance, argument);
+                    Expression.Call(ConvertOrUnbox(instance, instanceType), methodInfo,
+                        ConvertOrUnbox(argument, argumentType)), instance, argument);
 
             return createExpression.Compile();
         }
 
         /// <summary>
-        /// Returns an IL-compiled function that creates instances of <paramref name="instanceType"/> using its parameter-less constructor.
+        ///     Returns an IL-compiled function that creates instances of <paramref name="instanceType" /> using its parameter-less
+        ///     constructor.
         /// </summary>
         /// <param name="instanceType">
-        /// Type of the instance. 
+        ///     Type of the instance.
         /// </param>
         /// <returns>
-        /// The function. 
+        ///     The function.
         /// </returns>
         public static Func<object> CreateConstructor(Type instanceType)
         {
             if (instanceType == null)
             {
-                throw new ArgumentNullException("instanceType");
+                throw new ArgumentNullException(nameof(instanceType));
             }
 
             if (instanceType.IsAbstract || instanceType.IsInterface)
@@ -87,11 +88,14 @@ namespace Hypertable.Persistence.Reflection
 
             if (instanceType.IsValueType())
             {
-                var defaultExpression = Expression.Lambda<Func<object>>(Expression.Convert(Expression.Default(instanceType), typeof(object)));
+                var defaultExpression =
+                    Expression.Lambda<Func<object>>(
+                        Expression.Convert(Expression.Default(instanceType), typeof(object)));
                 return defaultExpression.Compile();
             }
 
-            var ctor = instanceType.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
+            var ctor = instanceType.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                null, Type.EmptyTypes, null);
 
             if (ctor == null)
             {
@@ -103,17 +107,18 @@ namespace Hypertable.Persistence.Reflection
         }
 
         /// <summary>
-        /// Creates a function for the method info specified.
+        ///     Creates a function for the method info specified.
         /// </summary>
         /// <param name="methodInfo">
-        /// The method info. 
+        ///     The method info.
         /// </param>
         /// <returns>
-        /// The function created or null. 
+        ///     The function created or null.
         /// </returns>
         public static Func<object, object, object> CreateFunc(MethodInfo methodInfo)
         {
-            if (methodInfo == null || methodInfo.GetParameters().Length != 1 || methodInfo.ReturnType == typeof(void) || methodInfo.DeclaringType == null)
+            if (methodInfo == null || methodInfo.GetParameters().Length != 1 || methodInfo.ReturnType == typeof(void) ||
+                methodInfo.DeclaringType == null)
             {
                 return null;
             }
@@ -125,21 +130,23 @@ namespace Hypertable.Persistence.Reflection
             var argument = Expression.Parameter(typeof(object));
             var createExpression =
                 Expression.Lambda<Func<object, object, object>>(
-                    Expression.Convert(Expression.Call(ConvertOrUnbox(instance, instanceType), methodInfo, ConvertOrUnbox(argument, argumentType)), typeof(object)), 
-                    instance, 
+                    Expression.Convert(
+                        Expression.Call(ConvertOrUnbox(instance, instanceType), methodInfo,
+                            ConvertOrUnbox(argument, argumentType)), typeof(object)),
+                    instance,
                     argument);
 
             return createExpression.Compile();
         }
 
         /// <summary>
-        /// Creates a getter function for the property info specified.
+        ///     Creates a getter function for the property info specified.
         /// </summary>
         /// <param name="propertyInfo">
-        /// The property info. 
+        ///     The property info.
         /// </param>
         /// <returns>
-        /// The getter function created or null. 
+        ///     The getter function created or null.
         /// </returns>
         public static Func<object, object> CreateGetter(PropertyInfo propertyInfo)
         {
@@ -152,19 +159,21 @@ namespace Hypertable.Persistence.Reflection
 
             var instance = Expression.Parameter(typeof(object));
             var createExpression =
-                Expression.Lambda<Func<object, object>>(Expression.Convert(Expression.Property(ConvertOrUnbox(instance, instanceType), propertyInfo), typeof(object)), instance);
+                Expression.Lambda<Func<object, object>>(
+                    Expression.Convert(Expression.Property(ConvertOrUnbox(instance, instanceType), propertyInfo),
+                        typeof(object)), instance);
 
             return createExpression.Compile();
         }
 
         /// <summary>
-        /// Creates a getter function for the field info specified.
+        ///     Creates a getter function for the field info specified.
         /// </summary>
         /// <param name="fieldInfo">
-        /// The field info. 
+        ///     The field info.
         /// </param>
         /// <returns>
-        /// The getter function created or null. 
+        ///     The getter function created or null.
         /// </returns>
         public static Func<object, object> CreateGetter(FieldInfo fieldInfo)
         {
@@ -177,19 +186,20 @@ namespace Hypertable.Persistence.Reflection
 
             var instance = Expression.Parameter(typeof(object));
             var createExpression = Expression.Lambda<Func<object, object>>(
-                Expression.Convert(Expression.Field(ConvertOrUnbox(instance, instanceType), fieldInfo), typeof(object)), instance);
+                Expression.Convert(Expression.Field(ConvertOrUnbox(instance, instanceType), fieldInfo), typeof(object)),
+                instance);
 
             return createExpression.Compile();
         }
 
         /// <summary>
-        /// Creates an indexer function for the indexer property specified.
+        ///     Creates an indexer function for the indexer property specified.
         /// </summary>
         /// <param name="propertyInfo">
-        /// The property info. 
+        ///     The property info.
         /// </param>
         /// <returns>
-        /// The indexer function created or null. 
+        ///     The indexer function created or null.
         /// </returns>
         public static Func<object, int, object> CreateIndexerGetter(PropertyInfo propertyInfo)
         {
@@ -204,19 +214,21 @@ namespace Hypertable.Persistence.Reflection
             var index = Expression.Parameter(typeof(int));
             var createExpression =
                 Expression.Lambda<Func<object, int, object>>(
-                    Expression.Convert(Expression.MakeIndex(ConvertOrUnbox(instance, instanceType), propertyInfo, new[] { index }), typeof(object)), instance, index);
+                    Expression.Convert(
+                        Expression.MakeIndex(ConvertOrUnbox(instance, instanceType), propertyInfo, new[] {index}),
+                        typeof(object)), instance, index);
 
             return createExpression.Compile();
         }
 
         /// <summary>
-        /// Creates an indexer action for the indexer property specified.
+        ///     Creates an indexer action for the indexer property specified.
         /// </summary>
         /// <param name="propertyInfo">
-        /// The property info. 
+        ///     The property info.
         /// </param>
         /// <returns>
-        /// The indexer action created or null. 
+        ///     The indexer action created or null.
         /// </returns>
         public static Action<object, int, object> CreateIndexerSetter(PropertyInfo propertyInfo)
         {
@@ -233,22 +245,24 @@ namespace Hypertable.Persistence.Reflection
             var newValue = Expression.Parameter(typeof(object));
             var createExpression =
                 Expression.Lambda<Action<object, int, object>>(
-                    Expression.Assign(Expression.MakeIndex(ConvertOrUnbox(instance, instanceType), propertyInfo, new[] { index }), ConvertOrUnbox(newValue, elementType)), 
-                    instance, 
-                    index, 
+                    Expression.Assign(
+                        Expression.MakeIndex(ConvertOrUnbox(instance, instanceType), propertyInfo, new[] {index}),
+                        ConvertOrUnbox(newValue, elementType)),
+                    instance,
+                    index,
                     newValue);
 
             return createExpression.Compile();
         }
 
         /// <summary>
-        /// Creates a getter action for the property info specified.
+        ///     Creates a getter action for the property info specified.
         /// </summary>
         /// <param name="propertyInfo">
-        /// The property info. 
+        ///     The property info.
         /// </param>
         /// <returns>
-        /// The getter action created or null. 
+        ///     The getter action created or null.
         /// </returns>
         public static Action<object, object> CreateSetter(PropertyInfo propertyInfo)
         {
@@ -264,19 +278,20 @@ namespace Hypertable.Persistence.Reflection
             var newValue = Expression.Parameter(typeof(object));
             var createExpression =
                 Expression.Lambda<Action<object, object>>(
-                    Expression.Assign(Expression.Property(ConvertOrUnbox(instance, instanceType), propertyInfo), ConvertOrUnbox(newValue, propertyType)), instance, newValue);
+                    Expression.Assign(Expression.Property(ConvertOrUnbox(instance, instanceType), propertyInfo),
+                        ConvertOrUnbox(newValue, propertyType)), instance, newValue);
 
             return createExpression.Compile();
         }
 
         /// <summary>
-        /// Creates a getter action for the field info specified.
+        ///     Creates a getter action for the field info specified.
         /// </summary>
         /// <param name="fieldInfo">
-        /// The field info. 
+        ///     The field info.
         /// </param>
         /// <returns>
-        /// The getter action created or null. 
+        ///     The getter action created or null.
         /// </returns>
         public static Action<object, object> CreateSetter(FieldInfo fieldInfo)
         {
@@ -287,7 +302,8 @@ namespace Hypertable.Persistence.Reflection
 
             if (fieldInfo.IsInitOnly)
             {
-                var method = new DynamicMethod("Setter" + fieldInfo.Name, typeof(void), new[] { typeof(object), typeof(object) }, fieldInfo.Module, true);
+                var method = new DynamicMethod("Setter" + fieldInfo.Name, typeof(void),
+                    new[] {typeof(object), typeof(object)}, fieldInfo.Module, true);
 
                 var generator = method.GetILGenerator();
 
@@ -306,7 +322,7 @@ namespace Hypertable.Persistence.Reflection
                 generator.Emit(OpCodes.Stfld, fieldInfo);
                 generator.Emit(OpCodes.Ret);
 
-                return (Action<object, object>)method.CreateDelegate(typeof(Action<object, object>));
+                return (Action<object, object>) method.CreateDelegate(typeof(Action<object, object>));
             }
 
             var instanceType = fieldInfo.DeclaringType;
@@ -316,7 +332,8 @@ namespace Hypertable.Persistence.Reflection
             var newValue = Expression.Parameter(typeof(object));
             var createExpression =
                 Expression.Lambda<Action<object, object>>(
-                    Expression.Assign(Expression.Field(ConvertOrUnbox(instance, instanceType), fieldInfo), ConvertOrUnbox(newValue, propertyType)), instance, newValue);
+                    Expression.Assign(Expression.Field(ConvertOrUnbox(instance, instanceType), fieldInfo),
+                        ConvertOrUnbox(newValue, propertyType)), instance, newValue);
 
             return createExpression.Compile();
         }
@@ -326,55 +343,60 @@ namespace Hypertable.Persistence.Reflection
         #region Methods
 
         /// <summary>
-        /// Create accessors for the given expression.
+        ///     Create accessors for the given expression.
         /// </summary>
         /// <param name="propertyLambda">
-        /// The property lambda expression.
+        ///     The property lambda expression.
         /// </param>
         /// <param name="getter">
-        /// The getter function.
+        ///     The getter function.
         /// </param>
         /// <param name="setter">
-        /// The setter method.
+        ///     The setter method.
         /// </param>
         /// <typeparam name="T">
-        /// The declaring type.
+        ///     The declaring type.
         /// </typeparam>
         /// <typeparam name="TProperty">
-        /// The property type.
+        ///     The property type.
         /// </typeparam>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="propertyLambda"/> is null.
+        ///     If <paramref name="propertyLambda" /> is null.
         /// </exception>
-        internal static void CreateAccessors<T, TProperty>(Expression<Func<T, TProperty>> propertyLambda, out Func<T, TProperty> getter, out Action<T, TProperty> setter)
+        internal static void CreateAccessors<T, TProperty>(Expression<Func<T, TProperty>> propertyLambda,
+            out Func<T, TProperty> getter, out Action<T, TProperty> setter)
         {
             if (propertyLambda == null)
             {
-                throw new ArgumentNullException("propertyLambda");
+                throw new ArgumentNullException(nameof(propertyLambda));
             }
 
-            var member = (MemberExpression)propertyLambda.Body;
+            var member = (MemberExpression) propertyLambda.Body;
             getter = Expression.Lambda<Func<T, TProperty>>(member, propertyLambda.Parameters[0]).Compile();
 
             var param = Expression.Parameter(typeof(TProperty), "value");
-            setter = Expression.Lambda<Action<T, TProperty>>(Expression.Assign(member, param), propertyLambda.Parameters[0], param).Compile();
+            setter = Expression
+                .Lambda<Action<T, TProperty>>(Expression.Assign(member, param), propertyLambda.Parameters[0], param)
+                .Compile();
         }
 
         /// <summary>
-        /// Creates an convert or unbox expression depending on the instance type.
+        ///     Creates an convert or unbox expression depending on the instance type.
         /// </summary>
         /// <param name="instance">
-        /// The instance expression.
+        ///     The instance expression.
         /// </param>
         /// <param name="instanceType">
-        /// The instance type.
+        ///     The instance type.
         /// </param>
         /// <returns>
-        /// The created unary expression.
+        ///     The created unary expression.
         /// </returns>
         private static UnaryExpression ConvertOrUnbox(Expression instance, Type instanceType)
         {
-            return instanceType.IsValueType() ? Expression.Unbox(instance, instanceType) : Expression.Convert(instance, instanceType);
+            return instanceType.IsValueType()
+                ? Expression.Unbox(instance, instanceType)
+                : Expression.Convert(instance, instanceType);
         }
 
         #endregion

@@ -18,30 +18,29 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence
 {
-    using Hypertable;
-
     /// <summary>
-    /// Defines a column binding.
+    ///     Defines a column binding.
     /// </summary>
     public interface IColumnBinding
     {
         #region Public Properties
 
         /// <summary>
-        /// Gets the column family.
+        ///     Gets the column family.
         /// </summary>
         /// <value>
-        /// The column family.
+        ///     The column family.
         /// </value>
         string ColumnFamily { get; }
 
         /// <summary>
-        /// Gets the column qualifier.
+        ///     Gets the column qualifier.
         /// </summary>
         /// <value>
-        /// The column qualifier.
+        ///     The column qualifier.
         /// </value>
         string ColumnQualifier { get; }
 

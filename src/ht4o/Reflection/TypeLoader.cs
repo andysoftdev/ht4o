@@ -18,68 +18,68 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Reflection
 {
     using System;
     using System.IO;
-
-    using Hypertable.Persistence.Serialization;
     using Hypertable.Persistence.Collections.Concurrent;
+    using Hypertable.Persistence.Serialization;
 
     /// <summary>
-    /// The type loader.
+    ///     The type loader.
     /// </summary>
     public static class TypeLoader
     {
         #region Static Fields
 
         /// <summary>
-        /// The types.
+        ///     The types.
         /// </summary>
         private static readonly ConcurrentStringDictionary<Type> Types = new ConcurrentStringDictionary<Type>();
 
         #endregion
 
-        #region Methods
+        #region Public Methods and Operators
 
         /// <summary>
-        /// Gets type for the type name specified.
+        ///     Gets type for the type name specified.
         /// </summary>
         /// <param name="typeName">
-        /// The type name.
+        ///     The type name.
         /// </param>
         /// <returns>
-        /// The resolved type.
+        ///     The resolved type.
         /// </returns>
         public static Type GetType(string typeName)
         {
             return Types.GetOrAdd(
-                typeName, 
+                typeName,
                 tn =>
+                {
+                    Type type = null;
+
+                    // Catching any exceptions that could be thrown from a failure on assembly load 
+                    // This is necessary, for example, if there are generic parameters that are qualified with a version of the assembly that predates the one available
+                    try
                     {
-                        Type type = null;
+                        type = Type.GetType(typeName, false, false);
+                    }
+                    catch (TypeLoadException)
+                    {
+                    }
+                    catch (FileNotFoundException)
+                    {
+                    }
+                    catch (FileLoadException)
+                    {
+                    }
+                    catch (BadImageFormatException)
+                    {
+                    }
 
-                        // Catching any exceptions that could be thrown from a failure on assembly load 
-                        // This is necessary, for example, if there are generic parameters that are qualified with a version of the assembly that predates the one available
-                        try
-                        {
-                            type = Type.GetType(typeName, false, false);
-                        }
-                        catch (TypeLoadException)
-                        {
-                        }
-                        catch (FileNotFoundException)
-                        {
-                        }
-                        catch (FileLoadException)
-                        {
-                        }
-                        catch (BadImageFormatException)
-                        {
-                        }
-
-                        return type ?? Type.GetType(typeName, Resolver.AssemblyResolver, Resolver.TypeResolver);
-                    });
+                    return type ?? Type.GetType(typeName, Resolver.AssemblyResolver, Resolver.TypeResolver);
+                });
         }
 
         #endregion

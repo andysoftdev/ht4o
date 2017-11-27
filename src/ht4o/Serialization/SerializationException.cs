@@ -18,13 +18,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Serialization
 {
     using System;
     using System.Runtime.Serialization;
 
     /// <summary>
-    /// The serialization exception.
+    ///     The serialization exception.
     /// </summary>
     [Serializable]
     public class SerializationException : Exception
@@ -32,17 +33,17 @@ namespace Hypertable.Persistence.Serialization
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SerializationException"/> class.
+        ///     Initializes a new instance of the <see cref="SerializationException" /> class.
         /// </summary>
         public SerializationException()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SerializationException"/> class.
+        ///     Initializes a new instance of the <see cref="SerializationException" /> class.
         /// </summary>
         /// <param name="message">
-        /// The message.
+        ///     The message.
         /// </param>
         public SerializationException(string message)
             : base(message)
@@ -50,13 +51,13 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SerializationException"/> class.
+        ///     Initializes a new instance of the <see cref="SerializationException" /> class.
         /// </summary>
         /// <param name="message">
-        /// The message.
+        ///     The message.
         /// </param>
         /// <param name="innerException">
-        /// The inner exception.
+        ///     The inner exception.
         /// </param>
         public SerializationException(string message, Exception innerException)
             : base(message, innerException)
@@ -64,13 +65,13 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SerializationException"/> class.
+        ///     Initializes a new instance of the <see cref="SerializationException" /> class.
         /// </summary>
         /// <param name="info">
-        /// The serialization info.
+        ///     The serialization info.
         /// </param>
         /// <param name="context">
-        /// The context.
+        ///     The context.
         /// </param>
         protected SerializationException(SerializationInfo info, StreamingContext context)
             : base(info, context)

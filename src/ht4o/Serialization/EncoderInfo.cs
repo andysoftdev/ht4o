@@ -22,29 +22,28 @@
 namespace Hypertable.Persistence.Serialization
 {
     using System;
-
     using Hypertable.Persistence.Extensions;
     using Hypertable.Persistence.Serialization.Delegates;
 
     /// <summary>
-    /// The encoder info.
+    ///     The encoder info.
     /// </summary>
     internal sealed class EncoderInfo
     {
         #region Fields
 
         /// <summary>
-        /// The tag.
+        ///     The tag.
         /// </summary>
         internal readonly Tags Tag;
 
         /// <summary>
-        /// The encode delegate.
+        ///     The encode delegate.
         /// </summary>
         private readonly Encode encode;
 
         /// <summary>
-        /// The serialize delegate.
+        ///     The serialize delegate.
         /// </summary>
         private readonly Serialize serialize;
 
@@ -53,13 +52,13 @@ namespace Hypertable.Persistence.Serialization
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EncoderInfo"/> class.
+        ///     Initializes a new instance of the <see cref="EncoderInfo" /> class.
         /// </summary>
         /// <param name="tag">
-        /// The tag.
+        ///     The tag.
         /// </param>
         /// <param name="encode">
-        /// The encode delegate.
+        ///     The encode delegate.
         /// </param>
         internal EncoderInfo(Tags tag, Encode encode)
         {
@@ -69,13 +68,13 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EncoderInfo"/> class.
+        ///     Initializes a new instance of the <see cref="EncoderInfo" /> class.
         /// </summary>
         /// <param name="tag">
-        /// The tag.
+        ///     The tag.
         /// </param>
         /// <param name="serialize">
-        /// The serialize delegate.
+        ///     The serialize delegate.
         /// </param>
         internal EncoderInfo(Tags tag, Serialize serialize)
         {
@@ -89,16 +88,16 @@ namespace Hypertable.Persistence.Serialization
         #region Methods
 
         /// <summary>
-        /// Encodes an object specified.
+        ///     Encodes an object specified.
         /// </summary>
         /// <param name="serializer">
-        /// The serializer.
+        ///     The serializer.
         /// </param>
         /// <param name="any">
-        /// The object to encode.
+        ///     The object to encode.
         /// </param>
         /// <param name="writeTag">
-        /// If <c>true</c> the encoder must writes the leading tag, otherwise <c>false</c>.
+        ///     If <c>true</c> the encoder must writes the leading tag, otherwise <c>false</c>.
         /// </param>
         internal void Encode(Serializer serializer, object any, bool writeTag)
         {
@@ -118,13 +117,13 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Check if the value type requires object ref handling. 
+        ///     Check if the value type requires object ref handling.
         /// </summary>
         /// <param name="type">
-        /// The value type.
+        ///     The value type.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the type requires ObjectRef handling; otherwise <c>false</c>.
+        ///     <c>true</c> if the type requires ObjectRef handling; otherwise <c>false</c>.
         /// </returns>
         internal bool HandleObjectRef(Type type)
         {

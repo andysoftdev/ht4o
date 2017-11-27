@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Serialization
 {
     using System;
@@ -25,53 +26,55 @@ namespace Hypertable.Persistence.Serialization
     using System.Reflection;
 
     /// <summary>
-    /// The resolver.
+    ///     The resolver.
     /// </summary>
     public static class Resolver
     {
         #region Static Fields
 
         /// <summary>
-        /// The assembly resolver.
+        ///     The assembly resolver.
         /// </summary>
         private static Func<AssemblyName, Assembly> assemblyResolver;
 
         /// <summary>
-        /// The instance resolver.
+        ///     The instance resolver.
         /// </summary>
         private static Func<Type, Type, object> instanceResolver;
 
         /// <summary>
-        /// The obsolete property resolver.
+        ///     The obsolete property resolver.
         /// </summary>
         private static Action<object, object> obsoletePropertyResolver;
 
         /// <summary>
-        /// The property name resolver.
+        ///     The property name resolver.
         /// </summary>
         private static Func<Type, string, string> propertyNameResolver;
 
         /// <summary>
-        /// The type resolver.
-        /// </summary>
-        private static Func<Assembly, string, bool, Type> typeResolver;
-
-        /// <summary>
-        /// The type code resolver.
+        ///     The type code resolver.
         /// </summary>
         private static Func<int, Type> typeCodeResolver;
+
+        /// <summary>
+        ///     The type resolver.
+        /// </summary>
+        private static Func<Assembly, string, bool, Type> typeResolver;
 
         #endregion
 
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes static members of the <see cref="Resolver"/> class.
+        ///     Initializes static members of the <see cref="Resolver" /> class.
         /// </summary>
         static Resolver()
         {
-            assemblyResolver = assemblyName => AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => string.Equals(assembly.GetName().Name, assemblyName.Name));
-            typeResolver = (assembly, simpleTypeName, ignoreCase) => assembly.GetType(simpleTypeName, false, ignoreCase);
+            assemblyResolver = assemblyName => AppDomain.CurrentDomain.GetAssemblies()
+                .FirstOrDefault(assembly => string.Equals(assembly.GetName().Name, assemblyName.Name));
+            typeResolver = (assembly, simpleTypeName, ignoreCase) =>
+                assembly.GetType(simpleTypeName, false, ignoreCase);
             instanceResolver = (serializedType, destinationType) => null;
             obsoletePropertyResolver = (instance, value) => { };
         }
@@ -81,23 +84,20 @@ namespace Hypertable.Persistence.Serialization
         #region Public Properties
 
         /// <summary>
-        /// Gets or sets the assembly resolver.
+        ///     Gets or sets the assembly resolver.
         /// </summary>
         /// <value>
-        /// The assembly resolver.
+        ///     The assembly resolver.
         /// </value>
         public static Func<AssemblyName, Assembly> AssemblyResolver
         {
-            get
-            {
-                return assemblyResolver;
-            }
+            get { return assemblyResolver; }
 
             set
             {
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value");
+                    throw new ArgumentNullException(nameof(value));
                 }
 
                 assemblyResolver = value;
@@ -105,23 +105,20 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Gets or sets the instance resolver.
+        ///     Gets or sets the instance resolver.
         /// </summary>
         /// <value>
-        /// The instance resolver.
+        ///     The instance resolver.
         /// </value>
         public static Func<Type, Type, object> InstanceResolver
         {
-            get
-            {
-                return instanceResolver;
-            }
+            get { return instanceResolver; }
 
             set
             {
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value");
+                    throw new ArgumentNullException(nameof(value));
                 }
 
                 instanceResolver = value;
@@ -129,23 +126,20 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Gets or sets the obsolete property resolver.
+        ///     Gets or sets the obsolete property resolver.
         /// </summary>
         /// <value>
-        /// The obsolete property resolver.
+        ///     The obsolete property resolver.
         /// </value>
         public static Action<object, object> ObsoletePropertyResolver
         {
-            get
-            {
-                return obsoletePropertyResolver;
-            }
+            get { return obsoletePropertyResolver; }
 
             set
             {
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value");
+                    throw new ArgumentNullException(nameof(value));
                 }
 
                 obsoletePropertyResolver = value;
@@ -153,23 +147,20 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Gets or sets the property name resolver.
+        ///     Gets or sets the property name resolver.
         /// </summary>
         /// <value>
-        /// The property name resolver.
+        ///     The property name resolver.
         /// </value>
         public static Func<Type, string, string> PropertyNameResolver
         {
-            get
-            {
-                return propertyNameResolver;
-            }
+            get { return propertyNameResolver; }
 
             set
             {
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value");
+                    throw new ArgumentNullException(nameof(value));
                 }
 
                 propertyNameResolver = value;
@@ -177,50 +168,44 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Gets or sets the type resolver.
+        ///     Gets or sets the type code resolver.
         /// </summary>
         /// <value>
-        /// The type resolver.
+        ///     The type code resolver.
         /// </value>
-        public static Func<Assembly, string, bool, Type> TypeResolver
+        public static Func<int, Type> TypeCodeResolver
         {
-            get
-            {
-                return typeResolver;
-            }
+            get { return typeCodeResolver; }
 
             set
             {
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value");
+                    throw new ArgumentNullException(nameof(value));
                 }
 
-                typeResolver = value;
+                typeCodeResolver = value;
             }
         }
 
         /// <summary>
-        /// Gets or sets the type code resolver.
+        ///     Gets or sets the type resolver.
         /// </summary>
         /// <value>
-        /// The type code resolver.
+        ///     The type resolver.
         /// </value>
-        public static Func<int, Type> TypeCodeResolver
+        public static Func<Assembly, string, bool, Type> TypeResolver
         {
-            get
-            {
-                return typeCodeResolver;
-            }
+            get { return typeResolver; }
 
             set
             {
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value");
+                    throw new ArgumentNullException(nameof(value));
                 }
 
-                typeCodeResolver = value;
+                typeResolver = value;
             }
         }
 

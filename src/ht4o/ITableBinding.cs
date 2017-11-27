@@ -18,30 +18,29 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence
 {
-    using Hypertable;
-
     /// <summary>
-    /// Defines a table binding.
+    ///     Defines a table binding.
     /// </summary>
     public interface ITableBinding
     {
         #region Public Properties
 
         /// <summary>
-        /// Gets the database namespace.
+        ///     Gets the database namespace.
         /// </summary>
         /// <value>
-        /// The database namespace.
+        ///     The database namespace.
         /// </value>
         string Namespace { get; }
 
         /// <summary>
-        /// Gets the table name.
+        ///     Gets the table name.
         /// </summary>
         /// <value>
-        /// The table name.
+        ///     The table name.
         /// </value>
         string TableName { get; }
 

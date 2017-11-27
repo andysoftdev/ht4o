@@ -18,26 +18,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Bindings
 {
-    using Hypertable;
     using Hypertable.Persistence.Reflection;
 
     /// <summary>
-    /// The inspected property key binding.
+    ///     The inspected property key binding.
     /// </summary>
     internal abstract class InspectedPropertyKeyBinding : PartialKeyBinding
     {
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="InspectedPropertyKeyBinding"/> class.
+        ///     Initializes a new instance of the <see cref="InspectedPropertyKeyBinding" /> class.
         /// </summary>
         /// <param name="inspectedProperty">
-        /// The inspected property.
+        ///     The inspected property.
         /// </param>
         /// <param name="columnBinding">
-        /// The column binding.
+        ///     The column binding.
         /// </param>
         protected InspectedPropertyKeyBinding(InspectedProperty inspectedProperty, IColumnBinding columnBinding)
             : base(inspectedProperty.InspectedType, columnBinding)

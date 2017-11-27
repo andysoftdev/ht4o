@@ -18,12 +18,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Attributes
 {
     using System;
 
     /// <summary>
-    /// The entity attribute.
+    ///     The entity attribute.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
     public sealed class EntityAttribute : Attribute
@@ -31,17 +32,17 @@ namespace Hypertable.Persistence.Attributes
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityAttribute"/> class.
+        ///     Initializes a new instance of the <see cref="EntityAttribute" /> class.
         /// </summary>
         public EntityAttribute()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityAttribute"/> class.
+        ///     Initializes a new instance of the <see cref="EntityAttribute" /> class.
         /// </summary>
         /// <param name="tableName">
-        /// The table name.
+        ///     The table name.
         /// </param>
         public EntityAttribute(string tableName)
         {
@@ -53,36 +54,36 @@ namespace Hypertable.Persistence.Attributes
         #region Public Properties
 
         /// <summary>
-        /// Gets or sets the column family.
+        ///     Gets or sets the column family.
         /// </summary>
         /// <value>
-        /// The column family.
+        ///     The column family.
         /// </value>
         public string ColumnFamily { get; set; }
 
         /// <summary>
-        /// Gets or sets the column qualifier.
+        ///     Gets or sets the column qualifier.
         /// </summary>
         /// <value>
-        /// The column qualifier.
+        ///     The column qualifier.
         /// </value>
         public string ColumnQualifier { get; set; }
 
         /// <summary>
-        /// Gets or sets the database namespace.
+        ///     Gets or sets the database namespace.
         /// </summary>
         /// <value>
-        /// The database namespace.
+        ///     The database namespace.
         /// </value>
         public string Namespace { get; set; }
 
         /// <summary>
-        /// Gets the table name.
+        ///     Gets the table name.
         /// </summary>
         /// <value>
-        /// The table name.
+        ///     The table name.
         /// </value>
-        public string TableName { get; private set; }
+        public string TableName { get; }
 
         #endregion
     }

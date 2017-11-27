@@ -18,27 +18,29 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Serialization.Delegates
 {
     using System;
 
     /// <summary>
-    /// The serializing entity delegate.
+    ///     The serializing entity delegate.
     /// </summary>
     /// <param name="isRoot">
-    /// Indicating whether this object is the root of the object graph.
+    ///     Indicating whether this object is the root of the object graph.
     /// </param>
     /// <param name="entityReference">
-    /// The entity reference.
+    ///     The entity reference.
     /// </param>
     /// <param name="serializeType">
-    /// The serialize type.
+    ///     The serialize type.
     /// </param>
     /// <param name="value">
-    /// The object.
+    ///     The object.
     /// </param>
     /// <returns>
-    /// The entity key.
+    ///     The entity key.
     /// </returns>
-    internal delegate Key SerializingEntity(bool isRoot, EntityReference entityReference, Type serializeType, object value);
+    internal delegate Key SerializingEntity(bool isRoot, EntityReference entityReference, Type serializeType,
+        object value);
 }

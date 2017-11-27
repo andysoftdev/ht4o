@@ -18,21 +18,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Serialization.Delegates
 {
     using System;
 
     /// <summary>
-    /// The deserializing entity delegate.
+    ///     The deserializing entity delegate.
     /// </summary>
     /// <param name="entityReference">
-    /// The entity reference.
+    ///     The entity reference.
     /// </param>
     /// <param name="destinationType">
-    /// The destination type.
+    ///     The destination type.
     /// </param>
     /// <param name="value">
-    /// The object.
+    ///     The object.
     /// </param>
     internal delegate void DeserializingEntity(EntityReference entityReference, Type destinationType, object value);
 }

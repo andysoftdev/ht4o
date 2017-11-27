@@ -18,20 +18,21 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence
 {
     /// <summary>
-    /// The behavior extensions.
+    ///     The behavior extensions.
     /// </summary>
     public static class BehaviorExtensions
     {
         #region Public Methods and Operators
 
         /// <summary>
-        /// Gets a value indicating whether the behavior is bypass read cache.
+        ///     Gets a value indicating whether the behavior is bypass read cache.
         /// </summary>
         /// <return>
-        /// <c>true</c> if bypass read cache behaviors, otherwise <c>false</c>.
+        ///     <c>true</c> if bypass read cache behaviors, otherwise <c>false</c>.
         /// </return>
         public static bool BypassReadCache(this Behaviors behaviors)
         {
@@ -39,10 +40,10 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets a value indicating whether the behavior is bypass write cache.
+        ///     Gets a value indicating whether the behavior is bypass write cache.
         /// </summary>
         /// <return>
-        /// <c>true</c> if bypass write cache behaviors, otherwise <c>false</c>.
+        ///     <c>true</c> if bypass write cache behaviors, otherwise <c>false</c>.
         /// </return>
         public static bool BypassWriteCache(this Behaviors behaviors)
         {
@@ -50,10 +51,10 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets a value indicating whether the behavior is don't cache.
+        ///     Gets a value indicating whether the behavior is don't cache.
         /// </summary>
         /// <return>
-        /// <c>true</c> if don't cache behaviors, otherwise <c>false</c>.
+        ///     <c>true</c> if don't cache behaviors, otherwise <c>false</c>.
         /// </return>
         public static bool DoNotCache(this Behaviors behaviors)
         {
@@ -61,10 +62,10 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets a value indicating whether the behavior is create always.
+        ///     Gets a value indicating whether the behavior is create always.
         /// </summary>
         /// <return>
-        /// <c>true</c> if create always behaviors, otherwise <c>false</c>.
+        ///     <c>true</c> if create always behaviors, otherwise <c>false</c>.
         /// </return>
         public static bool IsCreateAlways(this Behaviors behaviors)
         {
@@ -72,10 +73,10 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets a value indicating whether the behavior is create lazy.
+        ///     Gets a value indicating whether the behavior is create lazy.
         /// </summary>
         /// <return>
-        /// <c>true</c> if create lazy behaviors, otherwise <c>false</c>.
+        ///     <c>true</c> if create lazy behaviors, otherwise <c>false</c>.
         /// </return>
         public static bool IsCreateLazy(this Behaviors behaviors)
         {
@@ -83,10 +84,10 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets a value indicating whether the behavior is create new.
+        ///     Gets a value indicating whether the behavior is create new.
         /// </summary>
         /// <return>
-        /// <c>true</c> if create new behaviors, otherwise <c>false</c>.
+        ///     <c>true</c> if create new behaviors, otherwise <c>false</c>.
         /// </return>
         public static bool IsCreateNew(this Behaviors behaviors)
         {
@@ -94,10 +95,10 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets a value indicating whether the behavior is default.
+        ///     Gets a value indicating whether the behavior is default.
         /// </summary>
         /// <return>
-        /// <c>true</c> if default behaviors, otherwise <c>false</c>.
+        ///     <c>true</c> if default behaviors, otherwise <c>false</c>.
         /// </return>
         public static bool IsDefault(this Behaviors behaviors)
         {

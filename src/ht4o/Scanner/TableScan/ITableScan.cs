@@ -18,64 +18,65 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Scanner.TableScan
 {
     using System.Collections.Generic;
 
     /// <summary>
-    /// The table scan interface.
+    ///     The table scan interface.
     /// </summary>
     internal interface ITableScan
     {
         #region Public Properties
 
         /// <summary>
-        /// Gets a value indicating whether there is something to scan or not.
+        ///     Gets the entity scan targets.
         /// </summary>
         /// <value>
-        /// <c>true</c> if there is something to scan, otherwise <c>false</c>.
-        /// </value>
-        bool? IsEmpty { get; }
-
-        /// <summary>
-        /// Gets the entity scan targets.
-        /// </summary>
-        /// <value>
-        /// The entity scan targets.
+        ///     The entity scan targets.
         /// </value>
         IEnumerable<EntityScanTarget> EntityScanTargets { get; }
+
+        /// <summary>
+        ///     Gets a value indicating whether there is something to scan or not.
+        /// </summary>
+        /// <value>
+        ///     <c>true</c> if there is something to scan, otherwise <c>false</c>.
+        /// </value>
+        bool? IsEmpty { get; }
 
         #endregion
 
         #region Public Methods and Operators
 
         /// <summary>
-        /// Adds an entity specification to the scan.
+        ///     Adds an entity specification to the scan.
         /// </summary>
         /// <param name="entitySpec">
-        /// The entity specification to add.
+        ///     The entity specification to add.
         /// </param>
         void Add(EntitySpec entitySpec);
 
         /// <summary>
-        /// Creates the scan specification.
+        ///     Creates the scan specification.
         /// </summary>
         /// <returns>
-        /// The scan spec.
+        ///     The scan spec.
         /// </returns>
         ScanSpec CreateScanSpec();
 
         /// <summary>
-        /// Try remove a scan target for the entity key specified.
+        ///     Try remove a scan target for the entity key specified.
         /// </summary>
         /// <param name="key">
-        /// The entity key.
+        ///     The entity key.
         /// </param>
         /// <param name="entityScanTarget">
-        /// The entity scan target.
+        ///     The entity scan target.
         /// </param>
         /// <returns>
-        /// <c>true</c> if a scan target as been found for the entity key specified, otherwise <c>false</c>.
+        ///     <c>true</c> if a scan target as been found for the entity key specified, otherwise <c>false</c>.
         /// </returns>
         bool TryRemoveScanTarget(Key key, out EntityScanTarget entityScanTarget);
 

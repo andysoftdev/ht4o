@@ -19,8 +19,6 @@
  * 02110-1301, USA.
  */
 
-using Hypertable.Persistence.Collections.Concurrent;
-
 namespace Hypertable.Persistence.Serialization
 {
     using System;
@@ -31,65 +29,67 @@ namespace Hypertable.Persistence.Serialization
     using System.Linq.Expressions;
     using System.Reflection;
     using System.Runtime.Serialization;
-
     using Hypertable.Persistence.Collections;
+    using Hypertable.Persistence.Collections.Concurrent;
     using Hypertable.Persistence.Extensions;
     using Hypertable.Persistence.Reflection;
     using Hypertable.Persistence.Serialization.Delegates;
 
     /// <summary>
-    /// The serializer.
+    ///     The serializer.
     /// </summary>
     public class Serializer : SerializationBase
     {
         #region Static Fields
 
         /// <summary>
-        /// The type schema dictionary.
+        ///     The type schema dictionary.
         /// </summary>
-        private static readonly ConcurrentTypeDictionary<TypeSchema> TypeSchemaDictionary = new ConcurrentTypeDictionary<TypeSchema>();
+        private static readonly ConcurrentTypeDictionary<TypeSchema> TypeSchemaDictionary =
+            new ConcurrentTypeDictionary<TypeSchema>();
 
         #endregion
 
         #region Fields
 
         /// <summary>
-        /// The encoder configuration.
+        ///     The encoder configuration.
         /// </summary>
         private readonly EncoderConfiguration configuration;
 
         /// <summary>
-        /// The encoder info.
+        ///     The encoder info.
         /// </summary>
         private readonly FastDictionary<Type, EncoderInfo> encoderInfos = new FastDictionary<Type, EncoderInfo>(256);
 
         /// <summary>
-        /// The identity dictionary.
+        ///     The identity dictionary.
         /// </summary>
         private readonly IdentityDictionary<int> identityDictionary = new IdentityDictionary<int>(256);
 
         /// <summary>
-        /// The string dictionary.
+        ///     The string dictionary.
         /// </summary>
         private readonly StringDictionary<int> stringDictionary = new StringDictionary<int>(256);
 
         /// <summary>
-        /// The type dictionary.
+        ///     The type dictionary.
         /// </summary>
         private readonly FastDictionary<Type, int> typeDictionary = new FastDictionary<Type, int>(256);
 
         /// <summary>
-        /// The type schema reference dictionary.
+        ///     The type schema reference dictionary.
         /// </summary>
-        private readonly FastDictionary<Type, TypeSchemaRef> typeSchemaRefDictionary = new FastDictionary<Type, TypeSchemaRef>(256);
+        private readonly FastDictionary<Type, TypeSchemaRef> typeSchemaRefDictionary =
+            new FastDictionary<Type, TypeSchemaRef>(256);
 
         /// <summary>
-        /// The binary writer.
+        ///     The binary writer.
         /// </summary>
         private BinaryWriter binaryWriter;
 
         /// <summary>
-        /// The identity value.
+        ///     The identity value.
         /// </summary>
         private int identityValue;
 
@@ -98,7 +98,7 @@ namespace Hypertable.Persistence.Serialization
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Serializer"/> class.
+        ///     Initializes a new instance of the <see cref="Serializer" /> class.
         /// </summary>
         public Serializer()
             : this(null, null)
@@ -106,10 +106,10 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Serializer"/> class.
+        ///     Initializes a new instance of the <see cref="Serializer" /> class.
         /// </summary>
         /// <param name="configuration">
-        /// The encoder configuration.
+        ///     The encoder configuration.
         /// </param>
         public Serializer(EncoderConfiguration configuration)
             : this(null, configuration)
@@ -117,10 +117,10 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Serializer"/> class.
+        ///     Initializes a new instance of the <see cref="Serializer" /> class.
         /// </summary>
         /// <param name="binaryWriter">
-        /// The binary writer.
+        ///     The binary writer.
         /// </param>
         protected Serializer(BinaryWriter binaryWriter)
             : this(binaryWriter, null)
@@ -128,13 +128,13 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Serializer"/> class.
+        ///     Initializes a new instance of the <see cref="Serializer" /> class.
         /// </summary>
         /// <param name="binaryWriter">
-        /// The binary writer.
+        ///     The binary writer.
         /// </param>
         /// <param name="configuration">
-        /// The encoder configuration.
+        ///     The encoder configuration.
         /// </param>
         protected Serializer(BinaryWriter binaryWriter, EncoderConfiguration configuration)
         {
@@ -150,48 +150,36 @@ namespace Hypertable.Persistence.Serialization
         #region Public Properties
 
         /// <summary>
-        /// Gets the binary writer.
+        ///     Gets the binary writer.
         /// </summary>
         /// <value>
-        /// The binary writer.
+        ///     The binary writer.
         /// </value>
-        public BinaryWriter BinaryWriter
-        {
-            get
-            {
-                return this.binaryWriter;
-            }
-        }
+        public BinaryWriter BinaryWriter => this.binaryWriter;
 
         /// <summary>
-        /// Gets the configuration.
+        ///     Gets the configuration.
         /// </summary>
         /// <value>
-        /// The encoder configuration.
+        ///     The encoder configuration.
         /// </value>
-        public EncoderConfiguration Configuration
-        {
-            get
-            {
-                return this.configuration;
-            }
-        }
+        public EncoderConfiguration Configuration => this.configuration;
 
         #endregion
 
         #region Public Methods and Operators
 
         /// <summary>
-        /// Serializes the object specified.
+        ///     Serializes the object specified.
         /// </summary>
         /// <param name="value">
-        /// The object to serialize.
+        ///     The object to serialize.
         /// </param>
         /// <typeparam name="T">
-        /// Type of the object to serialize.
+        ///     Type of the object to serialize.
         /// </typeparam>
         /// <returns>
-        /// The serialized object.
+        ///     The serialized object.
         /// </returns>
         public static byte[] ToByteArray<T>(T value)
         {
@@ -199,19 +187,19 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Serializes the object specified.
+        ///     Serializes the object specified.
         /// </summary>
         /// <param name="value">
-        /// The object to serialize.
+        ///     The object to serialize.
         /// </param>
         /// <param name="capacity">
-        /// The internal memory stream initial capacity.
+        ///     The internal memory stream initial capacity.
         /// </param>
         /// <typeparam name="T">
-        /// Type of the object to serialize.
+        ///     Type of the object to serialize.
         /// </typeparam>
         /// <returns>
-        /// The serialized object.
+        ///     The serialized object.
         /// </returns>
         public static byte[] ToByteArray<T>(T value, int capacity)
         {
@@ -219,19 +207,19 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Serializes the object specified.
+        ///     Serializes the object specified.
         /// </summary>
         /// <param name="serializeType">
-        /// The serialize type.
+        ///     The serialize type.
         /// </param>
         /// <param name="value">
-        /// The object to serialize.
+        ///     The object to serialize.
         /// </param>
         /// <param name="capacity">
-        /// The internal memory stream initial capacity.
+        ///     The internal memory stream initial capacity.
         /// </param>
         /// <returns>
-        /// The serialized object.
+        ///     The serialized object.
         /// </returns>
         public static byte[] ToByteArray(Type serializeType, object value, int capacity)
         {
@@ -247,16 +235,16 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Deserialize from the stream specified.
+        ///     Deserialize from the stream specified.
         /// </summary>
         /// <param name="stream">
-        /// The stream.
+        ///     The stream.
         /// </param>
         /// <typeparam name="T">
-        /// Type of the object to deserialize.
+        ///     Type of the object to deserialize.
         /// </typeparam>
         /// <returns>
-        /// The deserialized object.
+        ///     The deserialized object.
         /// </returns>
         public T Deserialize<T>(Stream stream)
         {
@@ -264,32 +252,33 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Deserialize from the stream specified.
+        ///     Deserialize from the stream specified.
         /// </summary>
         /// <param name="destinationType">
-        /// The destination type.
+        ///     The destination type.
         /// </param>
         /// <param name="stream">
-        /// The stream.
+        ///     The stream.
         /// </param>
         /// <returns>
-        /// The deserialized object.
+        ///     The deserialized object.
         /// </returns>
-        public object Deserialize(Type destinationType, Stream stream) {
+        public object Deserialize(Type destinationType, Stream stream)
+        {
             return Deserializer.Deserialize(destinationType, stream);
         }
 
         /// <summary>
-        /// Serializes the object specified.
+        ///     Serializes the object specified.
         /// </summary>
         /// <typeparam name="T">
-        /// Type of the object to serialize.
+        ///     Type of the object to serialize.
         /// </typeparam>
         /// <param name="stream">
-        /// The stream.
+        ///     The stream.
         /// </param>
         /// <param name="value">
-        /// The object to serialize.
+        ///     The object to serialize.
         /// </param>
         public void Serialize<T>(Stream stream, T value)
         {
@@ -297,16 +286,16 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Serializes the object specified.
+        ///     Serializes the object specified.
         /// </summary>
         /// <param name="stream">
-        /// The stream.
+        ///     The stream.
         /// </param>
         /// <param name="serializeType">
-        /// The serialize type.
+        ///     The serialize type.
         /// </param>
         /// <param name="value">
-        /// The object to serialize.
+        ///     The object to serialize.
         /// </param>
         public void Serialize(Stream stream, Type serializeType, object value)
         {
@@ -317,14 +306,14 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Writes an object.
+        ///     Writes an object.
         /// </summary>
         /// <param name="value">
-        /// The object to write.
+        ///     The object to write.
         /// </param>
         public void WriteObject(object value)
         {
-            this.Write(value != null ? value.GetType() : typeof(object), value);
+            this.Write(value?.GetType() ?? typeof(object), value);
         }
 
         #endregion
@@ -332,16 +321,16 @@ namespace Hypertable.Persistence.Serialization
         #region Methods
 
         /// <summary>
-        /// Determine if the type tag requires an collection element tag.
+        ///     Determine if the type tag requires an collection element tag.
         /// </summary>
         /// <param name="tag">
-        /// The type tag.
+        ///     The type tag.
         /// </param>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the type requires an collection element tag, otherwise <c>false</c>.
+        ///     <c>true</c> if the type requires an collection element tag, otherwise <c>false</c>.
         /// </returns>
         internal static bool HasElementTag(Tags tag, Type type)
         {
@@ -351,15 +340,16 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Determine if the type from the tag specified.
+        ///     Determine if the type from the tag specified.
         /// </summary>
         /// <param name="tag">
-        /// The type tag.
+        ///     The type tag.
         /// </param>
         /// <returns>
-        /// The type or typeof(object).
+        ///     The type or typeof(object).
         /// </returns>
-        internal static Type TypeFromTag(Tags tag) {
+        internal static Type TypeFromTag(Tags tag)
+        {
             tag &= ~Tags.Array;
             switch (tag)
             {
@@ -379,7 +369,7 @@ namespace Hypertable.Persistence.Serialization
                     return typeof(long);
                 case Tags.ULong:
                     return typeof(ulong);
-                 case Tags.Bool:
+                case Tags.Bool:
                     return typeof(bool);
                 case Tags.Char:
                     return typeof(char);
@@ -399,7 +389,7 @@ namespace Hypertable.Persistence.Serialization
                     return typeof(Guid);
                 case Tags.Type:
                     return typeof(Type).GetType();
-                 case Tags.Uri:
+                case Tags.Uri:
                     return typeof(Uri);
             }
 
@@ -407,16 +397,16 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Encodes the object specified.
+        ///     Encodes the object specified.
         /// </summary>
         /// <param name="encoderInfo">
-        /// The encoder info.
+        ///     The encoder info.
         /// </param>
         /// <param name="value">
-        /// The object to encode.
+        ///     The object to encode.
         /// </param>
         /// <param name="writeTag">
-        /// If <c>true</c> the encoder writes the leading type tag, otherwise <c>false</c>.
+        ///     If <c>true</c> the encoder writes the leading type tag, otherwise <c>false</c>.
         /// </param>
         internal virtual void Encode(EncoderInfo encoderInfo, object value, bool writeTag)
         {
@@ -432,16 +422,16 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Gets the type schema.
+        ///     Gets the type schema.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <param name="inspector">
-        /// The inspector.
+        ///     The inspector.
         /// </param>
         /// <returns>
-        /// The type schema.
+        ///     The type schema.
         /// </returns>
         internal virtual TypeSchema GetTypeSchema(Type type, Inspector inspector)
         {
@@ -449,16 +439,16 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Write an object.
+        ///     Write an object.
         /// </summary>
         /// <param name="serializeType">
-        /// The serialize type.
+        ///     The serialize type.
         /// </param>
         /// <param name="type">
-        /// The object type.
+        ///     The object type.
         /// </param>
         /// <param name="value">
-        /// The object to write.
+        ///     The object to write.
         /// </param>
         internal void Write(Type serializeType, Type type, object value)
         {
@@ -479,7 +469,7 @@ namespace Hypertable.Persistence.Serialization
 
             if (inspector.IsArray)
             {
-                this.WriteArray(serializeType, type, (Array)value);
+                this.WriteArray(serializeType, type, (Array) value);
                 return;
             }
 
@@ -521,19 +511,19 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Writes an object.
+        ///     Writes an object.
         /// </summary>
         /// <param name="inspector">
-        /// The inspector.
+        ///     The inspector.
         /// </param>
         /// <param name="serializeType">
-        /// The serialize type.
+        ///     The serialize type.
         /// </param>
         /// <param name="type">
-        /// The object type.
+        ///     The object type.
         /// </param>
         /// <param name="value">
-        /// The object to write.
+        ///     The object to write.
         /// </param>
         internal virtual void WriteObject(Inspector inspector, Type serializeType, Type type, object value)
         {
@@ -542,31 +532,27 @@ namespace Hypertable.Persistence.Serialization
                 return;
             }
 
-            var streamingContext = inspector.HasSerializationHandlers ? new StreamingContext() : default(StreamingContext);
-            if (inspector.OnSerializing != null)
-            {
-                inspector.OnSerializing(value, streamingContext);
-            }
+            var streamingContext =
+                inspector.HasSerializationHandlers ? new StreamingContext() : default(StreamingContext);
+
+            inspector.OnSerializing?.Invoke(value, streamingContext);
 
             this.WriteObjectTrailer(type, inspector).WriteObject(this, value);
 
-            if (inspector.OnSerialized != null)
-            {
-                inspector.OnSerialized(value, streamingContext);
-            }
+            inspector.OnSerialized?.Invoke(value, streamingContext);
         }
 
         /// <summary>
-        /// Writes the object trailer.
+        ///     Writes the object trailer.
         /// </summary>
         /// <param name="type">
-        /// The object type.
+        ///     The object type.
         /// </param>
         /// <param name="inspector">
-        /// The inspector.
+        ///     The inspector.
         /// </param>
         /// <returns>
-        /// The type schema.
+        ///     The type schema.
         /// </returns>
         internal TypeSchema WriteObjectTrailer(Type type, Inspector inspector)
         {
@@ -576,19 +562,19 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Writes an object.
+        ///     Writes an object.
         /// </summary>
         /// <param name="inspector">
-        /// The inspector.
+        ///     The inspector.
         /// </param>
         /// <param name="serializeType">
-        /// The serialize type.
+        ///     The serialize type.
         /// </param>
         /// <param name="type">
-        /// The object type.
+        ///     The object type.
         /// </param>
         /// <param name="value">
-        /// The object to write.
+        ///     The object to write.
         /// </param>
         internal virtual void WriteSerializationInfo(Inspector inspector, Type serializeType, Type type, object value)
         {
@@ -600,12 +586,9 @@ namespace Hypertable.Persistence.Serialization
             var serializable = inspector.Serializable;
             var info = new SerializationInfo(serializable.InspectedType, new FormatterConverter());
             var streamingContext = new StreamingContext();
-            ((ISerializable)value).GetObjectData(info, streamingContext);
+            ((ISerializable) value).GetObjectData(info, streamingContext);
 
-            if (inspector.OnSerializing != null)
-            {
-                inspector.OnSerializing(value, streamingContext);
-            }
+            inspector.OnSerializing?.Invoke(value, streamingContext);
 
             Encoder.WriteTag(this.binaryWriter, Tags.SerializationInfo);
             this.WriteType(type);
@@ -618,20 +601,17 @@ namespace Hypertable.Persistence.Serialization
                 this.WriteObject(enumerator.Value);
             }
 
-            if (inspector.OnSerialized != null)
-            {
-                inspector.OnSerialized(value, streamingContext);
-            }
+            inspector.OnSerialized?.Invoke(value, streamingContext);
         }
 
         /// <summary>
-        /// Write an object.
+        ///     Write an object.
         /// </summary>
         /// <param name="serializeType">
-        /// The serialize type.
+        ///     The serialize type.
         /// </param>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
         protected void Write(Type serializeType, object value)
         {
@@ -646,13 +626,13 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Writes or adds an object reference.
+        ///     Writes or adds an object reference.
         /// </summary>
         /// <param name="value">
-        /// The object.
+        ///     The object.
         /// </param>
         /// <returns>
-        /// <c>true</c> if an object reference has been written, otherwise <c>false</c>.
+        ///     <c>true</c> if an object reference has been written, otherwise <c>false</c>.
         /// </returns>
         protected bool WriteOrAddObjectRef(object value)
         {
@@ -671,13 +651,13 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Writes or adds a string reference.
+        ///     Writes or adds a string reference.
         /// </summary>
         /// <param name="value">
-        /// The object.
+        ///     The object.
         /// </param>
         /// <returns>
-        /// <c>true</c> if a string reference has been written, otherwise <c>false</c>.
+        ///     <c>true</c> if a string reference has been written, otherwise <c>false</c>.
         /// </returns>
         protected bool WriteOrAddStringRef(string value)
         {
@@ -685,13 +665,13 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Writes or adds a type reference.
+        ///     Writes or adds a type reference.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <returns>
-        /// <c>true</c> if a type reference has been written, otherwise <c>false</c>.
+        ///     <c>true</c> if a type reference has been written, otherwise <c>false</c>.
         /// </returns>
         protected bool WriteOrAddTypeRef(Type type)
         {
@@ -699,10 +679,10 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Writes a string.
+        ///     Writes a string.
         /// </summary>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
         protected void WriteString(string value)
         {
@@ -715,10 +695,10 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Writes a type.
+        ///     Writes a type.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         protected void WriteType(Type type)
         {
@@ -734,16 +714,16 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Determine if the collection is typed collection or not.
+        ///     Determine if the collection is typed collection or not.
         /// </summary>
         /// <param name="serializeType">
-        /// The serialize type.
+        ///     The serialize type.
         /// </param>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the collection is typed collection, otherwise <c>false</c>.
+        ///     <c>true</c> if the collection is typed collection, otherwise <c>false</c>.
         /// </returns>
         private static CollectionFlags GetCollectionFlags(Type serializeType, Type type)
         {
@@ -777,16 +757,16 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Determine if the dictionary is typed dictionary or not.
+        ///     Determine if the dictionary is typed dictionary or not.
         /// </summary>
         /// <param name="serializeType">
-        /// The serialize type.
+        ///     The serialize type.
         /// </param>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the dictionary is typed dictionary, otherwise <c>false</c>.
+        ///     <c>true</c> if the dictionary is typed dictionary, otherwise <c>false</c>.
         /// </returns>
         private static DictionaryFlags GetDictionaryFlags(Type serializeType, Type type)
         {
@@ -808,45 +788,47 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Write an object.
+        ///     Write an object.
         /// </summary>
         /// <param name="serializer">
-        /// The serializer.
+        ///     The serializer.
         /// </param>
         /// <param name="serializeType">
-        /// The serialize type.
+        ///     The serialize type.
         /// </param>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
         /// <param name="getter">
-        /// The getter.
+        ///     The getter.
         /// </param>
-        private static void Write(Serializer serializer, Type serializeType, object value, Func<object, object> getter) {
+        private static void Write(Serializer serializer, Type serializeType, object value, Func<object, object> getter)
+        {
             serializer.Write(serializeType, getter(value));
         }
 
         /// <summary>
-        /// Writes a count.
+        ///     Writes a count.
         /// </summary>
         /// <param name="serializer">
-        /// The serializer.
+        ///     The serializer.
         /// </param>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
-        private static void WriteCount(Serializer serializer, int value) {
+        private static void WriteCount(Serializer serializer, int value)
+        {
             Encoder.WriteCount(serializer.binaryWriter, value);
         }
 
         /// <summary>
-        /// Writes a type.
+        ///     Writes a type.
         /// </summary>
         /// <param name="serializer">
-        /// The serializer.
+        ///     The serializer.
         /// </param>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         private static void WriteType(Serializer serializer, Type type)
         {
@@ -854,16 +836,16 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Attempts to get the encoder info associated with the type.
+        ///     Attempts to get the encoder info associated with the type.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <param name="encoderInfo">
-        /// The encoder Info.
+        ///     The encoder Info.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the decoder info exists for the tag specified, otherwise <c>false</c>.
+        ///     <c>true</c> if the decoder info exists for the tag specified, otherwise <c>false</c>.
         /// </returns>
         private bool TryGetEncoder(Type type, out EncoderInfo encoderInfo)
         {
@@ -881,12 +863,14 @@ namespace Hypertable.Persistence.Serialization
             int bucket;
             FastDictionary<Type, EncoderInfo>.Entry entry;
 
-            if (this.encoderInfos.TryGetValue(type, out bucket, out entry)) {
+            if (this.encoderInfos.TryGetValue(type, out bucket, out entry))
+            {
                 encoderInfo = entry.Value;
                 return true;
             }
 
-            if (Encoder.TryGetEncoder(type, out encoderInfo)) {
+            if (Encoder.TryGetEncoder(type, out encoderInfo))
+            {
                 entry.Value = encoderInfo;
                 this.encoderInfos.Insert(bucket, ref entry);
                 return true;
@@ -896,16 +880,16 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Writes an array.
+        ///     Writes an array.
         /// </summary>
         /// <param name="serializeType">
-        /// The serialize type.
+        ///     The serialize type.
         /// </param>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <param name="value">
-        /// The array to write.
+        ///     The array to write.
         /// </param>
         private void WriteArray(Type serializeType, Type type, Array value)
         {
@@ -921,9 +905,9 @@ namespace Hypertable.Persistence.Serialization
             {
                 Encoder.WriteTag(this.binaryWriter, Tags.Byte | Tags.Array);
                 // an array can have a maximum of 32 dimensions
-                Encoder.WriteCount(this.binaryWriter, 1 | (byte)ArrayFlags.ValueNotTagged);
+                Encoder.WriteCount(this.binaryWriter, 1 | (byte) ArrayFlags.ValueNotTagged);
                 Encoder.WriteCount(this.binaryWriter, value.Length);
-                this.binaryWriter.Write((byte[])value);
+                this.binaryWriter.Write((byte[]) value);
             }
             else
             {
@@ -934,7 +918,8 @@ namespace Hypertable.Persistence.Serialization
 
                     Encoder.WriteTag(this.binaryWriter, encoderInfo.Tag | Tags.Array);
                     // an array can have a maximum of 32 dimensions
-                    Encoder.WriteCount(this.binaryWriter, value.Rank | (byte)(hasElementTag ? ArrayFlags.ValueTagged : ArrayFlags.ValueNotTagged));
+                    Encoder.WriteCount(this.binaryWriter,
+                        value.Rank | (byte) (hasElementTag ? ArrayFlags.ValueTagged : ArrayFlags.ValueNotTagged));
                     for (var dimension = 0; dimension < value.Rank; dimension++)
                     {
                         Encoder.WriteCount(this.binaryWriter, value.GetLength(dimension));
@@ -965,7 +950,10 @@ namespace Hypertable.Persistence.Serialization
                                     }
                                     else
                                     {
-                                        this.Write(serializeType != typeof(object[]) && serializeType != typeof(object) ? elementType : typeof(object), item);
+                                        this.Write(
+                                            serializeType != typeof(object[]) && serializeType != typeof(object)
+                                                ? elementType
+                                                : typeof(object), item);
                                     }
                                 }
                                 else
@@ -989,7 +977,9 @@ namespace Hypertable.Persistence.Serialization
                         Encoder.WriteCount(this.binaryWriter, value.GetLength(dimension));
                     }
 
-                    var itemType = serializeType != typeof(object[]) && serializeType != typeof(object) ? elementType : typeof(object);
+                    var itemType = serializeType != typeof(object[]) && serializeType != typeof(object)
+                        ? elementType
+                        : typeof(object);
                     foreach (var item in value)
                     {
                         this.Write(itemType, item);
@@ -999,33 +989,33 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Write a date time value to the binary writer.
+        ///     Write a date time value to the binary writer.
         /// </summary>
         /// <param name="bw">
-        /// The binary writer.
+        ///     The binary writer.
         /// </param>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
         /// <param name="writeTag">
-        /// If <c>true</c> the encoder writes the leading type tag, otherwise <c>false</c>.
+        ///     If <c>true</c> the encoder writes the leading type tag, otherwise <c>false</c>.
         /// </param>
         private void WriteDateTime(BinaryWriter bw, object value, bool writeTag)
         {
-            Encoder.WriteDateTime(bw, (DateTime)value, this.configuration, writeTag);
+            Encoder.WriteDateTime(bw, (DateTime) value, this.configuration, writeTag);
         }
 
         /// <summary>
-        /// Writes a dictionary.
+        ///     Writes a dictionary.
         /// </summary>
         /// <param name="serializeType">
-        /// The serialize type.
+        ///     The serialize type.
         /// </param>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <param name="value">
-        /// The dictionary to write.
+        ///     The dictionary to write.
         /// </param>
         private void WriteDictionary(Type serializeType, Type type, IDictionary value)
         {
@@ -1055,7 +1045,7 @@ namespace Hypertable.Persistence.Serialization
                     var hasValueElementTag = HasElementTag(valueEncoderInfo.Tag, valueType);
                     flags |= hasValueElementTag ? DictionaryFlags.ValueTagged : DictionaryFlags.None;
 
-                    Encoder.WriteByte(this.binaryWriter, (byte)flags, false);
+                    Encoder.WriteByte(this.binaryWriter, (byte) flags, false);
 
                     if (flags.HasFlag(DictionaryFlags.Typed))
                     {
@@ -1141,7 +1131,7 @@ namespace Hypertable.Persistence.Serialization
                         flags |= DictionaryFlags.Typed;
                     }
 
-                    Encoder.WriteByte(this.binaryWriter, (byte)flags, false);
+                    Encoder.WriteByte(this.binaryWriter, (byte) flags, false);
                     if (flags.HasFlag(DictionaryFlags.Typed))
                     {
                         this.WriteType(type);
@@ -1199,7 +1189,7 @@ namespace Hypertable.Persistence.Serialization
                 var hasValueElementTag = HasElementTag(valueEncoderInfo.Tag, valueType);
                 flags |= hasValueElementTag ? DictionaryFlags.ValueTagged : DictionaryFlags.None;
 
-                Encoder.WriteByte(this.binaryWriter, (byte)flags, false);
+                Encoder.WriteByte(this.binaryWriter, (byte) flags, false);
                 if (flags.HasFlag(DictionaryFlags.Typed))
                 {
                     this.WriteType(type);
@@ -1257,7 +1247,7 @@ namespace Hypertable.Persistence.Serialization
                     flags |= DictionaryFlags.Typed;
                 }
 
-                Encoder.WriteByte(this.binaryWriter, (byte)flags, false);
+                Encoder.WriteByte(this.binaryWriter, (byte) flags, false);
                 if (flags.HasFlag(DictionaryFlags.Typed))
                 {
                     this.WriteType(type);
@@ -1273,19 +1263,19 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Writes an enumerable.
+        ///     Writes an enumerable.
         /// </summary>
         /// <param name="inspector">
-        /// The inspector.
+        ///     The inspector.
         /// </param>
         /// <param name="serializeType">
-        /// The serialize type.
+        ///     The serialize type.
         /// </param>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <param name="value">
-        /// The enumerable to write.
+        ///     The enumerable to write.
         /// </param>
         private void WriteEnumerable(Inspector inspector, Type serializeType, Type type, IEnumerable value)
         {
@@ -1308,7 +1298,7 @@ namespace Hypertable.Persistence.Serialization
                     var hasElementTag = HasElementTag(encoderInfo.Tag, elementType);
                     flags |= hasElementTag ? CollectionFlags.ValueTagged : CollectionFlags.None;
 
-                    Encoder.WriteByte(this.binaryWriter, (byte)flags, false);
+                    Encoder.WriteByte(this.binaryWriter, (byte) flags, false);
 
                     if (flags.HasFlag(CollectionFlags.Typed))
                     {
@@ -1317,7 +1307,7 @@ namespace Hypertable.Persistence.Serialization
 
                     Encoder.WriteTag(this.binaryWriter, encoderInfo.Tag);
 
-                    Encoder.WriteCount(this.binaryWriter, (int)inspector.Enumerable.Count(value));
+                    Encoder.WriteCount(this.binaryWriter, (int) inspector.Enumerable.Count(value));
 
                     if (elementType.IsSealed || elementType.IsPrimitive)
                     {
@@ -1367,13 +1357,13 @@ namespace Hypertable.Persistence.Serialization
                     flags |= CollectionFlags.Typed;
                 }
 
-                Encoder.WriteByte(this.binaryWriter, (byte)flags, false);
+                Encoder.WriteByte(this.binaryWriter, (byte) flags, false);
                 if (flags.HasFlag(CollectionFlags.Typed))
                 {
                     this.WriteType(type);
                 }
 
-                Encoder.WriteCount(this.binaryWriter, (int)inspector.Enumerable.Count(value));
+                Encoder.WriteCount(this.binaryWriter, (int) inspector.Enumerable.Count(value));
             }
             else
             {
@@ -1392,13 +1382,13 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Writes a key/value pair.
+        ///     Writes a key/value pair.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <param name="keyValuePair">
-        /// The key/value pair to write.
+        ///     The key/value pair to write.
         /// </param>
         private void WriteKeyValuePair(Type type, object keyValuePair)
         {
@@ -1407,18 +1397,22 @@ namespace Hypertable.Persistence.Serialization
             var keyGetter = DelegateFactory.CreateGetter(propertyInfoKey);
             var propertyInfoValue = type.GetProperty(@"Value");
             var valueGetter = DelegateFactory.CreateGetter(propertyInfoValue);
-            var write = typeof(Serializer).GetMethod(@"Write", BindingFlags.Static | BindingFlags.NonPublic, null, new[] { typeof(Serializer), typeof(Type), typeof(object), typeof(Func<object, object>) }, null);
-            var writeType = typeof(Serializer).GetMethod(@"WriteType", BindingFlags.Static | BindingFlags.NonPublic, null, new[] { typeof(Serializer), typeof(Type) }, null);
+            var write = typeof(Serializer).GetMethod(@"Write", BindingFlags.Static | BindingFlags.NonPublic, null,
+                new[] {typeof(Serializer), typeof(Type), typeof(object), typeof(Func<object, object>)}, null);
+            var writeType = typeof(Serializer).GetMethod(@"WriteType", BindingFlags.Static | BindingFlags.NonPublic,
+                null, new[] {typeof(Serializer), typeof(Type)}, null);
 
             var serializerParameter = Expression.Parameter(typeof(Serializer), @"serializer");
             var keyValuePairParameter = Expression.Parameter(typeof(object), @"keyValuePair");
             var expressions = new List<Expression>
-                {
-                    Expression.Call(null, writeType, serializerParameter, Expression.Constant(typeargs[0])),
-                    Expression.Call(null, writeType, serializerParameter, Expression.Constant(typeargs[1])),
-                    Expression.Call(null, write, serializerParameter, Expression.Constant(typeargs[0]), keyValuePairParameter, Expression.Constant(keyGetter)),
-                    Expression.Call(null, write, serializerParameter, Expression.Constant(typeargs[1]), keyValuePairParameter, Expression.Constant(valueGetter))
-                };
+            {
+                Expression.Call(null, writeType, serializerParameter, Expression.Constant(typeargs[0])),
+                Expression.Call(null, writeType, serializerParameter, Expression.Constant(typeargs[1])),
+                Expression.Call(null, write, serializerParameter, Expression.Constant(typeargs[0]),
+                    keyValuePairParameter, Expression.Constant(keyGetter)),
+                Expression.Call(null, write, serializerParameter, Expression.Constant(typeargs[1]),
+                    keyValuePairParameter, Expression.Constant(valueGetter))
+            };
 
             var block = Expression.Block(expressions);
             var serializer = Expression.Lambda<Serialize>(block, serializerParameter, keyValuePairParameter).Compile();
@@ -1428,30 +1422,31 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Writes or adds an reference.
+        ///     Writes or adds an reference.
         /// </summary>
         /// <param name="dictionary">
-        /// The dictionary.
+        ///     The dictionary.
         /// </param>
         /// <param name="key">
-        /// The key.
+        ///     The key.
         /// </param>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
         /// <param name="tag">
-        /// The tag.
+        ///     The tag.
         /// </param>
         /// <returns>
-        /// <c>true</c> if an object reference has been written, otherwise <c>false</c>.
+        ///     <c>true</c> if an object reference has been written, otherwise <c>false</c>.
         /// </returns>
         /// <typeparam name="TKey">
-        /// The key type.
+        ///     The key type.
         /// </typeparam>
         /// <typeparam name="TComparer">
-        /// The comparer type.
+        ///     The comparer type.
         /// </typeparam>
-        private bool WriteOrAddRef<TKey, TComparer>(FastDictionary<TKey, int, TComparer> dictionary, TKey key, int value, Tags tag) where TComparer : struct, IEqualityComparer<TKey>
+        private bool WriteOrAddRef<TKey, TComparer>(FastDictionary<TKey, int, TComparer> dictionary, TKey key,
+            int value, Tags tag) where TComparer : struct, IEqualityComparer<TKey>
         {
             /*int valueref;
             if (dictionary.TryGetValue(key, out valueref))
@@ -1465,7 +1460,8 @@ namespace Hypertable.Persistence.Serialization
             return false;*/
 
             int valueref;
-            if (dictionary.TryGetOrAddValue(key, out valueref, value)) {
+            if (dictionary.TryGetOrAddValue(key, out valueref, value))
+            {
                 Encoder.WriteTag(this.binaryWriter, tag);
                 Encoder.WriteCount(this.binaryWriter, valueref);
                 return true;
@@ -1475,33 +1471,39 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Writes a tuple.
+        ///     Writes a tuple.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <param name="tuple">
-        /// The tuple to write.
+        ///     The tuple to write.
         /// </param>
-        private void WriteTuple(Type type, object tuple) {
+        private void WriteTuple(Type type, object tuple)
+        {
             var typeargs = tuple.GetType().GetGenericArguments();
-            var write = typeof(Serializer).GetMethod(@"Write", BindingFlags.Static | BindingFlags.NonPublic, null, new[] { typeof(Serializer), typeof(Type), typeof(object), typeof(Func<object, object>) }, null);
-            var writeType = typeof(Serializer).GetMethod(@"WriteType", BindingFlags.Static | BindingFlags.NonPublic, null, new[] { typeof(Serializer), typeof(Type) }, null);
-            var writeCount = typeof(Serializer).GetMethod(@"WriteCount", BindingFlags.Static | BindingFlags.NonPublic, null, new[] { typeof(Serializer), typeof(int) }, null);
+            var write = typeof(Serializer).GetMethod(@"Write", BindingFlags.Static | BindingFlags.NonPublic, null,
+                new[] {typeof(Serializer), typeof(Type), typeof(object), typeof(Func<object, object>)}, null);
+            var writeType = typeof(Serializer).GetMethod(@"WriteType", BindingFlags.Static | BindingFlags.NonPublic,
+                null, new[] {typeof(Serializer), typeof(Type)}, null);
+            var writeCount = typeof(Serializer).GetMethod(@"WriteCount", BindingFlags.Static | BindingFlags.NonPublic,
+                null, new[] {typeof(Serializer), typeof(int)}, null);
 
             var serializerParameter = Expression.Parameter(typeof(Serializer), @"serializer");
             var tupleParameter = Expression.Parameter(typeof(object), @"serializerParameter");
             var expressions = new List<Expression>
-                {
-                    Expression.Call(null, writeCount, serializerParameter, Expression.Constant(typeargs.Length))
-                };
+            {
+                Expression.Call(null, writeCount, serializerParameter, Expression.Constant(typeargs.Length))
+            };
 
             for (var i = 0; i < typeargs.Length; ++i)
             {
                 var propertyInfoItem = type.GetProperty(@"Item" + (i + 1).ToString(CultureInfo.InvariantCulture));
                 var itemGetter = DelegateFactory.CreateGetter(propertyInfoItem);
-                expressions.Add(Expression.Call(null, writeType, serializerParameter, Expression.Constant(typeargs[i])));
-                expressions.Add(Expression.Call(null, write, serializerParameter, Expression.Constant(typeargs[i]), tupleParameter, Expression.Constant(itemGetter)));
+                expressions.Add(Expression.Call(null, writeType, serializerParameter,
+                    Expression.Constant(typeargs[i])));
+                expressions.Add(Expression.Call(null, write, serializerParameter, Expression.Constant(typeargs[i]),
+                    tupleParameter, Expression.Constant(itemGetter)));
             }
 
             var block = Expression.Block(expressions);
@@ -1512,35 +1514,36 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Write a type value to the binary writer.
+        ///     Write a type value to the binary writer.
         /// </summary>
         /// <param name="bw">
-        /// The binary writer.
+        ///     The binary writer.
         /// </param>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
         /// <param name="writeTag">
-        /// If <c>true</c> the encoder writes the leading type tag, otherwise <c>false</c>.
+        ///     If <c>true</c> the encoder writes the leading type tag, otherwise <c>false</c>.
         /// </param>
         private void WriteType(BinaryWriter bw, object value, bool writeTag)
         {
-            Encoder.WriteType(bw, (Type)value, this.configuration, writeTag);
+            Encoder.WriteType(bw, (Type) value, this.configuration, writeTag);
         }
 
         /// <summary>
-        /// Writes a type schema.
+        ///     Writes a type schema.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <param name="inspector">
-        /// The inspector.
+        ///     The inspector.
         /// </param>
         /// <returns>
-        /// The type schema written.
+        ///     The type schema written.
         /// </returns>
-        private TypeSchema WriteTypeSchema(Type type, Inspector inspector) {
+        private TypeSchema WriteTypeSchema(Type type, Inspector inspector)
+        {
             /*TypeSchemaRef typeSchemaRef;
             if (this.typeSchemaRefDictionary.TryGetValue(type, out typeSchemaRef))
             {
@@ -1560,7 +1563,8 @@ namespace Hypertable.Persistence.Serialization
             int bucket;
             FastDictionary<Type, TypeSchemaRef>.Entry entry;
 
-            if (this.typeSchemaRefDictionary.TryGetValue(type, out bucket, out entry)) {
+            if (this.typeSchemaRefDictionary.TryGetValue(type, out bucket, out entry))
+            {
                 Encoder.WriteTag(this.binaryWriter, Tags.TypeSchemaRef);
                 Encoder.WriteCount(this.binaryWriter, entry.Value.Ref);
                 return entry.Value.TypeSchema;
@@ -1577,24 +1581,28 @@ namespace Hypertable.Persistence.Serialization
 
         #endregion
 
+        #region Nested Types
+
         /// <summary>
-        /// The type schema reference.
+        ///     The type schema reference.
         /// </summary>
         private struct TypeSchemaRef
         {
             #region Fields
 
             /// <summary>
-            /// The reference.
+            ///     The reference.
             /// </summary>
             public int Ref;
 
             /// <summary>
-            /// The type schema.
+            ///     The type schema.
             /// </summary>
             public TypeSchema TypeSchema;
 
             #endregion
         }
+
+        #endregion
     }
 }

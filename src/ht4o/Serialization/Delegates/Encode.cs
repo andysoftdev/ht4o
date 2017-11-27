@@ -18,21 +18,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Serialization.Delegates
 {
     using System.IO;
 
     /// <summary>
-    /// The encode delegate.
+    ///     The encode delegate.
     /// </summary>
     /// <param name="binaryWriter">
-    /// The binary writer.
+    ///     The binary writer.
     /// </param>
     /// <param name="any">
-    /// The object to encode.
+    ///     The object to encode.
     /// </param>
     /// <param name="writeTag">
-    /// If <c>true</c> the encoder writes the leading type tag, otherwise <c>false</c>.
+    ///     If <c>true</c> the encoder writes the leading type tag, otherwise <c>false</c>.
     /// </param>
     internal delegate void Encode(BinaryWriter binaryWriter, object any, bool writeTag);
 }

@@ -18,23 +18,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Collections
 {
     using System.Collections.Generic;
     using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// The default equality comparer.
+    ///     The default equality comparer.
     /// </summary>
     internal struct EqualityComparer<T> : IEqualityComparer<T>
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Equals(T x, T y) {
+        public bool Equals(T x, T y)
+        {
             return x.Equals(y);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int GetHashCode(T obj) {
+        public int GetHashCode(T obj)
+        {
             return obj.GetHashCode();
         }
     }

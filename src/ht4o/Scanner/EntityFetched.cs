@@ -18,15 +18,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Scanner
 {
-    using Hypertable;
-
     /// <summary>
-    /// The entity fetched delegate.
+    ///     The entity fetched delegate.
     /// </summary>
     /// <param name="fetchedCell">
-    /// The fetched cell.
+    ///     The fetched cell.
     /// </param>
     internal delegate void EntityFetched(ref FetchedCell fetchedCell);
 }

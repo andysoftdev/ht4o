@@ -18,44 +18,44 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Serialization
 {
     using System;
     using System.Reflection;
     using System.Runtime.Serialization;
     using System.Text.RegularExpressions;
-
     using Hypertable.Persistence.Reflection;
 
     /// <summary>
-    /// The binder.
+    ///     The binder.
     /// </summary>
     public class Binder : SerializationBinder
     {
         #region Static Fields
 
         /// <summary>
-        /// The culture.
+        ///     The culture.
         /// </summary>
         private static readonly Regex Culture = new Regex(@", Culture=\w+", RegexOptions.Compiled);
 
         /// <summary>
-        /// The public key token.
+        ///     The public key token.
         /// </summary>
         private static readonly Regex PublicKeyToken = new Regex(@", PublicKeyToken=\w+", RegexOptions.Compiled);
 
         /// <summary>
-        /// The version.
+        ///     The version.
         /// </summary>
         private static readonly Regex Version = new Regex(@", Version=\d+.\d+.\d+.\d+", RegexOptions.Compiled);
 
         /// <summary>
-        /// The remove assembly culture.
+        ///     The remove assembly culture.
         /// </summary>
         private static bool removeAssemblyCulture = true;
 
         /// <summary>
-        /// The remove assembly version.
+        ///     The remove assembly version.
         /// </summary>
         private static bool removeAssemblyVersion = true;
 
@@ -64,49 +64,38 @@ namespace Hypertable.Persistence.Serialization
         #region Public Properties
 
         /// <summary>
-        /// Gets or sets a value indicating whether the assembly culture should be removed from the qualified type name.
+        ///     Gets or sets a value indicating whether the assembly culture should be removed from the qualified type name.
         /// </summary>
         /// <value>
-        /// The strict explicit type codes.
+        ///     The strict explicit type codes.
         /// </value>
         public static bool RemoveAssemblyCulture
         {
-            get
-            {
-                return removeAssemblyCulture;
-            }
+            get { return removeAssemblyCulture; }
 
-            set
-            {
-                removeAssemblyCulture = value;
-            }
+            set { removeAssemblyCulture = value; }
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the assembly public key token should be removed from the qualified type name.
+        ///     Gets or sets a value indicating whether the assembly public key token should be removed from the qualified type
+        ///     name.
         /// </summary>
         /// <value>
-        /// The strict explicit type codes.
+        ///     The strict explicit type codes.
         /// </value>
         public static bool RemoveAssemblyPublicKeyToken { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the assembly version should be removed from the qualified type name.
+        ///     Gets or sets a value indicating whether the assembly version should be removed from the qualified type name.
         /// </summary>
         /// <value>
-        /// The strict explicit type codes.
+        ///     The strict explicit type codes.
         /// </value>
         public static bool RemoveAssemblyVersion
         {
-            get
-            {
-                return removeAssemblyVersion;
-            }
+            get { return removeAssemblyVersion; }
 
-            set
-            {
-                removeAssemblyVersion = value;
-            }
+            set { removeAssemblyVersion = value; }
         }
 
         #endregion
@@ -114,22 +103,22 @@ namespace Hypertable.Persistence.Serialization
         #region Public Methods and Operators
 
         /// <summary>
-        /// The bind to name.
+        ///     The bind to name.
         /// </summary>
         /// <param name="serializedType">
-        /// The serialized type.
+        ///     The serialized type.
         /// </param>
         /// <param name="assemblyName">
-        /// The assembly name.
+        ///     The assembly name.
         /// </param>
         /// <param name="typeName">
-        /// The type name.
+        ///     The type name.
         /// </param>
         public override void BindToName(Type serializedType, out string assemblyName, out string typeName)
         {
             if (serializedType == null)
             {
-                throw new ArgumentNullException("serializedType");
+                throw new ArgumentNullException(nameof(serializedType));
             }
 
             assemblyName = serializedType.Assembly.FullName;
@@ -167,16 +156,16 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// When overridden in a derived class, controls the binding of a serialized object to a type.
+        ///     When overridden in a derived class, controls the binding of a serialized object to a type.
         /// </summary>
         /// <returns>
-        /// The type of the object the formatter creates a new instance of.
+        ///     The type of the object the formatter creates a new instance of.
         /// </returns>
         /// <param name="assemblyName">
-        /// Specifies the <see cref="T:System.Reflection.Assembly"/> name of the serialized object. 
+        ///     Specifies the <see cref="T:System.Reflection.Assembly" /> name of the serialized object.
         /// </param>
         /// <param name="typeName">
-        /// Specifies the <see cref="T:System.Type"/> name of the serialized object. 
+        ///     Specifies the <see cref="T:System.Type" /> name of the serialized object.
         /// </param>
         public override Type BindToType(string assemblyName, string typeName)
         {

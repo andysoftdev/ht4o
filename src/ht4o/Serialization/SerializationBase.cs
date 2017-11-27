@@ -18,17 +18,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Serialization
 {
     /// <summary>
-    /// The serialization base.
+    ///     The serialization base.
     /// </summary>
     public class SerializationBase
     {
         #region Static Fields
 
         /// <summary>
-        /// The default capacity for the memory stream.
+        ///     The default capacity for the memory stream.
         /// </summary>
         private static int defaultCapacity = 1024;
 
@@ -37,7 +38,7 @@ namespace Hypertable.Persistence.Serialization
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SerializationBase"/> class.
+        ///     Initializes a new instance of the <see cref="SerializationBase" /> class.
         /// </summary>
         protected SerializationBase()
         {
@@ -48,17 +49,14 @@ namespace Hypertable.Persistence.Serialization
         #region Public Properties
 
         /// <summary>
-        /// Gets or sets the memory stream default capacity.
+        ///     Gets or sets the memory stream default capacity.
         /// </summary>
         /// <value>
-        /// The default capacity.
+        ///     The default capacity.
         /// </value>
         public static int DefaultCapacity
         {
-            get
-            {
-                return defaultCapacity;
-            }
+            get { return defaultCapacity; }
 
             set
             {

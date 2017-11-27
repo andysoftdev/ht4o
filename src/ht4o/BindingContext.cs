@@ -19,83 +19,85 @@
  * 02110-1301, USA.
  */
 
-using Hypertable.Persistence.Collections.Concurrent;
-
 namespace Hypertable.Persistence
 {
     using System;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
     using System.Text.RegularExpressions;
-
-    using Hypertable;
     using Hypertable.Persistence.Bindings;
-    using Hypertable.Persistence.Collections;
-    using Hypertable.Persistence.Extensions;
+    using Hypertable.Persistence.Collections.Concurrent;
     using Hypertable.Persistence.Reflection;
 
     /// <summary>
-    /// The binding context.
+    ///     The binding context.
     /// </summary>
     public class BindingContext
     {
-        #region Fields
+        #region Static Fields
 
         /// <summary>
-        /// The default regular expression for the id property.
+        ///     The default regular expression for the id property.
         /// </summary>
         private static readonly Regex DefaultIdPropertyName = new Regex("^([Ii]d$)|(<Id>.*)", RegexOptions.Compiled);
 
         /// <summary>
-        /// The default regular expression for the timestamp property.
+        ///     The default regular expression for the timestamp property.
         /// </summary>
-        private static readonly Regex DefaultTimestampPropertyName = new Regex("^([Ll]astModified$)|(<LastModified>.*)", RegexOptions.Compiled);
+        private static readonly Regex DefaultTimestampPropertyName =
+            new Regex("^([Ll]astModified$)|(<LastModified>.*)", RegexOptions.Compiled);
+
+        #endregion
+
+        #region Fields
 
         /// <summary>
-        /// The column bindings.
+        ///     The column bindings.
         /// </summary>
-        private readonly ConcurrentTypeDictionary<BindingSpec<IColumnBinding>> columnBindings = new ConcurrentTypeDictionary<BindingSpec<IColumnBinding>>();
+        private readonly ConcurrentTypeDictionary<BindingSpec<IColumnBinding>> columnBindings =
+            new ConcurrentTypeDictionary<BindingSpec<IColumnBinding>>();
 
         /// <summary>
-        /// The key bindings.
+        ///     The key bindings.
         /// </summary>
-        private readonly ConcurrentTypeDictionary<IKeyBinding> keyBindings = new ConcurrentTypeDictionary<IKeyBinding>();
+        private readonly ConcurrentTypeDictionary<IKeyBinding> keyBindings = new ConcurrentTypeDictionary<IKeyBinding>()
+            ;
 
         /// <summary>
-        /// The synchronization object.
-        /// </summary>
-        private readonly object syncRoot = new object();
-
-        /// <summary>
-        /// The table bindings.
-        /// </summary>
-        private readonly ConcurrentTypeDictionary<BindingSpec<ITableBinding>> tableBindings = new ConcurrentTypeDictionary<BindingSpec<ITableBinding>>();
-
-        /// <summary>
-        /// The preliminary entity references.
+        ///     The preliminary entity references.
         /// </summary>
         private readonly ConcurrentTypeDictionary<EntityReference> preliminaryEntityReferences;
 
         /// <summary>
-        /// The registered column bindings.
+        ///     The synchronization object.
         /// </summary>
-        private Lazy<ConcurrentTypeDictionary<IColumnBinding>> registeredColumnBindings;
+        private readonly object syncRoot = new object();
 
         /// <summary>
-        /// The registered column names.
+        ///     The table bindings.
         /// </summary>
-        private Lazy<IDictionary<string, ISet<string>>> registeredColumnNames;
-
-        /// <summary>
-        /// The registered table bindings.
-        /// </summary>
-        private Lazy<ConcurrentTypeDictionary<ITableBinding>> registeredTableBindings;
+        private readonly ConcurrentTypeDictionary<BindingSpec<ITableBinding>> tableBindings =
+            new ConcurrentTypeDictionary<BindingSpec<ITableBinding>>();
 
         private string defaultColumnFamily;
 
         private Regex idPropertyName;
+
+        /// <summary>
+        ///     The registered column bindings.
+        /// </summary>
+        private Lazy<ConcurrentTypeDictionary<IColumnBinding>> registeredColumnBindings;
+
+        /// <summary>
+        ///     The registered column names.
+        /// </summary>
+        private Lazy<IDictionary<string, ISet<string>>> registeredColumnNames;
+
+        /// <summary>
+        ///     The registered table bindings.
+        /// </summary>
+        private Lazy<ConcurrentTypeDictionary<ITableBinding>> registeredTableBindings;
 
         private bool strictExplicitColumnBinding;
 
@@ -114,7 +116,7 @@ namespace Hypertable.Persistence
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BindingContext"/> class.
+        ///     Initializes a new instance of the <see cref="BindingContext" /> class.
         /// </summary>
         public BindingContext()
         {
@@ -128,26 +130,30 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BindingContext"/> class.
+        ///     Initializes a new instance of the <see cref="BindingContext" /> class.
         /// </summary>
         /// <param name="bindingContext">
-        /// The binding context.
+        ///     The binding context.
         /// </param>
         /// <exception cref="ArgumentNullException">
-        /// The type of <paramref name="bindingContext"/> is null.
+        ///     The type of <paramref name="bindingContext" /> is null.
         /// </exception>
         public BindingContext(BindingContext bindingContext)
         {
             if (bindingContext == null)
             {
-                throw new ArgumentNullException("bindingContext");
+                throw new ArgumentNullException(nameof(bindingContext));
             }
 
             this.preliminaryEntityReferences = bindingContext.preliminaryEntityReferences;
 
             this.DefaultColumnFamily = bindingContext.DefaultColumnFamily;
-            this.IdPropertyName = bindingContext.IdPropertyName != null ? new Regex(bindingContext.IdPropertyName.ToString(), RegexOptions.Compiled) : null;
-            this.TimestampPropertyName = bindingContext.TimestampPropertyName != null ? new Regex(bindingContext.TimestampPropertyName.ToString(), RegexOptions.Compiled) : null;
+            this.IdPropertyName = bindingContext.IdPropertyName != null
+                ? new Regex(bindingContext.IdPropertyName.ToString(), RegexOptions.Compiled)
+                : null;
+            this.TimestampPropertyName = bindingContext.TimestampPropertyName != null
+                ? new Regex(bindingContext.TimestampPropertyName.ToString(), RegexOptions.Compiled)
+                : null;
 
             this.StrictExplicitColumnBinding = bindingContext.StrictExplicitColumnBinding;
             this.StrictExplicitTableBinding = bindingContext.StrictExplicitTableBinding;
@@ -155,7 +161,8 @@ namespace Hypertable.Persistence
             this.StrictStaticTableBinding = bindingContext.StrictStaticTableBinding;
             this.StrictStaticColumnBinding = bindingContext.StrictStaticColumnBinding;
 
-            this.columnBindings = new ConcurrentTypeDictionary<BindingSpec<IColumnBinding>>(bindingContext.columnBindings);
+            this.columnBindings =
+                new ConcurrentTypeDictionary<BindingSpec<IColumnBinding>>(bindingContext.columnBindings);
             this.keyBindings = new ConcurrentTypeDictionary<IKeyBinding>(bindingContext.keyBindings);
             this.tableBindings = new ConcurrentTypeDictionary<BindingSpec<ITableBinding>>(bindingContext.tableBindings);
 
@@ -167,17 +174,14 @@ namespace Hypertable.Persistence
         #region Public Properties
 
         /// <summary>
-        /// Gets or sets default column family.
+        ///     Gets or sets default column family.
         /// </summary>
         /// <value>
-        /// The default column family.
+        ///     The default column family.
         /// </value>
         public string DefaultColumnFamily
         {
-            get
-            {
-                return this.defaultColumnFamily;
-            }
+            get { return this.defaultColumnFamily; }
             set
             {
                 this.defaultColumnFamily = value;
@@ -186,17 +190,14 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets or sets identifier property name regular expression.
+        ///     Gets or sets identifier property name regular expression.
         /// </summary>
         /// <value>
-        /// The identifier property name.
+        ///     The identifier property name.
         /// </value>
         public Regex IdPropertyName
         {
-            get
-            {
-                return this.idPropertyName;
-            }
+            get { return this.idPropertyName; }
             set
             {
                 this.idPropertyName = value;
@@ -205,17 +206,14 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether strict explicit column binding has been enabled.
+        ///     Gets or sets a value indicating whether strict explicit column binding has been enabled.
         /// </summary>
         /// <value>
-        /// The strict explicit column binding.
+        ///     The strict explicit column binding.
         /// </value>
         public bool StrictExplicitColumnBinding
         {
-            get
-            {
-                return this.strictExplicitColumnBinding;
-            }
+            get { return this.strictExplicitColumnBinding; }
             set
             {
                 this.strictExplicitColumnBinding = value;
@@ -224,17 +222,14 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether strict explicit key binding has been enabled.
+        ///     Gets or sets a value indicating whether strict explicit key binding has been enabled.
         /// </summary>
         /// <value>
-        /// The strict explicit key binding.
+        ///     The strict explicit key binding.
         /// </value>
         public bool StrictExplicitKeyBinding
         {
-            get
-            {
-                return this.strictExplicitKeyBinding;
-            }
+            get { return this.strictExplicitKeyBinding; }
             set
             {
                 this.strictExplicitKeyBinding = value;
@@ -243,17 +238,14 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether strict explicit table binding has been enabled.
+        ///     Gets or sets a value indicating whether strict explicit table binding has been enabled.
         /// </summary>
         /// <value>
-        /// The strict explicit table binding.
+        ///     The strict explicit table binding.
         /// </value>
         public bool StrictExplicitTableBinding
         {
-            get
-            {
-                return this.strictExplicitTableBinding;
-            }
+            get { return this.strictExplicitTableBinding; }
             set
             {
                 this.strictExplicitTableBinding = value;
@@ -262,17 +254,14 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether strict static column binding has been enabled.
+        ///     Gets or sets a value indicating whether strict static column binding has been enabled.
         /// </summary>
         /// <value>
-        /// The strict static column binding.
+        ///     The strict static column binding.
         /// </value>
         public bool StrictStaticColumnBinding
         {
-            get
-            {
-                return this.strictStaticColumnBinding;
-            }
+            get { return this.strictStaticColumnBinding; }
             set
             {
                 this.strictStaticColumnBinding = value;
@@ -281,17 +270,14 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether strict static table binding has been enabled.
+        ///     Gets or sets a value indicating whether strict static table binding has been enabled.
         /// </summary>
         /// <value>
-        /// The strict static table binding.
+        ///     The strict static table binding.
         /// </value>
         public bool StrictStaticTableBinding
         {
-            get
-            {
-                return this.strictStaticTableBinding;
-            }
+            get { return this.strictStaticTableBinding; }
             set
             {
                 this.strictStaticTableBinding = value;
@@ -300,17 +286,14 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets or sets timestamp property name regular expression.
+        ///     Gets or sets timestamp property name regular expression.
         /// </summary>
         /// <value>
-        /// The timestamp property name.
+        ///     The timestamp property name.
         /// </value>
         public Regex TimestampPropertyName
         {
-            get
-            {
-                return this.timestampPropertyName;
-            }
+            get { return this.timestampPropertyName; }
             set
             {
                 this.timestampPropertyName = value;
@@ -323,90 +306,90 @@ namespace Hypertable.Persistence
         #region Public Methods and Operators
 
         /// <summary>
-        /// Determines whether the binding context contains a column binding for the specified type.
+        ///     Determines whether the binding context contains a column binding for the specified type.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the binding context contains a column binding for the specified type; otherwise, <c>false</c>.
+        ///     <c>true</c> if the binding context contains a column binding for the specified type; otherwise, <c>false</c>.
         /// </returns>
         public bool ContainsColumnBinding(Type type)
         {
             if (type == null)
             {
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
             }
 
             return this.columnBindings.ContainsKey(type);
         }
 
         /// <summary>
-        /// Determines whether the binding context contains a key binding for the specified type.
+        ///     Determines whether the binding context contains a key binding for the specified type.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the binding context contains a key binding for the specified type; otherwise, <c>false</c>.
+        ///     <c>true</c> if the binding context contains a key binding for the specified type; otherwise, <c>false</c>.
         /// </returns>
         public bool ContainsKeyBinding(Type type)
         {
             if (type == null)
             {
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
             }
 
             return this.keyBindings.ContainsKey(type);
         }
 
         /// <summary>
-        /// Determines whether the binding context contains a table binding for the specified type.
+        ///     Determines whether the binding context contains a table binding for the specified type.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the binding context contains a table binding for the specified type; otherwise, <c>false</c>.
+        ///     <c>true</c> if the binding context contains a table binding for the specified type; otherwise, <c>false</c>.
         /// </returns>
         public bool ContainsTableBinding(Type type)
         {
             if (type == null)
             {
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
             }
 
             return this.tableBindings.ContainsKey(type);
         }
 
         /// <summary>
-        /// Registers a column binding for the type specified.
+        ///     Registers a column binding for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <param name="columnBinding">
-        /// The column binding.
+        ///     The column binding.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the column binding has been added, <c>false</c> if an existing column binding has been replaced.
+        ///     <c>true</c> if the column binding has been added, <c>false</c> if an existing column binding has been replaced.
         /// </returns>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="type"/> is null.
+        ///     If <paramref name="type" /> is null.
         /// </exception>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="columnBinding"/> is null.
+        ///     If <paramref name="columnBinding" /> is null.
         /// </exception>
         public bool RegisterColumnBinding(Type type, IColumnBinding columnBinding)
         {
             if (type == null)
             {
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
             }
 
             if (columnBinding == null)
             {
-                throw new ArgumentNullException("columnBinding");
+                throw new ArgumentNullException(nameof(columnBinding));
             }
 
             lock (this.syncRoot)
@@ -419,39 +402,41 @@ namespace Hypertable.Persistence
                     this.RemovingColumnBinding(type, existingColumnBinding.Binding);
                 }
 
-                this.columnBindings.Remove(from kv in this.columnBindings where kv.Value.Derived && type.IsAssignableFrom(kv.Key) select kv.Key);
+                this.columnBindings.Remove(from kv in this.columnBindings
+                    where kv.Value.Derived && type.IsAssignableFrom(kv.Key)
+                    select kv.Key);
                 return this.columnBindings.AddOrUpdate(type, new BindingSpec<IColumnBinding>(columnBinding));
             }
         }
 
         /// <summary>
-        /// Registers a key binding for the type specified.
+        ///     Registers a key binding for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <param name="keyBinding">
-        /// The key binding.
+        ///     The key binding.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the key binding has been added, <c>false</c> if an existing key binding has been replaced.
+        ///     <c>true</c> if the key binding has been added, <c>false</c> if an existing key binding has been replaced.
         /// </returns>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="type"/> is null.
+        ///     If <paramref name="type" /> is null.
         /// </exception>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="keyBinding"/> is null.
+        ///     If <paramref name="keyBinding" /> is null.
         /// </exception>
         public bool RegisterKeyBinding(Type type, IKeyBinding keyBinding)
         {
             if (type == null)
             {
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
             }
 
             if (keyBinding == null)
             {
-                throw new ArgumentNullException("keyBinding");
+                throw new ArgumentNullException(nameof(keyBinding));
             }
 
             lock (this.syncRoot)
@@ -469,33 +454,33 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Registers a table binding for the type specified.
+        ///     Registers a table binding for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <param name="tableBinding">
-        /// The key binding.
+        ///     The key binding.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the table binding has been added, <c>false</c> if an existing table binding has been replaced.
+        ///     <c>true</c> if the table binding has been added, <c>false</c> if an existing table binding has been replaced.
         /// </returns>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="type"/> is null.
+        ///     If <paramref name="type" /> is null.
         /// </exception>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="tableBinding"/> is null.
+        ///     If <paramref name="tableBinding" /> is null.
         /// </exception>
         public bool RegisterTableBinding(Type type, ITableBinding tableBinding)
         {
             if (type == null)
             {
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
             }
 
             if (tableBinding == null)
             {
-                throw new ArgumentNullException("tableBinding");
+                throw new ArgumentNullException(nameof(tableBinding));
             }
 
             lock (this.syncRoot)
@@ -508,28 +493,31 @@ namespace Hypertable.Persistence
                     this.RemovingTableBinding(type, existingTableBinding.Binding);
                 }
 
-                this.tableBindings.Remove(from kv in this.tableBindings where kv.Value.Derived && type.IsAssignableFrom(kv.Key) select kv.Key);
+                this.tableBindings.Remove(from kv in this.tableBindings
+                    where kv.Value.Derived && type.IsAssignableFrom(kv.Key)
+                    select kv.Key);
                 return this.tableBindings.AddOrUpdate(type, new BindingSpec<ITableBinding>(tableBinding));
             }
         }
 
         /// <summary>
-        /// Gets the column binding associated with the specified type.
+        ///     Gets the column binding associated with the specified type.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <param name="columnBinding">
-        /// When this method returns, contains the column binding associated with the specified type, if the type is found; otherwise null.
+        ///     When this method returns, contains the column binding associated with the specified type, if the type is found;
+        ///     otherwise null.
         /// </param>
         /// <returns>
-        /// <c>true</c> if a column binding exists for the type specified; otherwise, <c>false</c>.
+        ///     <c>true</c> if a column binding exists for the type specified; otherwise, <c>false</c>.
         /// </returns>
         public bool TryGetColumnBinding(Type type, out IColumnBinding columnBinding)
         {
             if (type == null)
             {
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
             }
 
             lock (this.syncRoot)
@@ -541,22 +529,23 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets the key binding associated with the specified type.
+        ///     Gets the key binding associated with the specified type.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <param name="keyBinding">
-        /// When this method returns, contains the key binding associated with the specified type, if the type is found; otherwise null.
+        ///     When this method returns, contains the key binding associated with the specified type, if the type is found;
+        ///     otherwise null.
         /// </param>
         /// <returns>
-        /// <c>true</c> if a key binding exists for the type specified; otherwise, <c>false</c>.
+        ///     <c>true</c> if a key binding exists for the type specified; otherwise, <c>false</c>.
         /// </returns>
         public bool TryGetKeyBinding(Type type, out IKeyBinding keyBinding)
         {
             if (type == null)
             {
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
             }
 
             lock (this.syncRoot)
@@ -569,22 +558,23 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets the table binding associated with the specified type.
+        ///     Gets the table binding associated with the specified type.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <param name="tableBinding">
-        /// When this method returns, contains the table binding associated with the specified type, if the type is found; otherwise null.
+        ///     When this method returns, contains the table binding associated with the specified type, if the type is found;
+        ///     otherwise null.
         /// </param>
         /// <returns>
-        /// <c>true</c> if a table binding exists for the type specified; otherwise, <c>false</c>.
+        ///     <c>true</c> if a table binding exists for the type specified; otherwise, <c>false</c>.
         /// </returns>
         public bool TryGetTableBinding(Type type, out ITableBinding tableBinding)
         {
             if (type == null)
             {
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
             }
 
             lock (this.syncRoot)
@@ -596,10 +586,10 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Unregister any registered bindings for the type specified.
+        ///     Unregister any registered bindings for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         public void UnregisterBinding(Type type)
         {
@@ -609,22 +599,22 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Unregister the column binding for the type specified.
+        ///     Unregister the column binding for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <returns>
-        /// <c>true</c> if an existing binding has been removed, otherwise <c>false</c>.
+        ///     <c>true</c> if an existing binding has been removed, otherwise <c>false</c>.
         /// </returns>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="type"/> is null.
+        ///     If <paramref name="type" /> is null.
         /// </exception>
         public bool UnregisterColumnBinding(Type type)
         {
             if (type == null)
             {
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
             }
 
             lock (this.syncRoot)
@@ -637,28 +627,30 @@ namespace Hypertable.Persistence
                     this.RemovingColumnBinding(type, columnBinding.Binding);
                 }
 
-                this.columnBindings.Remove(from kv in this.columnBindings where kv.Value.Derived && type.IsAssignableFrom(kv.Key) select kv.Key);
+                this.columnBindings.Remove(from kv in this.columnBindings
+                    where kv.Value.Derived && type.IsAssignableFrom(kv.Key)
+                    select kv.Key);
                 return this.columnBindings.Remove(type);
             }
         }
 
         /// <summary>
-        /// Unregister the key binding for the type specified.
+        ///     Unregister the key binding for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <returns>
-        /// <c>true</c> if an existing binding has been removed, otherwise <c>false</c>.
+        ///     <c>true</c> if an existing binding has been removed, otherwise <c>false</c>.
         /// </returns>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="type"/> is null.
+        ///     If <paramref name="type" /> is null.
         /// </exception>
         public bool UnregisterKeyBinding(Type type)
         {
             if (type == null)
             {
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
             }
 
             lock (this.syncRoot)
@@ -676,22 +668,22 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Unregister the table binding for the type specified.
+        ///     Unregister the table binding for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <returns>
-        /// <c>true</c> if an existing binding has been removed, otherwise <c>false</c>.
+        ///     <c>true</c> if an existing binding has been removed, otherwise <c>false</c>.
         /// </returns>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="type"/> is null.
+        ///     If <paramref name="type" /> is null.
         /// </exception>
         public bool UnregisterTableBinding(Type type)
         {
             if (type == null)
             {
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
             }
 
             lock (this.syncRoot)
@@ -704,7 +696,9 @@ namespace Hypertable.Persistence
                     this.RemovingTableBinding(type, tableBinding.Binding);
                 }
 
-                this.tableBindings.Remove(from kv in this.tableBindings where kv.Value.Derived && type.IsAssignableFrom(kv.Key) select kv.Key);
+                this.tableBindings.Remove(from kv in this.tableBindings
+                    where kv.Value.Derived && type.IsAssignableFrom(kv.Key)
+                    select kv.Key);
                 return this.tableBindings.Remove(type);
             }
         }
@@ -714,13 +708,13 @@ namespace Hypertable.Persistence
         #region Methods
 
         /// <summary>
-        /// Creates an entity reference for the inspector specified.
+        ///     Creates an entity reference for the inspector specified.
         /// </summary>
         /// <param name="inspector">
-        /// The inspector.
+        ///     The inspector.
         /// </param>
         /// <returns>
-        /// The newly created entity reference.
+        ///     The newly created entity reference.
         /// </returns>
         internal EntityReference CreateEntityReference(Inspector inspector)
         {
@@ -815,13 +809,13 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Creates an entity reference for the type specified.
+        ///     Creates an entity reference for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <returns>
-        /// The newly created entity reference.
+        ///     The newly created entity reference.
         /// </returns>
         internal EntityReference CreateEntityReference(Type type)
         {
@@ -839,7 +833,8 @@ namespace Hypertable.Persistence
             var entityReference = this.CreateEntityReference(inspector);
             if (entityReference == null && type.IsInterface)
             {
-                type = TypeFinder.GetCommonBaseType(this.CommonBaseTypeCandidatesForType(type).Where(t => t != null && t != typeof(object)).Distinct());
+                type = TypeFinder.GetCommonBaseType(this.CommonBaseTypeCandidatesForType(type)
+                    .Where(t => t != null && t != typeof(object)).Distinct());
                 return this.CreateEntityReference(type);
             }
 
@@ -847,50 +842,52 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets the common base type candidates for a given type.
+        ///     Gets the common base type candidates for a given type.
         /// </summary>
         /// <param name="type">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <returns>
-        /// The common base type candidates.
+        ///     The common base type candidates.
         /// </returns>
         protected virtual IEnumerable<Type> CommonBaseTypeCandidatesForType(Type type)
         {
             return new[]
             {
-                TypeFinder.GetCommonBaseType(this.keyBindings.Keys.Where(type.IsAssignableFrom)), 
+                TypeFinder.GetCommonBaseType(this.keyBindings.Keys.Where(type.IsAssignableFrom)),
                 TypeFinder.GetCommonBaseType(this.tableBindings.Keys.Where(type.IsAssignableFrom)),
                 TypeFinder.GetCommonBaseType(this.columnBindings.Keys.Where(type.IsAssignableFrom))
             };
         }
 
         /// <summary>
-        /// The distinct column bindings for the type specified.
+        ///     The distinct column bindings for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <returns>
-        /// Distinct column bindings.
+        ///     Distinct column bindings.
         /// </returns>
         protected virtual IEnumerable<IColumnBinding> DistinctColumnBindingsForType(Type type)
         {
-            return this.RegisteredColumnBindings().Where(kv => type.IsAssignableFrom(kv.Key)).Select(kv => kv.Value).Distinct(new ColumnBindingComparer());
+            return this.RegisteredColumnBindings().Where(kv => type.IsAssignableFrom(kv.Key)).Select(kv => kv.Value)
+                .Distinct(new ColumnBindingComparer());
         }
 
         /// <summary>
-        /// The distinct table bindings for the type specified.
+        ///     The distinct table bindings for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <returns>
-        /// Distinct table bindings.
+        ///     Distinct table bindings.
         /// </returns>
         protected virtual IEnumerable<ITableBinding> DistinctTableBindingsForType(Type type)
         {
-            var types = this.RegisteredColumnBindings().Where(kv => type.IsAssignableFrom(kv.Key)).Select(kv => kv.Key).ToArray();
+            var types = this.RegisteredColumnBindings().Where(kv => type.IsAssignableFrom(kv.Key)).Select(kv => kv.Key)
+                .ToArray();
             var bindings = this.RegisteredTableBindings();
             var distinctTableBindings = new HashSet<ITableBinding>(new TableBindingComparer());
             foreach (var t in types)
@@ -906,10 +903,10 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets all the registered column bindings.
+        ///     Gets all the registered column bindings.
         /// </summary>
         /// <returns>
-        /// All the registered column bindings.
+        ///     All the registered column bindings.
         /// </returns>
         protected IDictionary<Type, IColumnBinding> RegisteredColumnBindings()
         {
@@ -917,10 +914,10 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets all the registered column names.
+        ///     Gets all the registered column names.
         /// </summary>
         /// <returns>
-        /// All the registered column names, structured by column family and column qualifier.
+        ///     All the registered column names, structured by column family and column qualifier.
         /// </returns>
         protected IDictionary<string, ISet<string>> RegisteredColumnNames()
         {
@@ -928,10 +925,10 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets all the registered table bindings.
+        ///     Gets all the registered table bindings.
         /// </summary>
         /// <returns>
-        /// All the registered table bindings.
+        ///     All the registered table bindings.
         /// </returns>
         protected IDictionary<Type, ITableBinding> RegisteredTableBindings()
         {
@@ -939,55 +936,55 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// The removing column binding callback.
+        ///     The removing column binding callback.
         /// </summary>
         /// <param name="type">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <param name="columnBinding">
-        /// The column binding.
+        ///     The column binding.
         /// </param>
         protected virtual void RemovingColumnBinding(Type type, IColumnBinding columnBinding)
         {
         }
 
         /// <summary>
-        /// The removing key binding callback.
+        ///     The removing key binding callback.
         /// </summary>
         /// <param name="type">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <param name="keyBinding">
-        /// The key binding.
+        ///     The key binding.
         /// </param>
         protected virtual void RemovingKeyBinding(Type type, IKeyBinding keyBinding)
         {
         }
 
         /// <summary>
-        /// The removing table binding callback.
+        ///     The removing table binding callback.
         /// </summary>
         /// <param name="type">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <param name="tableBinding">
-        /// The table binding.
+        ///     The table binding.
         /// </param>
         protected virtual void RemovingTableBinding(Type type, ITableBinding tableBinding)
         {
         }
 
         /// <summary>
-        /// Gets the key binding for the inspected property specified.
+        ///     Gets the key binding for the inspected property specified.
         /// </summary>
         /// <param name="property">
-        /// The inspected property.
+        ///     The inspected property.
         /// </param>
         /// <param name="columnBinding">
-        /// The column binding.
+        ///     The column binding.
         /// </param>
         /// <returns>
-        /// The key binding.
+        ///     The key binding.
         /// </returns>
         private static IKeyBinding GetKeyBindingForProperty(InspectedProperty property, IColumnBinding columnBinding)
         {
@@ -1006,17 +1003,18 @@ namespace Hypertable.Persistence
                 return new GuidPropertyKeyBinding(property, columnBinding);
             }
 
-            throw new PersistenceException(String.Format(CultureInfo.InvariantCulture, @"Unsupported id property type {0}", property.PropertyType));
+            throw new PersistenceException(String.Format(CultureInfo.InvariantCulture,
+                @"Unsupported id property type {0}", property.PropertyType));
         }
 
         /// <summary>
-        /// Gets the column binding for the type specified.
+        ///     Gets the column binding for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <returns>
-        /// The column binding.
+        ///     The column binding.
         /// </returns>
         private IColumnBinding GetColumnBindingForType(Type type)
         {
@@ -1056,16 +1054,16 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets the key binding for the type specified.
+        ///     Gets the key binding for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <param name="columnBinding">
-        /// The column binding.
+        ///     The column binding.
         /// </param>
         /// <returns>
-        /// The kay binding.
+        ///     The kay binding.
         /// </returns>
         private IKeyBinding GetKeyBindingForType(Type type, IColumnBinding columnBinding)
         {
@@ -1080,13 +1078,13 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets the table binding for the type specified.
+        ///     Gets the table binding for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <returns>
-        /// The column binding.
+        ///     The column binding.
         /// </returns>
         private ITableBinding GetTableBindingForType(Type type)
         {
@@ -1126,7 +1124,7 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Refresh all lazy initializations.
+        ///     Refresh all lazy initializations.
         /// </summary>
         private void Refresh()
         {
@@ -1152,10 +1150,12 @@ namespace Hypertable.Persistence
                     this.registeredColumnNames = new Lazy<IDictionary<string, ISet<string>>>(
                         () =>
                         {
-                            var columnNames = new ConcurrentDictionary<string, ISet<string>>();
+                            var columnNames =
+                                new System.Collections.Concurrent.ConcurrentDictionary<string, ISet<string>>();
                             foreach (var binding in this.RegisteredColumnBindings().Values)
                             {
-                                var columnQualifiers = columnNames.GetOrAdd(binding.ColumnFamily, _ => new ConcurrentSet<string>());
+                                var columnQualifiers = columnNames.GetOrAdd(binding.ColumnFamily,
+                                    _ => new ConcurrentSet<string>());
                                 if (binding.ColumnQualifier != null)
                                 {
                                     columnQualifiers.Add(binding.ColumnQualifier);
@@ -1187,11 +1187,13 @@ namespace Hypertable.Persistence
 
         #endregion
 
+        #region Nested Types
+
         /// <summary>
-        /// The binding specification.
+        ///     The binding specification.
         /// </summary>
         /// <typeparam name="T">
-        /// The binding type.
+        ///     The binding type.
         /// </typeparam>
         private struct BindingSpec<T>
             where T : class
@@ -1199,12 +1201,12 @@ namespace Hypertable.Persistence
             #region Fields
 
             /// <summary>
-            /// The binding.
+            ///     The binding.
             /// </summary>
             public readonly T Binding;
 
             /// <summary>
-            /// Indicating whether this binding has been derived.
+            ///     Indicating whether this binding has been derived.
             /// </summary>
             public readonly bool Derived;
 
@@ -1213,13 +1215,13 @@ namespace Hypertable.Persistence
             #region Constructors and Destructors
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="BindingSpec{T}"/> struct.
+            ///     Initializes a new instance of the <see cref="BindingSpec{T}" /> struct.
             /// </summary>
             /// <param name="binding">
-            /// The binding.
+            ///     The binding.
             /// </param>
             /// <param name="derived">
-            /// Indicating whether the binding has been derived.
+            ///     Indicating whether the binding has been derived.
             /// </param>
             public BindingSpec(T binding, bool derived = false)
             {
@@ -1232,10 +1234,10 @@ namespace Hypertable.Persistence
             #region Public Methods and Operators
 
             /// <summary>
-            /// Creates a new derived binding.
+            ///     Creates a new derived binding.
             /// </summary>
             /// <returns>
-            /// The new derived binding.
+            ///     The new derived binding.
             /// </returns>
             public BindingSpec<T> Derive()
             {
@@ -1244,5 +1246,7 @@ namespace Hypertable.Persistence
 
             #endregion
         }
+
+        #endregion
     }
 }

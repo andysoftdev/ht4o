@@ -18,16 +18,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Serialization.Delegates
 {
     /// <summary>
-    /// The deserialize delegate.
+    ///     The deserialize delegate.
     /// </summary>
     /// <param name="deserializer">
-    /// The deserializer.
+    ///     The deserializer.
     /// </param>
     /// <returns>
-    /// The deserialized object.
+    ///     The deserialized object.
     /// </returns>
     public delegate object Deserialize(Deserializer deserializer);
 }

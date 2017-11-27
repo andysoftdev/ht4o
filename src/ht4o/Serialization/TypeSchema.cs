@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Serialization
 {
     using System;
@@ -26,57 +27,60 @@ namespace Hypertable.Persistence.Serialization
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
-
     using Hypertable.Persistence.Reflection;
 
     /// <summary>
-    /// The type schema.
+    ///     The type schema.
     /// </summary>
     internal sealed class TypeSchema
     {
-        #region Fields
+        #region Constants
 
         public const byte Version = 0;
 
+        #endregion
+
+        #region Fields
+
         /// <summary>
-        /// The type schema properties.
+        ///     The serialized schema.
+        /// </summary>
+        private readonly Lazy<byte[]> serializedSchema;
+
+        /// <summary>
+        ///     The type schema properties.
         /// </summary>
         private readonly TypeSchemaProperty[] typeSchemaProperties;
 
         /// <summary>
-        /// The write object action.
+        ///     The write object action.
         /// </summary>
         private readonly Action<Serializer, object> writeObject;
-
-        /// <summary>
-        /// The serialized schema.
-        /// </summary>
-        private readonly Lazy<byte[]> serializedSchema;
 
         #endregion
 
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TypeSchema"/> class.
+        ///     Initializes a new instance of the <see cref="TypeSchema" /> class.
         /// </summary>
         /// <param name="typeSchemaProperties">
-        /// The type schema properties.
+        ///     The type schema properties.
         /// </param>
         internal TypeSchema(TypeSchemaProperty[] typeSchemaProperties)
         {
             this.typeSchemaProperties = typeSchemaProperties;
-            this.serializedSchema = new Lazy<byte[]>(() => this.GetSerializedSchema());
+            this.serializedSchema = new Lazy<byte[]>(this.GetSerializedSchema);
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TypeSchema"/> class.
+        ///     Initializes a new instance of the <see cref="TypeSchema" /> class.
         /// </summary>
         /// <param name="inspector">
-        /// The inspector.
+        ///     The inspector.
         /// </param>
         /// <param name="handlePropertyIgnore">
-        /// The handle property ignore.
+        ///     The handle property ignore.
         /// </param>
         internal TypeSchema(Inspector inspector, bool handlePropertyIgnore)
         {
@@ -92,7 +96,7 @@ namespace Hypertable.Persistence.Serialization
 
             this.typeSchemaProperties = properties.ToArray();
             this.writeObject = TypeSchema.CompileWriteObjectDelegate(this.typeSchemaProperties);
-            this.serializedSchema = new Lazy<byte[]>(() => this.GetSerializedSchema());
+            this.serializedSchema = new Lazy<byte[]>(this.GetSerializedSchema);
         }
 
         #endregion
@@ -100,67 +104,94 @@ namespace Hypertable.Persistence.Serialization
         #region Properties
 
         /// <summary>
-        /// Gets the type schema properties.
+        ///     Gets the type schema properties.
         /// </summary>
         /// <value>
-        /// The type schema properties.
+        ///     The type schema properties.
         /// </value>
-        internal TypeSchemaProperty[] Properties
-        {
-            get
-            {
-                return this.typeSchemaProperties;
-            }
-        }
+        internal TypeSchemaProperty[] Properties => this.typeSchemaProperties;
 
         /// <summary>
-        /// Gets the write object action.
+        ///     Gets the serialized schema.
         /// </summary>
         /// <value>
-        /// The write object action.
+        ///     The serialized schema.
         /// </value>
-        internal Action<Serializer, object> WriteObject
-        {
-            get
-            {
-                return this.writeObject;
-            }
-        }
+        internal byte[] SerializedSchema => this.serializedSchema.Value;
 
         /// <summary>
-        /// Gets the serialized schema.
+        ///     Gets the write object action.
         /// </summary>
         /// <value>
-        /// The serialized schema.
+        ///     The write object action.
         /// </value>
-        internal byte[] SerializedSchema
-        {
-            get
-            {
-                return this.serializedSchema.Value;
-            }
-        }
+        internal Action<Serializer, object> WriteObject => this.writeObject;
 
         #endregion
 
         #region Methods
 
         /// <summary>
-        /// Encodes the specified property.
+        ///     Compiles the write object delegate.
+        /// </summary>
+        /// <param name="typeSchemaProperties">
+        ///     The type schema properties.
+        /// </param>
+        /// <returns>
+        ///     The write object action.
+        /// </returns>
+        private static Action<Serializer, object> CompileWriteObjectDelegate(
+            ICollection<TypeSchemaProperty> typeSchemaProperties)
+        {
+            if (typeSchemaProperties.Count > 0)
+            {
+                var serializer = Expression.Parameter(typeof(Serializer), @"serializer");
+                var any = Expression.Parameter(typeof(object), @"any");
+
+                var writeProperty =
+                    typeof(TypeSchema).GetMethod(@"WriteProperty", BindingFlags.Static | BindingFlags.NonPublic);
+                var encodeProperty =
+                    typeof(TypeSchema).GetMethod(@"EncodeProperty", BindingFlags.Static | BindingFlags.NonPublic);
+
+                var expressions = new List<Expression>(typeSchemaProperties.Count);
+                expressions.AddRange(
+                    typeSchemaProperties.Select(
+                        typeSchemaProperty =>
+                            typeSchemaProperty.EncoderInfo == null
+                                ? Expression.Call(null, writeProperty, serializer,
+                                    Expression.Constant(typeSchemaProperty.InspectedProperty), any)
+                                : Expression.Call(
+                                    null,
+                                    encodeProperty,
+                                    serializer,
+                                    Expression.Constant(typeSchemaProperty.InspectedProperty),
+                                    Expression.Constant(typeSchemaProperty.EncoderInfo),
+                                    any)));
+
+                var block = Expression.Block(expressions);
+                return Expression.Lambda<Action<Serializer, object>>(block, serializer, any).Compile();
+            }
+
+            return (serializer, o) => { };
+        }
+
+        /// <summary>
+        ///     Encodes the specified property.
         /// </summary>
         /// <param name="serializer">
-        /// The serializer.
+        ///     The serializer.
         /// </param>
         /// <param name="inspectedProperty">
-        /// The inspected property.
+        ///     The inspected property.
         /// </param>
         /// <param name="encoderInfo">
-        /// The encoder info.
+        ///     The encoder info.
         /// </param>
         /// <param name="any">
-        /// The object to which the property belongs.
+        ///     The object to which the property belongs.
         /// </param>
-        private static void EncodeProperty(Serializer serializer, InspectedProperty inspectedProperty, EncoderInfo encoderInfo, object any)
+        private static void EncodeProperty(Serializer serializer, InspectedProperty inspectedProperty,
+            EncoderInfo encoderInfo, object any)
         {
             var value = inspectedProperty.Getter(any);
             if (value == null)
@@ -174,16 +205,16 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Writes the specified property.
+        ///     Writes the specified property.
         /// </summary>
         /// <param name="serializer">
-        /// The serializer.
+        ///     The serializer.
         /// </param>
         /// <param name="inspectedProperty">
-        /// The inspected property.
+        ///     The inspected property.
         /// </param>
         /// <param name="any">
-        /// The object to which the property belongs.
+        ///     The object to which the property belongs.
         /// </param>
         private static void WriteProperty(Serializer serializer, InspectedProperty inspectedProperty, object any)
         {
@@ -199,47 +230,7 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Compiles the write object delegate.
-        /// </summary>
-        /// <param name="typeSchemaProperties">
-        /// The type schema properties.
-        /// </param>
-        /// <returns>
-        /// The write object action.
-        /// </returns>
-        private static Action<Serializer, object> CompileWriteObjectDelegate(ICollection<TypeSchemaProperty> typeSchemaProperties)
-        {
-            if (typeSchemaProperties.Count > 0)
-            {
-                var serializer = Expression.Parameter(typeof(Serializer), @"serializer");
-                var any = Expression.Parameter(typeof(object), @"any");
-
-                var writeProperty = typeof(TypeSchema).GetMethod(@"WriteProperty", BindingFlags.Static | BindingFlags.NonPublic);
-                var encodeProperty = typeof(TypeSchema).GetMethod(@"EncodeProperty", BindingFlags.Static | BindingFlags.NonPublic);
-
-                var expressions = new List<Expression>(typeSchemaProperties.Count);
-                expressions.AddRange(
-                    typeSchemaProperties.Select(
-                        typeSchemaProperty =>
-                        typeSchemaProperty.EncoderInfo == null
-                            ? Expression.Call(null, writeProperty, serializer, Expression.Constant(typeSchemaProperty.InspectedProperty), any)
-                            : Expression.Call(
-                                null, 
-                                encodeProperty, 
-                                serializer, 
-                                Expression.Constant(typeSchemaProperty.InspectedProperty), 
-                                Expression.Constant(typeSchemaProperty.EncoderInfo), 
-                                any)));
-
-                var block = Expression.Block(expressions);
-                return Expression.Lambda<Action<Serializer, object>>(block, serializer, any).Compile();
-            }
-
-            return (serializer, o) => { };
-        }
-
-        /// <summary>
-        /// Gets the serializeds schema.
+        ///     Gets the serializeds schema.
         /// </summary>
         private byte[] GetSerializedSchema()
         {

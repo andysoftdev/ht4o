@@ -18,14 +18,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Scanner.TableScan
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-
-    using Hypertable;
     using Hypertable.Persistence.Collections;
     using Hypertable.Persistence.Collections.Concurrent;
 
@@ -33,25 +32,25 @@ namespace Hypertable.Persistence.Scanner.TableScan
     //// scan hints, track recent row count? Check if switch ScanAndFilter off....
 
     /// <summary>
-    /// The table scan and filter.
+    ///     The table scan and filter.
     /// </summary>
     internal abstract class TableScanAndFilterBase : ITableScan
     {
         #region Public Properties
 
         /// <summary>
-        /// Gets the entity scan targets.
+        ///     Gets the entity scan targets.
         /// </summary>
         /// <value>
-        /// The entity scan targets.
+        ///     The entity scan targets.
         /// </value>
         public abstract IEnumerable<EntityScanTarget> EntityScanTargets { get; }
 
         /// <summary>
-        /// Gets a value indicating whether is empty.
+        ///     Gets a value indicating whether is empty.
         /// </summary>
         /// <value>
-        /// The is empty.
+        ///     The is empty.
         /// </value>
         public abstract bool? IsEmpty { get; }
 
@@ -60,17 +59,17 @@ namespace Hypertable.Persistence.Scanner.TableScan
         #region Public Methods and Operators
 
         /// <summary>
-        /// Adds an entity specification to the scan.
+        ///     Adds an entity specification to the scan.
         /// </summary>
         /// <param name="entitySpec">
-        /// The entity specification to add.
+        ///     The entity specification to add.
         /// </param>
         public void Add(EntitySpec entitySpec)
         {
             var entityScanTarget = entitySpec as EntityScanTarget;
             if (entityScanTarget == null)
             {
-                throw new ArgumentException(@"EntitySpec of type EntityScanTarget expected", "entitySpec");
+                throw new ArgumentException(@"EntitySpec of type EntityScanTarget expected", nameof(entitySpec));
             }
 
             EntityScanTarget entityScanTargetExisting;
@@ -81,14 +80,14 @@ namespace Hypertable.Persistence.Scanner.TableScan
         }
 
         /// <summary>
-        /// Creates the scan specification.
+        ///     Creates the scan specification.
         /// </summary>
         /// <returns>
-        /// The scan spec.
+        ///     The scan spec.
         /// </returns>
         public ScanSpec CreateScanSpec()
         {
-            var scanSpec = new ScanSpec { MaxVersions = 1, ScanAndFilter = true };
+            var scanSpec = new ScanSpec {MaxVersions = 1, ScanAndFilter = true};
             foreach (var entityScanTarget in this.EntityScanTargets)
             {
                 var key = entityScanTarget.Key;
@@ -115,16 +114,16 @@ namespace Hypertable.Persistence.Scanner.TableScan
         }
 
         /// <summary>
-        /// Try remove a scan target for the entity key specified.
+        ///     Try remove a scan target for the entity key specified.
         /// </summary>
         /// <param name="key">
-        /// The entity key.
+        ///     The entity key.
         /// </param>
         /// <param name="entityScanTarget">
-        /// The entity scan target.
+        ///     The entity scan target.
         /// </param>
         /// <returns>
-        /// <c>true</c> if a scan target as been found for the entity key specified, otherwise <c>false</c>.
+        ///     <c>true</c> if a scan target as been found for the entity key specified, otherwise <c>false</c>.
         /// </returns>
         public abstract bool TryRemoveScanTarget(Key key, out EntityScanTarget entityScanTarget);
 
@@ -133,62 +132,59 @@ namespace Hypertable.Persistence.Scanner.TableScan
         #region Methods
 
         /// <summary>
-        /// Gets or adds an entity scan target.
+        ///     Gets or adds an entity scan target.
         /// </summary>
         /// <param name="entityScanTarget">
-        /// The entity scan target.
+        ///     The entity scan target.
         /// </param>
         /// <param name="entityScanTargetExisting">
-        /// The existing entity scan target.
+        ///     The existing entity scan target.
         /// </param>
         /// <returns>
-        /// <c>true</c> if a scan target has been added, otherwise <c>false</c>.
+        ///     <c>true</c> if a scan target has been added, otherwise <c>false</c>.
         /// </returns>
-        protected abstract bool GetOrAdd(EntityScanTarget entityScanTarget, out EntityScanTarget entityScanTargetExisting);
+        protected abstract bool GetOrAdd(EntityScanTarget entityScanTarget,
+            out EntityScanTarget entityScanTargetExisting);
 
         #endregion
     }
 
     /// <summary>
-    /// The table scan and filter.
+    ///     The table scan and filter.
     /// </summary>
     internal sealed class TableScanAndFilter : TableScanAndFilterBase
     {
         #region Fields
 
         /// <summary>
-        /// The entity keys.
+        ///     The entity keys.
         /// </summary>
-        private readonly FastDictionary<Key, EntityScanTarget, KeyComparer> keys = new FastDictionary<Key, EntityScanTarget, KeyComparer>(256);
+        private readonly FastDictionary<Key, EntityScanTarget, KeyComparer> keys =
+            new FastDictionary<Key, EntityScanTarget, KeyComparer>(256);
 
         /// <summary>
-        /// The unqualified entity keys.
+        ///     The unqualified entity keys.
         /// </summary>
-        private readonly FastDictionary<Key, EntityScanTarget, RowComparer> unqualifiedKeys = new FastDictionary<Key, EntityScanTarget, RowComparer>(256);
+        private readonly FastDictionary<Key, EntityScanTarget, RowComparer> unqualifiedKeys =
+            new FastDictionary<Key, EntityScanTarget, RowComparer>(256);
 
         #endregion
 
         #region Public Properties
 
         /// <summary>
-        /// Gets the entity scan targets.
+        ///     Gets the entity scan targets.
         /// </summary>
         /// <value>
-        /// The entity scan targets.
+        ///     The entity scan targets.
         /// </value>
-        public override IEnumerable<EntityScanTarget> EntityScanTargets
-        {
-            get
-            {
-                return this.keys.Values.Concat(this.unqualifiedKeys.Values);
-            }
-        }
+        public override IEnumerable<EntityScanTarget> EntityScanTargets => this.keys.Values.Concat(this.unqualifiedKeys.Values);
 
         /// <summary>
-        /// Gets a value indicating whether there is something to scan or not.
+        ///     Gets a value indicating whether there is something to scan or not.
         /// </summary>
         /// <value>
-        /// <c>true</c> if there is something to scan, otherwise <c>false</c>.
+        ///     <c>true</c> if there is something to scan, otherwise <c>false</c>.
         /// </value>
         public override bool? IsEmpty
         {
@@ -208,16 +204,16 @@ namespace Hypertable.Persistence.Scanner.TableScan
         #region Public Methods and Operators
 
         /// <summary>
-        /// Try get a scan target for the entity key specified.
+        ///     Try get a scan target for the entity key specified.
         /// </summary>
         /// <param name="key">
-        /// The entity key.
+        ///     The entity key.
         /// </param>
         /// <param name="entityScanTarget">
-        /// The entity scan target.
+        ///     The entity scan target.
         /// </param>
         /// <returns>
-        /// <c>true</c> if a scan target as been found for the entity key specified, otherwise <c>false</c>.
+        ///     <c>true</c> if a scan target as been found for the entity key specified, otherwise <c>false</c>.
         /// </returns>
         public override bool TryRemoveScanTarget(Key key, out EntityScanTarget entityScanTarget)
         {
@@ -234,39 +230,46 @@ namespace Hypertable.Persistence.Scanner.TableScan
         #region Methods
 
         /// <summary>
-        /// Gets or adds an entity scan target.
+        ///     Gets or adds an entity scan target.
         /// </summary>
         /// <param name="entityScanTarget">
-        /// The entity scan target.
+        ///     The entity scan target.
         /// </param>
         /// <param name="entityScanTargetExisting">
-        /// The existing entity scan target.
+        ///     The existing entity scan target.
         /// </param>
         /// <returns>
-        /// <c>true</c> if a scan target has been added, otherwise <c>false</c>.
+        ///     <c>true</c> if a scan target has been added, otherwise <c>false</c>.
         /// </returns>
-        protected override bool GetOrAdd(EntityScanTarget entityScanTarget, out EntityScanTarget entityScanTargetExisting) {
-            if (entityScanTarget == null) {
-                throw new ArgumentNullException("entityScanTarget");
+        protected override bool GetOrAdd(EntityScanTarget entityScanTarget,
+            out EntityScanTarget entityScanTargetExisting)
+        {
+            if (entityScanTarget == null)
+            {
+                throw new ArgumentNullException(nameof(entityScanTarget));
             }
 
             var added = false;
 
-            if (string.IsNullOrEmpty(entityScanTarget.Key.ColumnFamily)) {
+            if (string.IsNullOrEmpty(entityScanTarget.Key.ColumnFamily))
+            {
                 entityScanTargetExisting = this.unqualifiedKeys.GetOrAdd(
                     entityScanTarget.Key,
-                    key => {
+                    key =>
+                    {
                         added = true;
                         return entityScanTarget;
                     });
             }
-            else {
+            else
+            {
                 entityScanTargetExisting = this.keys.GetOrAdd(
-                                    entityScanTarget.Key,
-                                    key => {
-                                        added = true;
-                                        return entityScanTarget;
-                                    });
+                    entityScanTarget.Key,
+                    key =>
+                    {
+                        added = true;
+                        return entityScanTarget;
+                    });
             }
 
             return added;
@@ -276,45 +279,41 @@ namespace Hypertable.Persistence.Scanner.TableScan
     }
 
     /// <summary>
-    /// The concurrent table scan and filter.
+    ///     The concurrent table scan and filter.
     /// </summary>
     internal sealed class ConcurrentTableScanAndFilter : TableScanAndFilterBase
     {
         #region Fields
 
         /// <summary>
-        /// The entity keys.
+        ///     The entity keys.
         /// </summary>
-        private readonly ConcurrentDictionary<Key, EntityScanTarget, KeyComparer> keys = new ConcurrentDictionary<Key, EntityScanTarget, KeyComparer>(256);
+        private readonly ConcurrentDictionary<Key, EntityScanTarget, KeyComparer> keys =
+            new ConcurrentDictionary<Key, EntityScanTarget, KeyComparer>(256);
 
         /// <summary>
-        /// The unqualified entity keys.
+        ///     The unqualified entity keys.
         /// </summary>
-        private readonly ConcurrentDictionary<Key, EntityScanTarget, RowComparer> unqualifiedKeys = new ConcurrentDictionary<Key, EntityScanTarget, RowComparer>(256);
+        private readonly ConcurrentDictionary<Key, EntityScanTarget, RowComparer> unqualifiedKeys =
+            new ConcurrentDictionary<Key, EntityScanTarget, RowComparer>(256);
 
         #endregion
 
         #region Public Properties
 
         /// <summary>
-        /// Gets the entity scan targets.
+        ///     Gets the entity scan targets.
         /// </summary>
         /// <value>
-        /// The entity scan targets.
+        ///     The entity scan targets.
         /// </value>
-        public override IEnumerable<EntityScanTarget> EntityScanTargets
-        {
-            get
-            {
-                return this.keys.Values.Concat(this.unqualifiedKeys.Values);
-            }
-        }
+        public override IEnumerable<EntityScanTarget> EntityScanTargets => this.keys.Values.Concat(this.unqualifiedKeys.Values);
 
         /// <summary>
-        /// Gets a value indicating whether there is something to scan or not.
+        ///     Gets a value indicating whether there is something to scan or not.
         /// </summary>
         /// <value>
-        /// <c>true</c> if there is something to scan, otherwise <c>false</c>.
+        ///     <c>true</c> if there is something to scan, otherwise <c>false</c>.
         /// </value>
         public override bool? IsEmpty
         {
@@ -334,16 +333,16 @@ namespace Hypertable.Persistence.Scanner.TableScan
         #region Public Methods and Operators
 
         /// <summary>
-        /// Try get a scan target for the entity key specified.
+        ///     Try get a scan target for the entity key specified.
         /// </summary>
         /// <param name="key">
-        /// The entity key.
+        ///     The entity key.
         /// </param>
         /// <param name="entityScanTarget">
-        /// The entity scan target.
+        ///     The entity scan target.
         /// </param>
         /// <returns>
-        /// <c>true</c> if a scan target as been found for the entity key specified, otherwise <c>false</c>.
+        ///     <c>true</c> if a scan target as been found for the entity key specified, otherwise <c>false</c>.
         /// </returns>
         public override bool TryRemoveScanTarget(Key key, out EntityScanTarget entityScanTarget)
         {
@@ -360,41 +359,46 @@ namespace Hypertable.Persistence.Scanner.TableScan
         #region Methods
 
         /// <summary>
-        /// Gets or adds an entity scan target.
+        ///     Gets or adds an entity scan target.
         /// </summary>
         /// <param name="entityScanTarget">
-        /// The entity scan target.
+        ///     The entity scan target.
         /// </param>
         /// <param name="entityScanTargetExisting">
-        /// The existing entity scan target.
+        ///     The existing entity scan target.
         /// </param>
         /// <returns>
-        /// <c>true</c> if a scan target has been added, otherwise <c>false</c>.
+        ///     <c>true</c> if a scan target has been added, otherwise <c>false</c>.
         /// </returns>
-        protected override bool GetOrAdd(EntityScanTarget entityScanTarget, out EntityScanTarget entityScanTargetExisting)
+        protected override bool GetOrAdd(EntityScanTarget entityScanTarget,
+            out EntityScanTarget entityScanTargetExisting)
         {
             if (entityScanTarget == null)
             {
-                throw new ArgumentNullException("entityScanTarget");
+                throw new ArgumentNullException(nameof(entityScanTarget));
             }
 
             var added = false;
 
-            if (string.IsNullOrEmpty(entityScanTarget.Key.ColumnFamily)) {
+            if (string.IsNullOrEmpty(entityScanTarget.Key.ColumnFamily))
+            {
                 entityScanTargetExisting = this.unqualifiedKeys.GetOrAdd(
                     entityScanTarget.Key,
-                    key => {
+                    key =>
+                    {
                         added = true;
                         return entityScanTarget;
                     });
             }
-            else {
+            else
+            {
                 entityScanTargetExisting = this.keys.GetOrAdd(
-                                    entityScanTarget.Key,
-                                    key => {
-                                        added = true;
-                                        return entityScanTarget;
-                                    });
+                    entityScanTarget.Key,
+                    key =>
+                    {
+                        added = true;
+                        return entityScanTarget;
+                    });
             }
 
             return added;

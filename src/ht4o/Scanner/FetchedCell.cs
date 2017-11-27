@@ -18,26 +18,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Scanner
 {
-    using Hypertable;
-
     //// TODO determine influence class/struct
 
     /// <summary>
-    /// Declares fetched cell.
+    ///     Declares fetched cell.
     /// </summary>
     internal struct FetchedCell
     {
         #region Fields
 
         /// <summary>
-        /// The fetched cell.
+        ///     The fetched cell.
         /// </summary>
         internal readonly Cell Cell;
 
         /// <summary>
-        /// The entity scan target.
+        ///     The entity scan target.
         /// </summary>
         internal readonly EntityScanTarget EntityScanTarget;
 
@@ -46,13 +45,13 @@ namespace Hypertable.Persistence.Scanner
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FetchedCell"/> struct.
+        ///     Initializes a new instance of the <see cref="FetchedCell" /> struct.
         /// </summary>
         /// <param name="cell">
-        /// The fetched cell.
+        ///     The fetched cell.
         /// </param>
         /// <param name="entityScanTarget">
-        /// The entity scan target.
+        ///     The entity scan target.
         /// </param>
         internal FetchedCell(Cell cell, EntityScanTarget entityScanTarget)
         {

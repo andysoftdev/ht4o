@@ -23,7 +23,6 @@ namespace Hypertable.Persistence.Test.Common
     using System;
     using System.Runtime.Serialization;
 
-    using Hypertable;
     using Hypertable.Persistence.Attributes;
 
     /// <summary>

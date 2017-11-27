@@ -18,12 +18,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Attributes
 {
     using System;
 
     /// <summary>
-    /// The transient attribute.
+    ///     The transient attribute.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public sealed class TransientAttribute : Attribute

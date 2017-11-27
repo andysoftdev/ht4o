@@ -18,24 +18,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Scanner
 {
     using System;
 
     /// <summary>
-    /// The entity array scan target.
+    ///     The entity array scan target.
     /// </summary>
     internal sealed class EntityArrayScanTarget : EntityScanTarget
     {
         #region Fields
 
         /// <summary>
-        /// The array.
+        ///     The array.
         /// </summary>
         private readonly Array array;
 
         /// <summary>
-        /// The indexes.
+        ///     The indexes.
         /// </summary>
         private readonly int[] indexes;
 
@@ -44,19 +45,19 @@ namespace Hypertable.Persistence.Scanner
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityArrayScanTarget"/> class.
+        ///     Initializes a new instance of the <see cref="EntityArrayScanTarget" /> class.
         /// </summary>
         /// <param name="entityType">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <param name="entitySpec">
-        /// The entity spec.
+        ///     The entity spec.
         /// </param>
         /// <param name="array">
-        /// The array.
+        ///     The array.
         /// </param>
         /// <param name="indexes">
-        /// The indexes.
+        ///     The indexes.
         /// </param>
         internal EntityArrayScanTarget(Type entityType, EntitySpec entitySpec, Array array, int[] indexes)
             : base(entityType, entitySpec)
@@ -72,13 +73,13 @@ namespace Hypertable.Persistence.Scanner
         #region Methods
 
         /// <summary>
-        /// Sets an array element for the target specified.
+        ///     Sets an array element for the target specified.
         /// </summary>
         /// <param name="target">
-        /// The target.
+        ///     The target.
         /// </param>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
         private void Set(object target, object value)
         {

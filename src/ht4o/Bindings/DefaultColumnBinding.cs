@@ -18,23 +18,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Bindings
 {
     using System;
     using System.Globalization;
-
     using Hypertable.Persistence.Attributes;
-    using Hypertable.Persistence.Reflection;
+    using Hypertable.Persistence.Extensions;
 
     /// <summary>
-    /// The default column binding.
+    ///     The default column binding.
     /// </summary>
     internal sealed class DefaultColumnBinding : IColumnBinding
     {
         #region Fields
 
         /// <summary>
-        /// The default column family.
+        ///     The default column family.
         /// </summary>
         private readonly string defaultColumnFamily;
 
@@ -43,40 +43,42 @@ namespace Hypertable.Persistence.Bindings
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DefaultColumnBinding"/> class.
+        ///     Initializes a new instance of the <see cref="DefaultColumnBinding" /> class.
         /// </summary>
         /// <param name="type">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <param name="defaultColumnFamily">
-        /// The default column family.
+        ///     The default column family.
         /// </param>
         /// <exception cref="ArgumentNullException">
-        /// If the <paramref name="type"/> is null.
+        ///     If the <paramref name="type" /> is null.
         /// </exception>
         /// <exception cref="ArgumentException">
-        /// If the <paramref name="type"/> is typeof(object).
+        ///     If the <paramref name="type" /> is typeof(object).
         /// </exception>
         private DefaultColumnBinding(Type type, string defaultColumnFamily)
         {
             if (type == null)
             {
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
             }
 
             if (type == typeof(object))
             {
-                throw new ArgumentException(@"typeof(object) is not a valid column binding type", "type");
+                throw new ArgumentException(@"typeof(object) is not a valid column binding type", nameof(type));
             }
 
             if (type.IsInterface)
             {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, @"interface type {0} is not a valid column binding type", type), "type");
+                throw new ArgumentException(
+                    string.Format(CultureInfo.InvariantCulture,
+                        @"interface type {0} is not a valid column binding type", type), nameof(type));
             }
 
             this.defaultColumnFamily = defaultColumnFamily;
 
-            var entityAttribute = type.GetAttribute<EntityAttribute>();
+            var entityAttribute = ReflectionExtensions.GetAttribute<EntityAttribute>(type);
             if (entityAttribute != null)
             {
                 this.ColumnFamily = entityAttribute.ColumnFamily;
@@ -87,12 +89,16 @@ namespace Hypertable.Persistence.Bindings
             {
                 if (string.IsNullOrEmpty(this.ColumnFamily))
                 {
-                    throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, @"abstract type {0} requires a column family binding", type), "type");
+                    throw new ArgumentException(
+                        string.Format(CultureInfo.InvariantCulture,
+                            @"abstract type {0} requires a column family binding", type), nameof(type));
                 }
 
                 if (!string.IsNullOrEmpty(this.ColumnQualifier))
                 {
-                    throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, @"abstract type {0} may not bind to a column qualifier", type), "type");
+                    throw new ArgumentException(
+                        string.Format(CultureInfo.InvariantCulture,
+                            @"abstract type {0} may not bind to a column qualifier", type), nameof(type));
                 }
             }
         }
@@ -102,62 +108,56 @@ namespace Hypertable.Persistence.Bindings
         #region Public Properties
 
         /// <summary>
-        /// Gets the column family.
+        ///     Gets the column family.
         /// </summary>
         /// <value>
-        /// The column family.
+        ///     The column family.
         /// </value>
         public string ColumnFamily { get; private set; }
 
         /// <summary>
-        /// Gets the column qualifier.
+        ///     Gets the column qualifier.
         /// </summary>
         /// <value>
-        /// The column qualifier.
+        ///     The column qualifier.
         /// </value>
-        public string ColumnQualifier { get; private set; }
+        public string ColumnQualifier { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the binding is complete.
+        ///     Gets a value indicating whether the binding is complete.
         /// </summary>
         /// <value>
-        /// <c>true</c> if the binding is complete, otherwise <c>false</c>.
+        ///     <c>true</c> if the binding is complete, otherwise <c>false</c>.
         /// </value>
-        public bool IsComplete
-        {
-            get
-            {
-                return !string.IsNullOrEmpty(this.ColumnFamily);
-            }
-        }
+        public bool IsComplete => !string.IsNullOrEmpty(this.ColumnFamily);
 
         #endregion
 
         #region Methods
 
         /// <summary>
-        /// Creates a new instance of the <see cref="DefaultColumnBinding"/> class.
+        ///     Creates a new instance of the <see cref="DefaultColumnBinding" /> class.
         /// </summary>
         /// <param name="type">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <param name="defaultColumnFamily">
-        /// The default column family.
+        ///     The default column family.
         /// </param>
         /// <exception cref="ArgumentNullException">
-        /// If the <paramref name="type"/> is null.
+        ///     If the <paramref name="type" /> is null.
         /// </exception>
         /// <exception cref="ArgumentException">
-        /// If the <paramref name="type"/> is typeof(object).
+        ///     If the <paramref name="type" /> is typeof(object).
         /// </exception>
         /// <returns>
-        /// The <see cref="DefaultColumnBinding"/>.
+        ///     The <see cref="DefaultColumnBinding" />.
         /// </returns>
         internal static DefaultColumnBinding Create(Type type, string defaultColumnFamily)
         {
             if (type == null)
             {
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
             }
 
             if (type == typeof(object))
@@ -167,8 +167,8 @@ namespace Hypertable.Persistence.Bindings
 
             if (type.IsAbstract)
             {
-                var entityAttribute = type.GetAttribute<EntityAttribute>();
-                if (entityAttribute == null || string.IsNullOrEmpty(entityAttribute.ColumnFamily))
+                var entityAttribute = ReflectionExtensions.GetAttribute<EntityAttribute>(type);
+                if (string.IsNullOrEmpty(entityAttribute?.ColumnFamily))
                 {
                     return null;
                 }
@@ -178,16 +178,16 @@ namespace Hypertable.Persistence.Bindings
         }
 
         /// <summary>
-        /// Merge in binding elements from the type specified.
+        ///     Merge in binding elements from the type specified.
         /// </summary>
         /// <param name="type">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         internal void Merge(Type type)
         {
             if (type != null && type != typeof(object))
             {
-                var entityAttribute = type.GetAttribute<EntityAttribute>();
+                var entityAttribute = ReflectionExtensions.GetAttribute<EntityAttribute>(type);
                 if (entityAttribute != null)
                 {
                     if (string.IsNullOrEmpty(this.ColumnFamily))

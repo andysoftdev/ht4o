@@ -18,62 +18,61 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Scanner
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
-
     using Hypertable.Persistence.Collections;
 
     /// <summary>
-    /// The entity scan result.
+    ///     The entity scan result.
     /// </summary>
     internal sealed class EntityScanResult : EntitySpec
     {
         #region Fields
 
         /// <summary>
-        /// The result collection.
+        ///     The result collection.
         /// </summary>
         private readonly ChunkedCollection<object> collection = new ChunkedCollection<object>();
 
         /// <summary>
-        /// The entity sink, receives the entities fetched.
+        ///     The entity sink, receives the entities fetched.
         /// </summary>
-        private readonly Action<object > valueSink;
+        private readonly Action<object> valueSink;
 
         #endregion
 
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityScanResult"/> class.
+        ///     Initializes a new instance of the <see cref="EntityScanResult" /> class.
         /// </summary>
         /// <param name="entityReference">
-        /// The entity reference.
+        ///     The entity reference.
         /// </param>
         internal EntityScanResult(EntityReference entityReference)
             : base(entityReference, null)
         {
             this.collection = new ChunkedCollection<object>();
             this.valueSink = v =>
+            {
+                lock (this.collection.SyncRoot)
                 {
-                    lock (this.collection.SyncRoot)
-                    {
-                        this.collection.Add(v);
-                    }
-                };
+                    this.collection.Add(v);
+                }
+            };
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityScanResult"/> class.
+        ///     Initializes a new instance of the <see cref="EntityScanResult" /> class.
         /// </summary>
         /// <param name="entityReference">
-        /// The entity reference.
+        ///     The entity reference.
         /// </param>
         /// <param name="entitySink">
-        /// The entity sink, receives the entities fetched.
+        ///     The entity sink, receives the entities fetched.
         /// </param>
         internal EntityScanResult(EntityReference entityReference, Action<object> entitySink)
             : base(entityReference, null)
@@ -86,32 +85,20 @@ namespace Hypertable.Persistence.Scanner
         #region Properties
 
         /// <summary>
-        /// Gets the values.
+        ///     Gets the values.
         /// </summary>
         /// <value>
-        /// The values.
+        ///     The values.
         /// </value>
-        internal ICollection<object> Values
-        {
-            get
-            {
-                return this.collection;
-            }
-        }
+        internal ICollection<object> Values => this.collection;
 
         /// <summary>
-        /// Gets the value sink.
+        ///     Gets the value sink.
         /// </summary>
         /// <value>
-        /// The values.
+        ///     The values.
         /// </value>
-        internal Action<object> ValueSink
-        {
-            get
-            {
-                return this.valueSink;
-            }
-        }
+        internal Action<object> ValueSink => this.valueSink;
 
         #endregion
     }

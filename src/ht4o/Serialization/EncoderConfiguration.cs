@@ -26,38 +26,38 @@ namespace Hypertable.Persistence.Serialization
     using System.Runtime.Serialization;
 
     /// <summary>
-    /// Defines how to serialize DateTime.
+    ///     Defines how to serialize DateTime.
     /// </summary>
     public enum DateTimeBehavior
     {
         /// <summary>
-        /// Serializes the date time as it is, local or utc.
+        ///     Serializes the date time as it is, local or utc.
         /// </summary>
         Default,
 
         /// <summary>
-        /// Converts local date time to utc on serialization and vice versa on deseralization.
+        ///     Converts local date time to utc on serialization and vice versa on deseralization.
         /// </summary>
         /// <remarks>
-        /// Has no effect on utc data times.
+        ///     Has no effect on utc data times.
         /// </remarks>
         Utc
     }
 
     /// <summary>
-    /// The encoder.
+    ///     The encoder.
     /// </summary>
     public sealed class EncoderConfiguration
     {
         #region Fields
 
         /// <summary>
-        /// The binder.
+        ///     The binder.
         /// </summary>
         private SerializationBinder binder;
 
         /// <summary>
-        /// The type writer.
+        ///     The type writer.
         /// </summary>
         private Action<BinaryWriter, Type, EncoderConfiguration> typeWriter;
 
@@ -66,17 +66,17 @@ namespace Hypertable.Persistence.Serialization
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EncoderConfiguration"/> class.
+        ///     Initializes a new instance of the <see cref="EncoderConfiguration" /> class.
         /// </summary>
         public EncoderConfiguration()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EncoderConfiguration"/> class.
-        /// </summary> 
+        ///     Initializes a new instance of the <see cref="EncoderConfiguration" /> class.
+        /// </summary>
         /// <param name="configuration">
-        /// The encoder configuration to take over.
+        ///     The encoder configuration to take over.
         /// </param>
         internal EncoderConfiguration(EncoderConfiguration configuration)
         {
@@ -91,13 +91,13 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EncoderConfiguration"/> class.
-        /// </summary> 
+        ///     Initializes a new instance of the <see cref="EncoderConfiguration" /> class.
+        /// </summary>
         /// <param name="configuration">
-        /// The encoder configuration to take over.
+        ///     The encoder configuration to take over.
         /// </param>
         /// <param name="defaultConfiguration">
-        /// The encoder default configuration.
+        ///     The encoder default configuration.
         /// </param>
         private EncoderConfiguration(EncoderConfiguration configuration, EncoderConfiguration defaultConfiguration)
             : this(configuration)
@@ -121,17 +121,14 @@ namespace Hypertable.Persistence.Serialization
         #region Public Properties
 
         /// <summary>
-        /// Gets or sets the binder.
+        ///     Gets or sets the binder.
         /// </summary>
         /// <value>
-        /// The binder.
+        ///     The binder.
         /// </value>
         public SerializationBinder Binder
         {
-            get
-            {
-                return this.binder;
-            }
+            get { return this.binder; }
 
             set
             {
@@ -143,33 +140,30 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        /// Gets or sets the date time behavior.
+        ///     Gets or sets the date time behavior.
         /// </summary>
         /// <value>
-        /// The date time behavior.
+        ///     The date time behavior.
         /// </value>
         public DateTimeBehavior DateTimeBehavior { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to strictly use explicit type codes.
+        ///     Gets or sets a value indicating whether to strictly use explicit type codes.
         /// </summary>
         /// <value>
-        /// The strict explicit type codes.
+        ///     The strict explicit type codes.
         /// </value>
         public bool StrictExplicitTypeCodes { get; set; }
 
         /// <summary>
-        /// Gets or sets the type writer.
+        ///     Gets or sets the type writer.
         /// </summary>
         /// <value>
-        /// The type writer.
+        ///     The type writer.
         /// </value>
         public Action<BinaryWriter, Type, EncoderConfiguration> TypeWriter
         {
-            get
-            {
-                return this.typeWriter;
-            }
+            get { return this.typeWriter; }
 
             set
             {
@@ -185,14 +179,16 @@ namespace Hypertable.Persistence.Serialization
         #region Methods
 
         /// <summary>
-        /// Creates a new instance of the <see cref="EncoderConfiguration"/> class.
-        /// </summary> 
+        ///     Creates a new instance of the <see cref="EncoderConfiguration" /> class.
+        /// </summary>
         /// <param name="configuration">
-        /// The encoder configuration to take over.
+        ///     The encoder configuration to take over.
         /// </param>
         internal static EncoderConfiguration CreateFrom(EncoderConfiguration configuration)
         {
-            return configuration != null ? new EncoderConfiguration(configuration, Encoder.Configuration) : new EncoderConfiguration(Encoder.Configuration);
+            return configuration != null
+                ? new EncoderConfiguration(configuration, Encoder.Configuration)
+                : new EncoderConfiguration(Encoder.Configuration);
         }
 
         #endregion

@@ -54,7 +54,7 @@ namespace Hypertable.Persistence.Collections.Concurrent
         /// </summary>
         internal ConcurrentSet()
         {
-            dictionary = new ConcurrentDictionary<T, object, TComparer>();
+            this.dictionary = new ConcurrentDictionary<T, object, TComparer>();
         }
 
         #endregion
@@ -67,7 +67,7 @@ namespace Hypertable.Persistence.Collections.Concurrent
         /// <returns>
         ///     The number of elements contained in the set.
         /// </returns>
-        public int Count => dictionary.Count;
+        public int Count => this.dictionary.Count;
 
         /// <summary>
         ///     Gets a value indicating whether the set is read-only.
@@ -94,7 +94,7 @@ namespace Hypertable.Persistence.Collections.Concurrent
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Add(T item)
         {
-            return dictionary.TryAdd(item, null);
+            return this.dictionary.TryAdd(item, null);
         }
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace Hypertable.Persistence.Collections.Concurrent
         /// </summary>
         public void Clear()
         {
-            dictionary.Clear();
+            this.dictionary.Clear();
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace Hypertable.Persistence.Collections.Concurrent
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(T item)
         {
-            return dictionary.ContainsKey(item);
+            return this.dictionary.ContainsKey(item);
         }
 
         /// <summary>
@@ -129,7 +129,7 @@ namespace Hypertable.Persistence.Collections.Concurrent
         /// <filterpriority>1</filterpriority>
         public IEnumerator<T> GetEnumerator()
         {
-            return dictionary.Keys.GetEnumerator();
+            return this.dictionary.Keys.GetEnumerator();
         }
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace Hypertable.Persistence.Collections.Concurrent
         public bool Remove(T item)
         {
             object value;
-            return dictionary.TryRemove(item, out value);
+            return this.dictionary.TryRemove(item, out value);
         }
 
         #endregion
@@ -154,12 +154,12 @@ namespace Hypertable.Persistence.Collections.Concurrent
 
         void ICollection<T>.Add(T item)
         {
-            Add(item);
+            this.Add(item);
         }
 
         void ICollection<T>.CopyTo(T[] array, int arrayIndex)
         {
-            dictionary.Keys.CopyTo(array, arrayIndex);
+            this.dictionary.Keys.CopyTo(array, arrayIndex);
         }
 
         void ISet<T>.ExceptWith(IEnumerable<T> other)
@@ -169,7 +169,7 @@ namespace Hypertable.Persistence.Collections.Concurrent
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return GetEnumerator();
+            return this.GetEnumerator();
         }
 
         void ISet<T>.IntersectWith(IEnumerable<T> other)

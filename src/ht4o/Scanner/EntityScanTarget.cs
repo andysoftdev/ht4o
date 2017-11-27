@@ -18,41 +18,38 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Scanner
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Globalization;
-
-    using Hypertable;
     using Hypertable.Persistence.Collections;
     using Hypertable.Persistence.Reflection;
 
     /// <summary>
-    /// The entity scan target.
+    ///     The entity scan target.
     /// </summary>
     internal class EntityScanTarget : EntitySpec
     {
         #region Fields
 
         /// <summary>
-        /// The scan target setter action.
+        ///     The scan target setter action.
         /// </summary>
         protected Action<object, object> setter;
 
         /// <summary>
-        /// The scan target.
+        ///     The scan target.
         /// </summary>
         private readonly object target;
 
         /// <summary>
-        /// The scan target references.
+        ///     The scan target references.
         /// </summary>
         private ICollection<EntityScanTarget> scanTargetRefs;
 
         /// <summary>
-        /// The value.
+        ///     The value.
         /// </summary>
         private object value;
 
@@ -61,13 +58,13 @@ namespace Hypertable.Persistence.Scanner
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityScanTarget"/> class.
+        ///     Initializes a new instance of the <see cref="EntityScanTarget" /> class.
         /// </summary>
         /// <param name="entityReference">
-        /// The entity reference.
+        ///     The entity reference.
         /// </param>
         /// <param name="key">
-        /// The entity key.
+        ///     The entity key.
         /// </param>
         internal EntityScanTarget(EntityReference entityReference, object key)
             : this(entityReference, entityReference.GetKeyFromObject(key, true))
@@ -75,13 +72,13 @@ namespace Hypertable.Persistence.Scanner
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityScanTarget"/> class.
+        ///     Initializes a new instance of the <see cref="EntityScanTarget" /> class.
         /// </summary>
         /// <param name="entityReference">
-        /// The entity reference.
+        ///     The entity reference.
         /// </param>
         /// <param name="key">
-        /// The entity key.
+        ///     The entity key.
         /// </param>
         internal EntityScanTarget(EntityReference entityReference, Key key)
             : base(entityReference, key)
@@ -89,16 +86,16 @@ namespace Hypertable.Persistence.Scanner
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityScanTarget"/> class.
+        ///     Initializes a new instance of the <see cref="EntityScanTarget" /> class.
         /// </summary>
         /// <param name="entityReference">
-        /// The entity reference.
+        ///     The entity reference.
         /// </param>
         /// <param name="key">
-        /// The entity key.
+        ///     The entity key.
         /// </param>
         /// <param name="entitySink">
-        /// The entity sink, receives the entities fetched.
+        ///     The entity sink, receives the entities fetched.
         /// </param>
         internal EntityScanTarget(EntityReference entityReference, Key key, Action<object> entitySink)
             : base(entityReference, key)
@@ -108,16 +105,16 @@ namespace Hypertable.Persistence.Scanner
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityScanTarget"/> class.
+        ///     Initializes a new instance of the <see cref="EntityScanTarget" /> class.
         /// </summary>
         /// <param name="property">
-        /// The inspected property.
+        ///     The inspected property.
         /// </param>
         /// <param name="entitySpec">
-        /// The entity specification.
+        ///     The entity specification.
         /// </param>
         /// <param name="target">
-        /// The scan target.
+        ///     The scan target.
         /// </param>
         internal EntityScanTarget(InspectedProperty property, EntitySpec entitySpec, object target)
             : base(property.PropertyType, entitySpec)
@@ -127,16 +124,16 @@ namespace Hypertable.Persistence.Scanner
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityScanTarget"/> class.
+        ///     Initializes a new instance of the <see cref="EntityScanTarget" /> class.
         /// </summary>
         /// <param name="entityType">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <param name="entitySpec">
-        /// The entity spec.
+        ///     The entity spec.
         /// </param>
         /// <param name="setter">
-        /// The scan target setter action.
+        ///     The scan target setter action.
         /// </param>
         internal EntityScanTarget(Type entityType, EntitySpec entitySpec, Action<object, object> setter)
             : base(entityType, entitySpec)
@@ -145,13 +142,13 @@ namespace Hypertable.Persistence.Scanner
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityScanTarget"/> class.
+        ///     Initializes a new instance of the <see cref="EntityScanTarget" /> class.
         /// </summary>
         /// <param name="entityType">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <param name="entitySpec">
-        /// The entity specification.
+        ///     The entity specification.
         /// </param>
         protected EntityScanTarget(Type entityType, EntitySpec entitySpec)
             : base(entityType, entitySpec)
@@ -159,16 +156,16 @@ namespace Hypertable.Persistence.Scanner
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityScanTarget"/> class.
+        ///     Initializes a new instance of the <see cref="EntityScanTarget" /> class.
         /// </summary>
         /// <param name="entityType">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <param name="entitySpec">
-        /// The entity specification.
+        ///     The entity specification.
         /// </param>
         /// <param name="key">
-        /// The entity key.
+        ///     The entity key.
         /// </param>
         protected EntityScanTarget(Type entityType, EntitySpec entitySpec, Key key)
             : base(entityType, entitySpec, key)
@@ -180,28 +177,22 @@ namespace Hypertable.Persistence.Scanner
         #region Properties
 
         /// <summary>
-        /// Gets the value.
+        ///     Gets the value.
         /// </summary>
         /// <value>
-        /// The value.
+        ///     The value.
         /// </value>
-        internal object Value
-        {
-            get
-            {
-                return this.value;
-            }
-        }
+        internal object Value => this.value;
 
         #endregion
 
         #region Methods
 
         /// <summary>
-        /// Add a scan target reference.
+        ///     Add a scan target reference.
         /// </summary>
         /// <param name="entityScanTarget">
-        /// The entity scan target.
+        ///     The entity scan target.
         /// </param>
         internal void AddScanTargetRef(EntityScanTarget entityScanTarget)
         {
@@ -214,17 +205,14 @@ namespace Hypertable.Persistence.Scanner
         }
 
         /// <summary>
-        /// Sets the value specified to the scan target and all attached scan target references.
+        ///     Sets the value specified to the scan target and all attached scan target references.
         /// </summary>
         /// <param name="v">
-        /// The value.
+        ///     The value.
         /// </param>
         internal void SetValue(object v)
         {
-            if (this.setter != null)
-            {
-                this.setter(this.target, v);
-            }
+            this.setter?.Invoke(this.target, v);
 
             this.value = v;
 

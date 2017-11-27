@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Reflection
 {
     using System;
@@ -25,20 +26,20 @@ namespace Hypertable.Persistence.Reflection
     using System.Linq;
 
     /// <summary>
-    /// The type finder.
+    ///     The type finder.
     /// </summary>
     internal static class TypeFinder
     {
         #region Methods
 
         /// <summary>
-        /// Gets the common base type for the types specified.
+        ///     Gets the common base type for the types specified.
         /// </summary>
         /// <param name="types">
-        /// The types.
+        ///     The types.
         /// </param>
         /// <returns>
-        /// The common base type.
+        ///     The common base type.
         /// </returns>
         internal static Type GetCommonBaseType(IEnumerable<Type> types)
         {
@@ -46,25 +47,25 @@ namespace Hypertable.Persistence.Reflection
         }
 
         /// <summary>
-        /// Gets the common base type for the types specified.
+        ///     Gets the common base type for the types specified.
         /// </summary>
         /// <param name="types">
-        /// The types.
+        ///     The types.
         /// </param>
         /// <returns>
-        /// The common base type.
+        ///     The common base type.
         /// </returns>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="types"/> is null.
+        ///     If <paramref name="types" /> is null.
         /// </exception>
         /// <exception cref="ArgumentException">
-        /// If <paramref name="types"/> contains a null element.
+        ///     If <paramref name="types" /> contains a null element.
         /// </exception>
         internal static Type GetCommonBaseType(Type[] types)
         {
             if (types == null)
             {
-                throw new ArgumentNullException("types");
+                throw new ArgumentNullException(nameof(types));
             }
 
             if (types.Length == 0)
@@ -75,7 +76,7 @@ namespace Hypertable.Persistence.Reflection
             var commonBaseClass = types[0];
             if (commonBaseClass == null)
             {
-                throw new ArgumentException("types contains a null reference", "types");
+                throw new ArgumentException("types contains a null reference", nameof(types));
             }
 
             for (var i = 1; i < types.Length; ++i)
@@ -83,7 +84,7 @@ namespace Hypertable.Persistence.Reflection
                 var type = types[i];
                 if (type == null)
                 {
-                    throw new ArgumentException("types contains a null reference", "types");
+                    throw new ArgumentException("types contains a null reference", nameof(types));
                 }
 
                 if (type.IsAssignableFrom(commonBaseClass))

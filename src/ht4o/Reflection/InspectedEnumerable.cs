@@ -18,20 +18,21 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Reflection
 {
     using System;
     using System.Reflection;
 
     /// <summary>
-    /// The inspected enumerable.
+    ///     The inspected enumerable.
     /// </summary>
     internal sealed class InspectedEnumerable
     {
         #region Fields
 
         /// <summary>
-        /// The add function.
+        ///     The add function.
         /// </summary>
         private Func<object, object, object> addFunc;
 
@@ -40,10 +41,10 @@ namespace Hypertable.Persistence.Reflection
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="InspectedEnumerable"/> class.
+        ///     Initializes a new instance of the <see cref="InspectedEnumerable" /> class.
         /// </summary>
         /// <param name="type">
-        /// The type to inspect.
+        ///     The type to inspect.
         /// </param>
         internal InspectedEnumerable(Type type)
         {
@@ -67,171 +68,154 @@ namespace Hypertable.Persistence.Reflection
         #region Properties
 
         /// <summary>
-        /// Gets the add action.
+        ///     Gets the add action.
         /// </summary>
         /// <value>
-        /// The add action.
+        ///     The add action.
         /// </value>
-        internal Action<object, object> Add { get; private set; }
+        internal Action<object, object> Add { get; }
 
         /// <summary>
-        /// Gets the capacity action.
+        ///     Gets the capacity action.
         /// </summary>
         /// <value>
-        /// The capacity action.
+        ///     The capacity action.
         /// </value>
-        internal Action<object, object> Capacity { get; private set; }
+        internal Action<object, object> Capacity { get; }
 
         /// <summary>
-        /// Gets the count function.
+        ///     Gets the count function.
         /// </summary>
         /// <value>
-        /// The count function.
+        ///     The count function.
         /// </value>
-        internal Func<object, object> Count { get; private set; }
+        internal Func<object, object> Count { get; }
 
         /// <summary>
-        /// Gets the element type.
+        ///     Gets the element type.
         /// </summary>
         /// <value>
-        /// The element type.
+        ///     The element type.
         /// </value>
-        internal Type ElementType { get; private set; }
+        internal Type ElementType { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the inspected enumerable has an add action.
+        ///     Gets a value indicating whether the inspected enumerable has an add action.
         /// </summary>
         /// <value>
-        /// <c>true</c> if the inspected enumerable has an add action, otherwise <c>false</c>.
+        ///     <c>true</c> if the inspected enumerable has an add action, otherwise <c>false</c>.
         /// </value>
-        internal bool HasAdd
-        {
-            get
-            {
-                return this.Add != null;
-            }
-        }
+        internal bool HasAdd => this.Add != null;
 
         /// <summary>
-        /// Gets a value indicating whether the inspected enumerable has an capacity action.
+        ///     Gets a value indicating whether the inspected enumerable has an capacity action.
         /// </summary>
         /// <value>
-        /// <c>true</c> if the inspected enumerable has an capacity action, otherwise <c>false</c>.
+        ///     <c>true</c> if the inspected enumerable has an capacity action, otherwise <c>false</c>.
         /// </value>
-        internal bool HasCapacity
-        {
-            get
-            {
-                return this.Capacity != null;
-            }
-        }
+        internal bool HasCapacity => this.Capacity != null;
 
         /// <summary>
-        /// Gets a value indicating whether the inspected enumerable has an count function.
+        ///     Gets a value indicating whether the inspected enumerable has an count function.
         /// </summary>
         /// <value>
-        /// <c>true</c> if the inspected enumerable has an count function, otherwise <c>false</c>.
+        ///     <c>true</c> if the inspected enumerable has an count function, otherwise <c>false</c>.
         /// </value>
-        internal bool HasCount
-        {
-            get
-            {
-                return this.Count != null;
-            }
-        }
+        internal bool HasCount => this.Count != null;
 
         /// <summary>
-        /// Gets a value indicating whether the inspected enumerable has an indexer.
+        ///     Gets a value indicating whether the inspected enumerable has an indexer.
         /// </summary>
         /// <value>
-        /// <c>true</c> if the inspected enumerable has an indexer, otherwise <c>false</c>.
+        ///     <c>true</c> if the inspected enumerable has an indexer, otherwise <c>false</c>.
         /// </value>
-        internal bool HasIndexer
-        {
-            get
-            {
-                return this.Indexer != null;
-            }
-        }
+        internal bool HasIndexer => this.Indexer != null;
 
         /// <summary>
-        /// Gets the indexer action.
+        ///     Gets the indexer action.
         /// </summary>
         /// <value>
-        /// The indexer action.
+        ///     The indexer action.
         /// </value>
-        internal Action<object, int, object> Indexer { get; private set; }
+        internal Action<object, int, object> Indexer { get; }
 
         /// <summary>
-        /// Gets the inspected type.
+        ///     Gets the inspected type.
         /// </summary>
         /// <value>
-        /// The inspected type.
+        ///     The inspected type.
         /// </value>
-        internal Type InspectedType { get; private set; }
+        internal Type InspectedType { get; }
 
         #endregion
 
         #region Methods
 
         /// <summary>
-        /// Create the capacity action for the type specified.
+        ///     Create the capacity action for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <returns>
-        /// The newly created capacity action or null.
+        ///     The newly created capacity action or null.
         /// </returns>
         private static Action<object, object> CreateCapacityMethod(Type type)
         {
             return
                 DelegateFactory.CreateSetter(
-                    type.GetProperty("Capacity", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy));
+                    type.GetProperty("Capacity",
+                        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic |
+                        BindingFlags.FlattenHierarchy));
         }
 
         /// <summary>
-        /// Create the count function for the type specified.
+        ///     Create the count function for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <returns>
-        /// The newly created count function or null.
+        ///     The newly created count function or null.
         /// </returns>
         private static Func<object, object> CreateCountMethod(Type type)
         {
-            return DelegateFactory.CreateGetter(type.GetProperty("Count", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy));
+            return DelegateFactory.CreateGetter(type.GetProperty("Count",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy));
         }
 
         /// <summary>
-        /// Create the indexer action for the type specified.
+        ///     Create the indexer action for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <returns>
-        /// The newly created indexer action or null.
+        ///     The newly created indexer action or null.
         /// </returns>
         private static Action<object, int, object> CreateIndexerMethod(Type type)
         {
             return
-                DelegateFactory.CreateIndexerSetter(type.GetProperty("Item", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy));
+                DelegateFactory.CreateIndexerSetter(type.GetProperty("Item",
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic |
+                    BindingFlags.FlattenHierarchy));
         }
 
         /// <summary>
-        /// Create the add action for the type specified.
+        ///     Create the add action for the type specified.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <returns>
-        /// The newly created add action or null.
+        ///     The newly created add action or null.
         /// </returns>
         private Action<object, object> CreateAddMethod(Type type)
         {
             var methodInfo = type.GetMethod(
-                "Add", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy, null, new[] { this.ElementType }, null);
+                "Add",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy,
+                null, new[] {this.ElementType}, null);
 
             if (methodInfo == null)
             {
@@ -252,13 +236,13 @@ namespace Hypertable.Persistence.Reflection
         }
 
         /// <summary>
-        /// Invokes the add function on the target instance specified.
+        ///     Invokes the add function on the target instance specified.
         /// </summary>
         /// <param name="target">
-        /// The target.
+        ///     The target.
         /// </param>
         /// <param name="param">
-        /// The value to add.
+        ///     The value to add.
         /// </param>
         private void InvokeAddFunc(object target, object param)
         {

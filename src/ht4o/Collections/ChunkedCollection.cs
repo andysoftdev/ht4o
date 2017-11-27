@@ -7,42 +7,43 @@
     using System.Threading;
 
     /// <summary>
-    /// Represents a strongly typed collection of objects that can be accessed by index. Provides methods to manipulate collections.
+    ///     Represents a strongly typed collection of objects that can be accessed by index. Provides methods to manipulate
+    ///     collections.
     /// </summary>
     /// <typeparam name="T">
-    /// The type of elements in the collection.
+    ///     The type of elements in the collection.
     /// </typeparam>
     internal sealed class ChunkedCollection<T> : ICollection<T>, ICollection
     {
         #region Fields
 
         /// <summary>
-        /// The chunk size.
-        /// </summary>
-        private readonly int chunkSize = 4 * 1024;
-
-        /// <summary>
-        /// The chunks.
+        ///     The chunks.
         /// </summary>
         private readonly List<T[]> chunks = new List<T[]>(32);
 
         /// <summary>
-        /// The element count.
+        ///     The chunk size.
+        /// </summary>
+        private readonly int chunkSize = 4 * 1024;
+
+        /// <summary>
+        ///     The element count.
         /// </summary>
         private int count;
 
         /// <summary>
-        /// The current chunk.
+        ///     The current chunk.
         /// </summary>
         private T[] current;
 
         /// <summary>
-        /// The current chunk's element count.
+        ///     The current chunk's element count.
         /// </summary>
         private int currentCount;
 
         /// <summary>
-        /// The synchronization object.
+        ///     The synchronization object.
         /// </summary>
         private object syncRoot;
 
@@ -51,26 +52,26 @@
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ChunkedCollection{T}"/> class.
+        ///     Initializes a new instance of the <see cref="ChunkedCollection{T}" /> class.
         /// </summary>
         public ChunkedCollection()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ChunkedCollection{T}"/> class.
+        ///     Initializes a new instance of the <see cref="ChunkedCollection{T}" /> class.
         /// </summary>
         /// <param name="chunkSize">
-        /// The chunk size.
+        ///     The chunk size.
         /// </param>
         /// <exception cref="ArgumentException">
-        /// If <paramref name="chunkSize"/> is less than two.
+        ///     If <paramref name="chunkSize" /> is less than two.
         /// </exception>
         public ChunkedCollection(int chunkSize)
         {
             if (chunkSize < 2)
             {
-                throw new ArgumentException(@"Invalid chunk size", "chunkSize");
+                throw new ArgumentException(@"Invalid chunk size", nameof(chunkSize));
             }
 
             this.chunkSize = chunkSize;
@@ -81,50 +82,32 @@
         #region Public Properties
 
         /// <summary>
-        /// Gets the number of elements actually contained in the <see cref="ChunkedCollection{T}"/>.
+        ///     Gets the number of elements actually contained in the <see cref="ChunkedCollection{T}" />.
         /// </summary>
-        public int Count
-        {
-            get
-            {
-                return this.count;
-            }
-        }
+        public int Count => this.count;
 
         /// <summary>
-        /// Gets a value indicating whether the <see cref="ChunkedCollection{T}"/> is read-only.
+        ///     Gets a value indicating whether the <see cref="ChunkedCollection{T}" /> is read-only.
         /// </summary>
         /// <returns>
-        /// True if the <see cref="ChunkedCollection{T}"/> is read-only; otherwise, false.
+        ///     True if the <see cref="ChunkedCollection{T}" /> is read-only; otherwise, false.
         /// </returns>
-        public bool IsReadOnly
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool IsReadOnly => false;
 
         /// <summary>
-        /// Gets a value indicating whether access to the <see cref="ChunkedCollection{T}"/> is synchronized (thread safe).
+        ///     Gets a value indicating whether access to the <see cref="ChunkedCollection{T}" /> is synchronized (thread safe).
         /// </summary>
         /// <returns>
-        /// True if access to the <see cref="ChunkedCollection{T}"/> is synchronized (thread safe); otherwise, false.
+        ///     True if access to the <see cref="ChunkedCollection{T}" /> is synchronized (thread safe); otherwise, false.
         /// </returns>
         /// <filterpriority>2</filterpriority>
-        public bool IsSynchronized
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool IsSynchronized => false;
 
         /// <summary>
-        /// Gets an object that can be used to synchronize access to the <see cref="ChunkedCollection{T}"/>.
+        ///     Gets an object that can be used to synchronize access to the <see cref="ChunkedCollection{T}" />.
         /// </summary>
         /// <returns>
-        /// An object that can be used to synchronize access to the <see cref="ChunkedCollection{T}"/>.
+        ///     An object that can be used to synchronize access to the <see cref="ChunkedCollection{T}" />.
         /// </returns>
         /// <filterpriority>2</filterpriority>
         public object SyncRoot
@@ -142,78 +125,50 @@
 
         #endregion
 
-        #region Explicit Interface Properties
-
-        /// <summary>
-        /// Gets the number of elements contained in the <see cref="ChunkedCollection{T}"/>.
-        /// </summary>
-        /// <returns>
-        /// The number of elements contained in the <see cref="ChunkedCollection{T}"/>.
-        /// </returns>
-        /// <filterpriority>2</filterpriority>
-        int ICollection.Count
-        {
-            get
-            {
-                return this.Count;
-            }
-        }
-
-        /// <summary>
-        /// Gets the number of elements contained in the <see cref="ChunkedCollection{T}"/>.
-        /// </summary>
-        /// <returns>
-        /// The number of elements contained in the <see cref="ChunkedCollection{T}"/>.
-        /// </returns>
-        int ICollection<T>.Count
-        {
-            get
-            {
-                return this.Count;
-            }
-        }
-
-        #endregion
-
         #region Properties
 
         /// <summary>
-        /// Gets the chunk size of the <see cref="ChunkedCollection{T}"/>.
+        ///     Gets the number of elements contained in the <see cref="ChunkedCollection{T}" />.
         /// </summary>
-        internal int ChunkSize
-        {
-            get
-            {
-                return this.chunkSize;
-            }
-        }
+        /// <returns>
+        ///     The number of elements contained in the <see cref="ChunkedCollection{T}" />.
+        /// </returns>
+        /// <filterpriority>2</filterpriority>
+        int ICollection.Count => this.Count;
 
         /// <summary>
-        /// Gets all the element chunks.
+        ///     Gets the number of elements contained in the <see cref="ChunkedCollection{T}" />.
         /// </summary>
-        internal IEnumerable<T[]> Chunks
-        {
-            get
-            {
-                return this.chunks;
-            }
-        }
+        /// <returns>
+        ///     The number of elements contained in the <see cref="ChunkedCollection{T}" />.
+        /// </returns>
+        int ICollection<T>.Count => this.Count;
+
+        /// <summary>
+        ///     Gets all the element chunks.
+        /// </summary>
+        internal IEnumerable<T[]> Chunks => this.chunks;
+
+        /// <summary>
+        ///     Gets the chunk size of the <see cref="ChunkedCollection{T}" />.
+        /// </summary>
+        internal int ChunkSize => this.chunkSize;
 
         #endregion
 
         #region Indexers
 
         /// <summary>
-        /// Gets or sets the element at the specified index.
+        ///     Gets or sets the element at the specified index.
         /// </summary>
         /// <param name="index">
-        /// The index.
+        ///     The index.
         /// </param>
         /// <exception cref="ArgumentOutOfRangeException">
-        /// Index is not a valid index in the collection.
+        ///     Index is not a valid index in the collection.
         /// </exception>
         /// <returns>
-        /// The element at the specified index.
+        ///     The element at the specified index.
         /// </returns>
         internal T this[int index]
         {
@@ -221,7 +176,7 @@
             {
                 if (index < 0 || index >= this.count)
                 {
-                    throw new ArgumentOutOfRangeException("index");
+                    throw new ArgumentOutOfRangeException(nameof(index));
                 }
 
                 return this.chunks[index / this.chunkSize][index % this.chunkSize];
@@ -231,7 +186,7 @@
             {
                 if (index < 0 || index >= this.count)
                 {
-                    throw new ArgumentOutOfRangeException("index");
+                    throw new ArgumentOutOfRangeException(nameof(index));
                 }
 
                 this.chunks[index / this.chunkSize][index % this.chunkSize] = value;
@@ -243,13 +198,13 @@
         #region Public Methods and Operators
 
         /// <summary>
-        /// Adds an item to the <see cref="ChunkedCollection{T}"/>.
+        ///     Adds an item to the <see cref="ChunkedCollection{T}" />.
         /// </summary>
         /// <param name="item">
-        /// The object to add to the <see cref="ChunkedCollection{T}"/>.
+        ///     The object to add to the <see cref="ChunkedCollection{T}" />.
         /// </param>
         /// <exception cref="T:System.NotSupportedException">
-        /// The <see cref="ChunkedCollection{T}"/> is read-only.
+        ///     The <see cref="ChunkedCollection{T}" /> is read-only.
         /// </exception>
         public void Add(T item)
         {
@@ -263,10 +218,10 @@
         }
 
         /// <summary>
-        /// Removes all items from the <see cref="ChunkedCollection{T}"/>.
+        ///     Removes all items from the <see cref="ChunkedCollection{T}" />.
         /// </summary>
         /// <exception cref="T:System.NotSupportedException">
-        /// The <see cref="ChunkedCollection{T}"/> is read-only. 
+        ///     The <see cref="ChunkedCollection{T}" /> is read-only.
         /// </exception>
         public void Clear()
         {
@@ -277,13 +232,13 @@
         }
 
         /// <summary>
-        /// Determines whether the <see cref="ChunkedCollection{T}"/> contains a specific value.
+        ///     Determines whether the <see cref="ChunkedCollection{T}" /> contains a specific value.
         /// </summary>
         /// <returns>
-        /// True if <paramref name="item"/> is found in the <see cref="ChunkedCollection{T}"/>; otherwise, false.
+        ///     True if <paramref name="item" /> is found in the <see cref="ChunkedCollection{T}" />; otherwise, false.
         /// </returns>
         /// <param name="item">
-        /// The object to locate in the <see cref="ChunkedCollection{T}"/>.
+        ///     The object to locate in the <see cref="ChunkedCollection{T}" />.
         /// </param>
         public bool Contains(T item)
         {
@@ -291,43 +246,47 @@
         }
 
         /// <summary>
-        /// Copies the elements of the <see cref="ChunkedCollection{T}"/> to an <see cref="T:System.Array"/>, starting at a particular <see cref="T:System.Array"/> index.
+        ///     Copies the elements of the <see cref="ChunkedCollection{T}" /> to an <see cref="T:System.Array" />, starting at a
+        ///     particular <see cref="T:System.Array" /> index.
         /// </summary>
         /// <param name="array">
-        /// The one-dimensional <see cref="T:System.Array"/> that is the destination of the elements copied from <see cref="ChunkedCollection{T}"/>. The <see cref="T:System.Array"/> must have zero-based indexing.
+        ///     The one-dimensional <see cref="T:System.Array" /> that is the destination of the elements copied from
+        ///     <see cref="ChunkedCollection{T}" />. The <see cref="T:System.Array" /> must have zero-based indexing.
         /// </param>
         /// <param name="arrayIndex">
-        /// The zero-based index in <paramref name="array"/> at which copying begins.
+        ///     The zero-based index in <paramref name="array" /> at which copying begins.
         /// </param>
         public void CopyTo(T[] array, int arrayIndex)
         {
             if (array == null)
             {
-                throw new ArgumentNullException("array");
+                throw new ArgumentNullException(nameof(array));
             }
 
-            this.CopyTo((Array)array, arrayIndex);
+            this.CopyTo((Array) array, arrayIndex);
         }
 
         /// <summary>
-        /// Copies the elements of the <see cref="ChunkedCollection{T}"/> to an <see cref="T:System.Array"/>, starting at a particular <see cref="T:System.Array"/> index.
+        ///     Copies the elements of the <see cref="ChunkedCollection{T}" /> to an <see cref="T:System.Array" />, starting at a
+        ///     particular <see cref="T:System.Array" /> index.
         /// </summary>
         /// <param name="array">
-        /// The one-dimensional <see cref="T:System.Array"/> that is the destination of the elements copied from <see cref="ChunkedCollection{T}"/>. The <see cref="T:System.Array"/> must have zero-based indexing. 
+        ///     The one-dimensional <see cref="T:System.Array" /> that is the destination of the elements copied from
+        ///     <see cref="ChunkedCollection{T}" />. The <see cref="T:System.Array" /> must have zero-based indexing.
         /// </param>
         /// <param name="index">
-        /// The zero-based index in <paramref name="array"/> at which copying begins. 
+        ///     The zero-based index in <paramref name="array" /> at which copying begins.
         /// </param>
         public void CopyTo(Array array, int index)
         {
             if (array == null)
             {
-                throw new ArgumentNullException("array");
+                throw new ArgumentNullException(nameof(array));
             }
 
             if (array.Rank != 1)
             {
-                throw new ArgumentException(@"Array is multidimensional", "array");
+                throw new ArgumentException(@"Array is multidimensional", nameof(array));
             }
 
             try
@@ -336,15 +295,15 @@
             }
             catch (ArrayTypeMismatchException)
             {
-                throw new ArgumentException(@"Invalid array element type", "array");
+                throw new ArgumentException(@"Invalid array element type", nameof(array));
             }
         }
 
         /// <summary>
-        /// Returns an enumerator that iterates through the collection.
+        ///     Returns an enumerator that iterates through the collection.
         /// </summary>
         /// <returns>
-        /// A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can be used to iterate through the collection.
+        ///     A <see cref="T:System.Collections.Generic.IEnumerator`1" /> that can be used to iterate through the collection.
         /// </returns>
         /// <filterpriority>1</filterpriority>
         public IEnumerator<T> GetEnumerator()
@@ -353,16 +312,18 @@
         }
 
         /// <summary>
-        /// Removes the first occurrence of a specific object from the <see cref="ChunkedCollection{T}"/>.
+        ///     Removes the first occurrence of a specific object from the <see cref="ChunkedCollection{T}" />.
         /// </summary>
         /// <returns>
-        /// True if <paramref name="item"/> was successfully removed from the <see cref="ChunkedCollection{T}"/>; otherwise, false. This method also returns false if <paramref name="item"/> is not found in the original <see cref="ChunkedCollection{T}"/>.
+        ///     True if <paramref name="item" /> was successfully removed from the <see cref="ChunkedCollection{T}" />; otherwise,
+        ///     false. This method also returns false if <paramref name="item" /> is not found in the original
+        ///     <see cref="ChunkedCollection{T}" />.
         /// </returns>
         /// <param name="item">
-        /// The object to remove from the <see cref="ChunkedCollection{T}"/>.
+        ///     The object to remove from the <see cref="ChunkedCollection{T}" />.
         /// </param>
         /// <exception cref="T:System.NotSupportedException">
-        /// Remove is not implemented yet.
+        ///     Remove is not implemented yet.
         /// </exception>
         public bool Remove(T item)
         {
@@ -370,10 +331,10 @@
         }
 
         /// <summary>
-        /// Copies the elements of the <see cref="ChunkedCollection{T}"/> to a new array.
+        ///     Copies the elements of the <see cref="ChunkedCollection{T}" /> to a new array.
         /// </summary>
         /// <returns>
-        /// An array containing copies of the elements of the <see cref="ChunkedCollection{T}"/>.
+        ///     An array containing copies of the elements of the <see cref="ChunkedCollection{T}" />.
         /// </returns>
         public T[] ToArray()
         {
@@ -387,10 +348,10 @@
         #region Explicit Interface Methods
 
         /// <summary>
-        /// Returns an enumerator that iterates through a collection.
+        ///     Returns an enumerator that iterates through a collection.
         /// </summary>
         /// <returns>
-        /// An <see cref="T:System.Collections.IEnumerator"/> object that can be used to iterate through the collection.
+        ///     An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.
         /// </returns>
         /// <filterpriority>2</filterpriority>
         IEnumerator IEnumerable.GetEnumerator()
@@ -403,7 +364,7 @@
         #region Methods
 
         /// <summary>
-        /// The add chunk.
+        ///     The add chunk.
         /// </summary>
         private void AddChunk()
         {
@@ -414,13 +375,13 @@
         }
 
         /// <summary>
-        /// The copy to unchecked.
+        ///     The copy to unchecked.
         /// </summary>
         /// <param name="array">
-        /// The array.
+        ///     The array.
         /// </param>
         /// <param name="index">
-        /// The index.
+        ///     The index.
         /// </param>
         private void CopyToUnchecked(Array array, int index)
         {
@@ -444,45 +405,47 @@
 
         #endregion
 
+        #region Nested Types
+
         /// <summary>
-        /// The enumerator.
+        ///     The enumerator.
         /// </summary>
         public struct Enumerator : IEnumerator<T>
         {
             #region Fields
 
             /// <summary>
-            /// The chunked collection.
+            ///     The chunked collection.
             /// </summary>
             private readonly ChunkedCollection<T> chunkedCollection;
 
             /// <summary>
-            /// The count.
+            ///     The count.
             /// </summary>
             private readonly int count;
 
             /// <summary>
-            /// The chunk index.
+            ///     The chunk index.
             /// </summary>
             private int chunkIndex;
 
             /// <summary>
-            /// The current.
+            ///     The current.
             /// </summary>
             private T current;
 
             /// <summary>
-            /// The current chunk.
+            ///     The current chunk.
             /// </summary>
             private T[] currentChunk;
 
             /// <summary>
-            /// The index.
+            ///     The index.
             /// </summary>
             private int index;
 
             /// <summary>
-            /// The local chunk index.
+            ///     The local chunk index.
             /// </summary>
             private int localChunkIndex;
 
@@ -491,10 +454,10 @@
             #region Constructors and Destructors
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="Enumerator"/> struct.
+            ///     Initializes a new instance of the <see cref="Enumerator" /> struct.
             /// </summary>
             /// <param name="chunkedCollection">
-            /// The chunked collection.
+            ///     The chunked collection.
             /// </param>
             internal Enumerator(ChunkedCollection<T> chunkedCollection)
             {
@@ -512,40 +475,28 @@
             #region Public Properties
 
             /// <summary>
-            /// Gets Current.
+            ///     Gets Current.
             /// </summary>
-            public T Current
-            {
-                get
-                {
-                    return this.current;
-                }
-            }
+            public T Current => this.current;
 
             #endregion
 
             #region Explicit Interface Properties
 
             /// <summary>
-            /// Gets the current item.
+            ///     Gets the current item.
             /// </summary>
             /// <value>
-            /// The current item.
+            ///     The current item.
             /// </value>
-            object IEnumerator.Current
-            {
-                get
-                {
-                    return this.Current;
-                }
-            }
+            object IEnumerator.Current => this.Current;
 
             #endregion
 
             #region Public Methods and Operators
 
             /// <summary>
-            /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+            ///     Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
             /// </summary>
             /// <filterpriority>2</filterpriority>
             public void Dispose()
@@ -553,10 +504,11 @@
             }
 
             /// <summary>
-            /// Advances the enumerator to the next element of the collection.
+            ///     Advances the enumerator to the next element of the collection.
             /// </summary>
             /// <returns>
-            /// True if the enumerator was successfully advanced to the next element; false if the enumerator has passed the end of the collection.
+            ///     True if the enumerator was successfully advanced to the next element; false if the enumerator has passed the end of
+            ///     the collection.
             /// </returns>
             public bool MoveNext()
             {
@@ -582,7 +534,7 @@
             #region Explicit Interface Methods
 
             /// <summary>
-            /// The reset.
+            ///     The reset.
             /// </summary>
             void IEnumerator.Reset()
             {
@@ -595,5 +547,7 @@
 
             #endregion
         }
+
+        #endregion
     }
 }

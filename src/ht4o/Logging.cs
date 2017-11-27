@@ -18,32 +18,31 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence
 {
     using System;
     using System.Diagnostics;
-
 #if DEBUG
-
     using System.Collections.Generic;
     using System.Linq;
 
 #endif
 
     /// <summary>
-    /// The logging.
+    ///     The logging.
     /// </summary>
     public static class Logging
     {
         #region Static Fields
 
         /// <summary>
-        /// The synchronization object.
+        ///     The synchronization object.
         /// </summary>
         private static readonly object SyncRoot = new object();
 
         /// <summary>
-        /// The trace source.
+        ///     The trace source.
         /// </summary>
         private static TraceSource traceSource;
 
@@ -52,13 +51,13 @@ namespace Hypertable.Persistence
         #region Public Properties
 
         /// <summary>
-        /// Gets or sets trace source.
+        ///     Gets or sets trace source.
         /// </summary>
         /// <value>
-        /// The trace source.
+        ///     The trace source.
         /// </value>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="value"/> is null.
+        ///     If <paramref name="value" /> is null.
         /// </exception>
         public static TraceSource TraceSource
         {
@@ -74,7 +73,7 @@ namespace Hypertable.Persistence
             {
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value");
+                    throw new ArgumentNullException(nameof(value));
                 }
 
                 lock (SyncRoot)
@@ -89,20 +88,20 @@ namespace Hypertable.Persistence
         #region Public Methods and Operators
 
         /// <summary>
-        /// Checks if the specified trace event type is enabled.
+        ///     Checks if the specified trace event type is enabled.
         /// </summary>
         /// <param name="traceEventType">
-        /// The trace event type.
+        ///     The trace event type.
         /// </param>
         /// <returns>
-        /// <c>true</c> if  the specified trace event type is enabled, otherwise <c>false</c>.
+        ///     <c>true</c> if  the specified trace event type is enabled, otherwise <c>false</c>.
         /// </returns>
         public static bool IsEnabled(TraceEventType traceEventType)
         {
             lock (SyncRoot)
             {
                 var ts = GetTraceSource();
-                if (ts != null && ts.Switch != null)
+                if (ts?.Switch != null)
                 {
                     try
                     {
@@ -118,13 +117,13 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Writes a trace message to the trace source.
+        ///     Writes a trace message to the trace source.
         /// </summary>
         /// <param name="traceEventType">
-        /// The trace event type.
+        ///     The trace event type.
         /// </param>
         /// <param name="message">
-        /// The trace message.
+        ///     The trace message.
         /// </param>
         public static void TraceEvent(TraceEventType traceEventType, string message)
         {
@@ -133,7 +132,7 @@ namespace Hypertable.Persistence
                 lock (SyncRoot)
                 {
                     var ts = GetTraceSource();
-                    if (ts != null && ts.Switch != null)
+                    if (ts?.Switch != null)
                     {
                         try
                         {
@@ -151,13 +150,13 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Writes a trace message to the trace source.
+        ///     Writes a trace message to the trace source.
         /// </summary>
         /// <param name="traceEventType">
-        /// The trace event type.
+        ///     The trace event type.
         /// </param>
         /// <param name="func">
-        /// The trace message function.
+        ///     The trace message function.
         /// </param>
         public static void TraceEvent(TraceEventType traceEventType, Func<string> func)
         {
@@ -166,7 +165,7 @@ namespace Hypertable.Persistence
                 lock (SyncRoot)
                 {
                     var ts = GetTraceSource();
-                    if (ts != null && ts.Switch != null)
+                    if (ts?.Switch != null)
                     {
                         try
                         {
@@ -184,10 +183,10 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Writes a trace error message to the trace source.
+        ///     Writes a trace error message to the trace source.
         /// </summary>
         /// <param name="exception">
-        /// The exception to trace.
+        ///     The exception to trace.
         /// </param>
         public static void TraceException(Exception exception)
         {
@@ -196,7 +195,7 @@ namespace Hypertable.Persistence
                 lock (SyncRoot)
                 {
                     var ts = GetTraceSource();
-                    if (ts != null && ts.Switch != null)
+                    if (ts?.Switch != null)
                     {
                         try
                         {
@@ -218,10 +217,10 @@ namespace Hypertable.Persistence
         #region Methods
 
         /// <summary>
-        /// Gets the trace source.
+        ///     Gets the trace source.
         /// </summary>
         /// <returns>
-        /// The trace source.
+        ///     The trace source.
         /// </returns>
         private static TraceSource GetTraceSource()
         {

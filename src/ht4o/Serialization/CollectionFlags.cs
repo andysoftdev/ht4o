@@ -18,38 +18,39 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Serialization
 {
     using System;
 
     /// <summary>
-    /// The collection flags.
+    ///     The collection flags.
     /// </summary>
     [Flags]
     public enum CollectionFlags
     {
         /// <summary>
-        /// Nothing have been set.
+        ///     Nothing have been set.
         /// </summary>
-        None = 0, 
+        None = 0,
 
         /// <summary>
-        /// Set if a typed collection.
+        ///     Set if a typed collection.
         /// </summary>
-        Typed = 1, 
+        Typed = 1,
 
         /// <summary>
-        /// Set if a tag for the declared element type have been written.
+        ///     Set if a tag for the declared element type have been written.
         /// </summary>
         TypeTagged = 1 << 1,
 
         /// <summary>
-        /// Set for a set collection.
+        ///     Set for a set collection.
         /// </summary>
         Set = 1 << 2,
 
         /// <summary>
-        /// Set if the element values have been tagged.
+        ///     Set if the element values have been tagged.
         /// </summary>
         ValueTagged = 1 << 3
     }

@@ -18,12 +18,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Attributes
 {
     using System;
 
     /// <summary>
-    /// The id attribute.
+    ///     The id attribute.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public sealed class IdAttribute : Attribute

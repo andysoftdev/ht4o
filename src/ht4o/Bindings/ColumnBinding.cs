@@ -18,24 +18,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Bindings
 {
     using System;
 
     /// <summary>
-    /// The column binding.
+    ///     The column binding.
     /// </summary>
     public sealed class ColumnBinding : IColumnBinding
     {
         #region Fields
 
         /// <summary>
-        /// The column family.
+        ///     The column family.
         /// </summary>
         private readonly string columnFamily;
 
         /// <summary>
-        /// The column qualifier.
+        ///     The column qualifier.
         /// </summary>
         private readonly string columnQualifier;
 
@@ -44,13 +45,13 @@ namespace Hypertable.Persistence.Bindings
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ColumnBinding"/> class.
+        ///     Initializes a new instance of the <see cref="ColumnBinding" /> class.
         /// </summary>
         /// <param name="columnFamily">
-        /// The column family.
+        ///     The column family.
         /// </param>
         /// <exception cref="ArgumentNullException">
-        /// If the <paramref name="columnFamily"/> is null or empty.
+        ///     If the <paramref name="columnFamily" /> is null or empty.
         /// </exception>
         public ColumnBinding(string columnFamily)
             : this(columnFamily, null)
@@ -58,22 +59,22 @@ namespace Hypertable.Persistence.Bindings
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ColumnBinding"/> class.
+        ///     Initializes a new instance of the <see cref="ColumnBinding" /> class.
         /// </summary>
         /// <param name="columnFamily">
-        /// The column family.
+        ///     The column family.
         /// </param>
         /// <param name="columnQualifier">
-        /// The column qualifier.
+        ///     The column qualifier.
         /// </param>
         /// <exception cref="ArgumentNullException">
-        /// If the <paramref name="columnFamily"/> is null or empty.
+        ///     If the <paramref name="columnFamily" /> is null or empty.
         /// </exception>
         public ColumnBinding(string columnFamily, string columnQualifier)
         {
             if (string.IsNullOrEmpty(columnFamily))
             {
-                throw new ArgumentNullException("columnFamily");
+                throw new ArgumentNullException(nameof(columnFamily));
             }
 
             this.columnFamily = columnFamily;
@@ -85,32 +86,20 @@ namespace Hypertable.Persistence.Bindings
         #region Public Properties
 
         /// <summary>
-        /// Gets the column family.
+        ///     Gets the column family.
         /// </summary>
         /// <value>
-        /// The column family.
+        ///     The column family.
         /// </value>
-        public string ColumnFamily
-        {
-            get
-            {
-                return this.columnFamily;
-            }
-        }
+        public string ColumnFamily => this.columnFamily;
 
         /// <summary>
-        /// Gets the column qualifier.
+        ///     Gets the column qualifier.
         /// </summary>
         /// <value>
-        /// The column qualifier.
+        ///     The column qualifier.
         /// </value>
-        public string ColumnQualifier
-        {
-            get
-            {
-                return this.columnQualifier;
-            }
-        }
+        public string ColumnQualifier => this.columnQualifier;
 
         #endregion
     }

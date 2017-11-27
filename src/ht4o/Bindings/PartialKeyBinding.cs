@@ -18,22 +18,21 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Bindings
 {
     using System;
     using System.Globalization;
 
-    using Hypertable;
-
     /// <summary>
-    /// The partial key binding.
+    ///     The partial key binding.
     /// </summary>
     public abstract class PartialKeyBinding : IKeyBinding
     {
         #region Fields
 
         /// <summary>
-        /// The entity type.
+        ///     The entity type.
         /// </summary>
         private readonly Type entityType;
 
@@ -42,41 +41,41 @@ namespace Hypertable.Persistence.Bindings
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PartialKeyBinding"/> class.
+        ///     Initializes a new instance of the <see cref="PartialKeyBinding" /> class.
         /// </summary>
         /// <param name="entityType">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="entityType"/> is null.
+        ///     If <paramref name="entityType" /> is null.
         /// </exception>
         protected PartialKeyBinding(Type entityType)
         {
             if (entityType == null)
             {
-                throw new ArgumentNullException("entityType");
+                throw new ArgumentNullException(nameof(entityType));
             }
 
             this.entityType = entityType;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PartialKeyBinding"/> class.
+        ///     Initializes a new instance of the <see cref="PartialKeyBinding" /> class.
         /// </summary>
         /// <param name="entityType">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <param name="columnBinding">
-        /// The column binding.
+        ///     The column binding.
         /// </param>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="entityType"/> is null.
+        ///     If <paramref name="entityType" /> is null.
         /// </exception>
         protected PartialKeyBinding(Type entityType, IColumnBinding columnBinding)
         {
             if (entityType == null)
             {
-                throw new ArgumentNullException("entityType");
+                throw new ArgumentNullException(nameof(entityType));
             }
 
             this.entityType = entityType;
@@ -88,36 +87,30 @@ namespace Hypertable.Persistence.Bindings
         #region Public Properties
 
         /// <summary>
-        /// Gets the entity type.
+        ///     Gets the entity type.
         /// </summary>
         /// <value>
-        /// The entity type.
+        ///     The entity type.
         /// </value>
-        public Type EntityType
-        {
-            get
-            {
-                return this.entityType;
-            }
-        }
+        public Type EntityType => this.entityType;
 
         #endregion
 
         #region Properties
 
         /// <summary>
-        /// Gets or sets the column binding.
+        ///     Gets or sets the column binding.
         /// </summary>
         /// <value>
-        /// The column binding.
+        ///     The column binding.
         /// </value>
         internal IColumnBinding ColumnBinding { get; set; }
 
         /// <summary>
-        /// Gets or sets the timestamp action.
+        ///     Gets or sets the timestamp action.
         /// </summary>
         /// <value>
-        /// The timestamp action.
+        ///     The timestamp action.
         /// </value>
         internal Action<object, object> TimestampAction { get; set; }
 
@@ -126,41 +119,41 @@ namespace Hypertable.Persistence.Bindings
         #region Public Methods and Operators
 
         /// <summary>
-        /// Creates a database key for the entity specified.
+        ///     Creates a database key for the entity specified.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <returns>
-        /// The database key.
+        ///     The database key.
         /// </returns>
         public abstract Key CreateKey(object entity);
 
         /// <summary>
-        /// Gets the database key from the entity specified.
+        ///     Gets the database key from the entity specified.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <returns>
-        /// The database key.
+        ///     The database key.
         /// </returns>
         public abstract Key KeyFromEntity(object entity);
 
         /// <summary>
-        /// Gets the database key from the value specified.
+        ///     Gets the database key from the value specified.
         /// </summary>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
         /// <returns>
-        /// The database key.
+        ///     The database key.
         /// </returns>
         public virtual Key KeyFromValue(object value)
         {
             if (value == null)
             {
-                throw new ArgumentNullException("value");
+                throw new ArgumentNullException(nameof(value));
             }
 
             var key = value as Key;
@@ -174,17 +167,17 @@ namespace Hypertable.Persistence.Bindings
                 return this.KeyFromEntity(value);
             }
 
-            return this.Merge(new Key((string)Convert.ChangeType(value, typeof(string), CultureInfo.CurrentCulture)));
+            return this.Merge(new Key((string) Convert.ChangeType(value, typeof(string), CultureInfo.CurrentCulture)));
         }
 
         /// <summary>
-        /// Updates the entity using the database key specified.
+        ///     Updates the entity using the database key specified.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <param name="key">
-        /// The database key.
+        ///     The database key.
         /// </param>
         public abstract void SetKey(object entity, Key key);
 
@@ -193,22 +186,22 @@ namespace Hypertable.Persistence.Bindings
         #region Methods
 
         /// <summary>
-        /// Generates a new key.
+        ///     Generates a new key.
         /// </summary>
         /// <param name="key">
-        /// The key to update.
+        ///     The key to update.
         /// </param>
         /// <param name="type">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <returns>
-        /// The updated key.
+        ///     The updated key.
         /// </returns>
         protected Key GenerateKey(Key key, Type type)
         {
             if (key == null)
             {
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
             }
 
             key.Row = Key.Generate(type);
@@ -216,19 +209,19 @@ namespace Hypertable.Persistence.Bindings
         }
 
         /// <summary>
-        /// Merge in the column details.
+        ///     Merge in the column details.
         /// </summary>
         /// <param name="key">
-        /// The to merge in key the column details.
+        ///     The to merge in key the column details.
         /// </param>
         /// <returns>
-        /// The merged key.
+        ///     The merged key.
         /// </returns>
         protected Key Merge(Key key)
         {
             if (key == null)
             {
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
             }
 
             var columnBinding = this.ColumnBinding;
@@ -242,25 +235,22 @@ namespace Hypertable.Persistence.Bindings
         }
 
         /// <summary>
-        /// Executes the timestamp action for the entity and database key specified.
+        ///     Executes the timestamp action for the entity and database key specified.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <param name="key">
-        /// The database key.
+        ///     The database key.
         /// </param>
         protected void Timestamp(object entity, Key key)
         {
             if (key == null)
             {
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
             }
 
-            if (this.TimestampAction != null)
-            {
-                this.TimestampAction(entity, key.DateTime);
-            }
+            this.TimestampAction?.Invoke(entity, key.DateTime);
         }
 
         #endregion

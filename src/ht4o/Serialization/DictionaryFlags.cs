@@ -18,43 +18,44 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Serialization
 {
     using System;
 
     /// <summary>
-    /// The dictionary flags.
+    ///     The dictionary flags.
     /// </summary>
     [Flags]
     public enum DictionaryFlags
     {
         /// <summary>
-        /// Nothing have been set.
+        ///     Nothing have been set.
         /// </summary>
-        None = 0, 
+        None = 0,
 
         /// <summary>
-        /// Set if a typed dictionary.
+        ///     Set if a typed dictionary.
         /// </summary>
-        Typed = 1, 
+        Typed = 1,
 
         /// <summary>
-        /// Set if a tag for the declared key type have been written.
+        ///     Set if a tag for the declared key type have been written.
         /// </summary>
-        KeyTypeTagged = 1 << 1, 
+        KeyTypeTagged = 1 << 1,
 
         /// <summary>
-        /// Set if a tag for the declared value type have been written.
+        ///     Set if a tag for the declared value type have been written.
         /// </summary>
         ValueTypeTagged = 1 << 2,
 
         /// <summary>
-        /// Set if the key values have been tagged.
+        ///     Set if the key values have been tagged.
         /// </summary>
         KeyValueTagged = 1 << 3,
 
         /// <summary>
-        /// Set if the values have been tagged.
+        ///     Set if the values have been tagged.
         /// </summary>
         ValueTagged = 1 << 4
     }

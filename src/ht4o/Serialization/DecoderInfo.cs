@@ -18,26 +18,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Serialization
 {
     using System;
-
     using Hypertable.Persistence.Serialization.Delegates;
 
     /// <summary>
-    /// The decoder info.
+    ///     The decoder info.
     /// </summary>
     internal sealed class DecoderInfo
     {
         #region Fields
 
         /// <summary>
-        /// The deserialize deleagte.
+        ///     The deserialize deleagte.
         /// </summary>
         internal readonly Deserialize Deserialize;
 
         /// <summary>
-        /// The type to deserialize.
+        ///     The type to deserialize.
         /// </summary>
         internal readonly Type Type;
 
@@ -46,13 +46,13 @@ namespace Hypertable.Persistence.Serialization
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DecoderInfo"/> class.
+        ///     Initializes a new instance of the <see cref="DecoderInfo" /> class.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <param name="deserialize">
-        /// The deserialize.
+        ///     The deserialize.
         /// </param>
         internal DecoderInfo(Type type, Deserialize deserialize)
         {

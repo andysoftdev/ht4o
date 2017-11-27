@@ -42,10 +42,6 @@ namespace Hypertable.Persistence.Collections.Concurrent.Details
 
         #endregion
 
-        #region Constructors and Destructors
-
-        #endregion
-
         #region Public Properties
 
         public int EstimatedValue

@@ -79,13 +79,7 @@ namespace Hypertable.Persistence.Serialization
 
         #region Properties
 
-        private unsafe int Count
-        {
-            get
-            {
-                return (int)(this.ptr - this.basePtr);
-            }
-        }
+        private unsafe int Count => (int) (this.ptr - this.basePtr);
 
         #endregion
 
@@ -102,7 +96,7 @@ namespace Hypertable.Persistence.Serialization
             this.EnsureBuffer(1);
 
             var p = this.ptr;
-            *p = (byte)(value ? 1 : 0);
+            *p = (byte) (value ? 1 : 0);
 
             ++this.ptr;
         }
@@ -122,7 +116,7 @@ namespace Hypertable.Persistence.Serialization
             this.EnsureBuffer(1);
 
             var p = this.ptr;
-            *p = (byte)value;
+            *p = (byte) value;
 
             ++this.ptr;
         }
@@ -131,7 +125,7 @@ namespace Hypertable.Persistence.Serialization
         {
             if (value == null)
             {
-                throw new ArgumentNullException("value");
+                throw new ArgumentNullException(nameof(value));
             }
 
             var l = value.Length;
@@ -139,7 +133,7 @@ namespace Hypertable.Persistence.Serialization
             if (this.EnsureBuffer(l))
             {
                 var p = this.ptr;
-                memcpy(p, value, new UIntPtr((uint)l));
+                memcpy(p, value, new UIntPtr((uint) l));
 
                 this.ptr += l;
             }
@@ -162,7 +156,7 @@ namespace Hypertable.Persistence.Serialization
         {
             if (chars == null)
             {
-                throw new ArgumentNullException("chars");
+                throw new ArgumentNullException(nameof(chars));
             }
 
             var length = chars.Length;
@@ -185,7 +179,7 @@ namespace Hypertable.Persistence.Serialization
         {
             if (chars == null)
             {
-                throw new ArgumentNullException("chars");
+                throw new ArgumentNullException(nameof(chars));
             }
 
             var byteCount = this.charMaxByteCount > 1 ? this.encoding.GetByteCount(chars, index, count) : count;
@@ -209,15 +203,15 @@ namespace Hypertable.Persistence.Serialization
 
             var p = this.ptr;
 
-            var v = (ulong*)&value;
-            p[0] = (byte)*v;
-            p[1] = (byte)(*v >> 8);
-            p[2] = (byte)(*v >> 16);
-            p[3] = (byte)(*v >> 24);
-            p[4] = (byte)(*v >> 32);
-            p[5] = (byte)(*v >> 40);
-            p[6] = (byte)(*v >> 48);
-            p[7] = (byte)(*v >> 56);
+            var v = (ulong*) &value;
+            p[0] = (byte) *v;
+            p[1] = (byte) (*v >> 8);
+            p[2] = (byte) (*v >> 16);
+            p[3] = (byte) (*v >> 24);
+            p[4] = (byte) (*v >> 32);
+            p[5] = (byte) (*v >> 40);
+            p[6] = (byte) (*v >> 48);
+            p[7] = (byte) (*v >> 56);
 
             this.ptr += 8;
         }
@@ -232,31 +226,31 @@ namespace Hypertable.Persistence.Serialization
             {
                 var v = bits;
 
-                p[0] = (byte)*v;
-                p[1] = (byte)(*v >> 8);
-                p[2] = (byte)(*v >> 16);
-                p[3] = (byte)(*v >> 24);
+                p[0] = (byte) *v;
+                p[1] = (byte) (*v >> 8);
+                p[2] = (byte) (*v >> 16);
+                p[3] = (byte) (*v >> 24);
 
                 ++v;
 
-                p[4] = (byte)*v;
-                p[5] = (byte)(*v >> 8);
-                p[6] = (byte)(*v >> 16);
-                p[7] = (byte)(*v >> 24);
+                p[4] = (byte) *v;
+                p[5] = (byte) (*v >> 8);
+                p[6] = (byte) (*v >> 16);
+                p[7] = (byte) (*v >> 24);
 
                 ++v;
 
-                p[8] = (byte)*v;
-                p[9] = (byte)(*v >> 8);
-                p[10] = (byte)(*v >> 16);
-                p[11] = (byte)(*v >> 24);
+                p[8] = (byte) *v;
+                p[9] = (byte) (*v >> 8);
+                p[10] = (byte) (*v >> 16);
+                p[11] = (byte) (*v >> 24);
 
                 ++v;
 
-                p[12] = (byte)*v;
-                p[13] = (byte)(*v >> 8);
-                p[14] = (byte)(*v >> 16);
-                p[15] = (byte)(*v >> 24);
+                p[12] = (byte) *v;
+                p[13] = (byte) (*v >> 8);
+                p[14] = (byte) (*v >> 16);
+                p[15] = (byte) (*v >> 24);
             }
 
             this.ptr += 16;
@@ -268,8 +262,8 @@ namespace Hypertable.Persistence.Serialization
 
             var p = this.ptr;
 
-            p[0] = (byte)value;
-            p[1] = (byte)(value >> 8);
+            p[0] = (byte) value;
+            p[1] = (byte) (value >> 8);
 
             this.ptr += 2;
         }
@@ -280,8 +274,8 @@ namespace Hypertable.Persistence.Serialization
 
             var p = this.ptr;
 
-            p[0] = (byte)value;
-            p[1] = (byte)(value >> 8);
+            p[0] = (byte) value;
+            p[1] = (byte) (value >> 8);
 
             this.ptr += 2;
         }
@@ -292,10 +286,10 @@ namespace Hypertable.Persistence.Serialization
 
             var p = this.ptr;
 
-            p[0] = (byte)value;
-            p[1] = (byte)(value >> 8);
-            p[2] = (byte)(value >> 16);
-            p[3] = (byte)(value >> 24);
+            p[0] = (byte) value;
+            p[1] = (byte) (value >> 8);
+            p[2] = (byte) (value >> 16);
+            p[3] = (byte) (value >> 24);
 
             this.ptr += 4;
         }
@@ -306,10 +300,10 @@ namespace Hypertable.Persistence.Serialization
 
             var p = this.ptr;
 
-            p[0] = (byte)value;
-            p[1] = (byte)(value >> 8);
-            p[2] = (byte)(value >> 16);
-            p[3] = (byte)(value >> 24);
+            p[0] = (byte) value;
+            p[1] = (byte) (value >> 8);
+            p[2] = (byte) (value >> 16);
+            p[3] = (byte) (value >> 24);
 
             this.ptr += 4;
         }
@@ -320,14 +314,14 @@ namespace Hypertable.Persistence.Serialization
 
             var p = this.ptr;
 
-            p[0] = (byte)value;
-            p[1] = (byte)(value >> 8);
-            p[2] = (byte)(value >> 16);
-            p[3] = (byte)(value >> 24);
-            p[4] = (byte)(value >> 32);
-            p[5] = (byte)(value >> 40);
-            p[6] = (byte)(value >> 48);
-            p[7] = (byte)(value >> 56);
+            p[0] = (byte) value;
+            p[1] = (byte) (value >> 8);
+            p[2] = (byte) (value >> 16);
+            p[3] = (byte) (value >> 24);
+            p[4] = (byte) (value >> 32);
+            p[5] = (byte) (value >> 40);
+            p[6] = (byte) (value >> 48);
+            p[7] = (byte) (value >> 56);
 
             this.ptr += 8;
         }
@@ -338,14 +332,14 @@ namespace Hypertable.Persistence.Serialization
 
             var p = this.ptr;
 
-            p[0] = (byte)value;
-            p[1] = (byte)(value >> 8);
-            p[2] = (byte)(value >> 16);
-            p[3] = (byte)(value >> 24);
-            p[4] = (byte)(value >> 32);
-            p[5] = (byte)(value >> 40);
-            p[6] = (byte)(value >> 48);
-            p[7] = (byte)(value >> 56);
+            p[0] = (byte) value;
+            p[1] = (byte) (value >> 8);
+            p[2] = (byte) (value >> 16);
+            p[3] = (byte) (value >> 24);
+            p[4] = (byte) (value >> 32);
+            p[5] = (byte) (value >> 40);
+            p[6] = (byte) (value >> 48);
+            p[7] = (byte) (value >> 56);
 
             this.ptr += 8;
         }
@@ -356,11 +350,11 @@ namespace Hypertable.Persistence.Serialization
 
             var p = this.ptr;
 
-            var v = (uint*)&value;
-            p[0] = (byte)*v;
-            p[1] = (byte)(*v >> 8);
-            p[2] = (byte)(*v >> 16);
-            p[3] = (byte)(*v >> 24);
+            var v = (uint*) &value;
+            p[0] = (byte) *v;
+            p[1] = (byte) (*v >> 8);
+            p[2] = (byte) (*v >> 16);
+            p[3] = (byte) (*v >> 24);
 
             this.ptr += 4;
         }
@@ -369,12 +363,14 @@ namespace Hypertable.Persistence.Serialization
         {
             if (value == null)
             {
-                throw new ArgumentNullException("value");
+                throw new ArgumentNullException(nameof(value));
             }
 
             var chars = value.ToCharArray();
             var length = chars.Length;
-            var byteCount = length > 0 && this.charMaxByteCount > 1 ? this.encoding.GetByteCount(chars, 0, length) : length;
+            var byteCount = length > 0 && this.charMaxByteCount > 1
+                ? this.encoding.GetByteCount(chars, 0, length)
+                : length;
             if (this.EnsureBuffer(byteCount + 5))
             {
                 this.WriteStringLength(byteCount);
@@ -405,7 +401,8 @@ namespace Hypertable.Persistence.Serialization
             base.Dispose(disposing);
         }
 
-        [DllImport("msvcrt.dll", EntryPoint = "memcpy", CallingConvention = CallingConvention.Cdecl, SetLastError = false)]
+        [DllImport("msvcrt.dll", EntryPoint = "memcpy", CallingConvention = CallingConvention.Cdecl,
+            SetLastError = false)]
         private static extern unsafe IntPtr memcpy(byte* dest, byte[] src, UIntPtr count);
 
         private unsafe bool EnsureBuffer(int requiredCapacity)
@@ -429,28 +426,30 @@ namespace Hypertable.Persistence.Serialization
 
         private unsafe void WriteStringLength(int value)
         {
-            var v = (uint)value;
+            var v = (uint) value;
             while (v >= 0x80)
             {
-                *this.ptr++ = (byte)(v | 0x80);
+                *this.ptr++ = (byte) (v | 0x80);
                 v >>= 7;
             }
 
-            *this.ptr++ = (byte)v;
+            *this.ptr++ = (byte) v;
         }
 
         private void WriteStringLengthDirect(int value)
         {
-           var v = (uint)value;
+            var v = (uint) value;
             while (v >= 0x80)
             {
-                base.Write((byte)(v | 0x80));
+                base.Write((byte) (v | 0x80));
                 v >>= 7;
             }
-            base.Write((byte)v);
+            base.Write((byte) v);
         }
 
         #endregion
+
+        #region Nested Types
 
         private sealed class MemoryPage : IDisposable
         {
@@ -477,7 +476,7 @@ namespace Hypertable.Persistence.Serialization
             public unsafe MemoryPage()
             {
                 this.bufferHandle = GCHandle.Alloc(this.Buffer, GCHandleType.Pinned);
-                this.BasePtr = (byte*)this.bufferHandle.AddrOfPinnedObject();
+                this.BasePtr = (byte*) this.bufferHandle.AddrOfPinnedObject();
                 this.EndPtr = this.BasePtr + Size;
             }
 
@@ -555,5 +554,7 @@ namespace Hypertable.Persistence.Serialization
 
             #endregion
         }
+
+        #endregion
     }
 }

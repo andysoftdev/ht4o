@@ -18,27 +18,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Bindings
 {
     using System;
-
-    using Hypertable;
     using Hypertable.Persistence.Reflection;
 
     /// <summary>
-    /// The guid property key binding.
+    ///     The guid property key binding.
     /// </summary>
     internal sealed class GuidPropertyKeyBinding : InspectedPropertyKeyBinding
     {
         #region Fields
 
         /// <summary>
-        /// The getter function.
+        ///     The getter function.
         /// </summary>
         private readonly Func<object, object> get;
 
         /// <summary>
-        /// The setter action.
+        ///     The setter action.
         /// </summary>
         private readonly Action<object, object> set;
 
@@ -47,13 +46,13 @@ namespace Hypertable.Persistence.Bindings
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GuidPropertyKeyBinding"/> class.
+        ///     Initializes a new instance of the <see cref="GuidPropertyKeyBinding" /> class.
         /// </summary>
         /// <param name="inspectedProperty">
-        /// The inspected property.
+        ///     The inspected property.
         /// </param>
         /// <param name="columnBinding">
-        /// The column binding.
+        ///     The column binding.
         /// </param>
         internal GuidPropertyKeyBinding(InspectedProperty inspectedProperty, IColumnBinding columnBinding)
             : base(inspectedProperty, columnBinding)
@@ -67,13 +66,13 @@ namespace Hypertable.Persistence.Bindings
         #region Public Methods and Operators
 
         /// <summary>
-        /// Creates a database key for the entity specified.
+        ///     Creates a database key for the entity specified.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <returns>
-        /// The database key.
+        ///     The database key.
         /// </returns>
         public override Key CreateKey(object entity)
         {
@@ -83,47 +82,47 @@ namespace Hypertable.Persistence.Bindings
         }
 
         /// <summary>
-        /// Gets the database key from the entity specified.
+        ///     Gets the database key from the entity specified.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <returns>
-        /// The database key.
+        ///     The database key.
         /// </returns>
         public override Key KeyFromEntity(object entity)
         {
-            return this.Merge(new Key(Encode((Guid)this.get(entity))));
+            return this.Merge(new Key(Encode((Guid) this.get(entity))));
         }
 
         /// <summary>
-        /// Gets the database key from the value specified.
+        ///     Gets the database key from the value specified.
         /// </summary>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
         /// <returns>
-        /// The database key.
+        ///     The database key.
         /// </returns>
         public override Key KeyFromValue(object value)
         {
-            return value is Guid ? this.Merge(new Key(Encode((Guid)value))) : base.KeyFromValue(value);
+            return value is Guid ? this.Merge(new Key(Encode((Guid) value))) : base.KeyFromValue(value);
         }
 
         /// <summary>
-        /// Updates the entity using the database key specified.
+        ///     Updates the entity using the database key specified.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <param name="key">
-        /// The database key.
+        ///     The database key.
         /// </param>
         public override void SetKey(object entity, Key key)
         {
             if (key == null)
             {
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
             }
 
             this.set(entity, Decode(key.Row));
@@ -135,13 +134,13 @@ namespace Hypertable.Persistence.Bindings
         #region Methods
 
         /// <summary>
-        /// Decodes the given encoded string GUID into a <see cref="Guid"/> instance.
+        ///     Decodes the given encoded string GUID into a <see cref="Guid" /> instance.
         /// </summary>
         /// <param name="value">
-        /// The encoded string GUID.
+        ///     The encoded string GUID.
         /// </param>
         /// <returns>
-        /// The decoded guid instance.
+        ///     The decoded guid instance.
         /// </returns>
         private static Guid Decode(string value)
         {
@@ -149,13 +148,13 @@ namespace Hypertable.Persistence.Bindings
         }
 
         /// <summary>
-        /// Encodes the given <see cref="Guid"/> instance into a string GUID.
+        ///     Encodes the given <see cref="Guid" /> instance into a string GUID.
         /// </summary>
         /// <param name="value">
-        /// The guid instance.
+        ///     The guid instance.
         /// </param>
         /// <returns>
-        /// The encoded string GUID.
+        ///     The encoded string GUID.
         /// </returns>
         private static string Encode(Guid value)
         {

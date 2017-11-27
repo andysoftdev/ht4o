@@ -18,31 +18,30 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence
 {
     using System;
     using System.Collections.Generic;
 
-    using Hypertable;
-
     /// <summary>
-    /// The column binding comparer.
+    ///     The column binding comparer.
     /// </summary>
     public sealed class ColumnBindingComparer : IEqualityComparer<IColumnBinding>
     {
         #region Public Methods and Operators
 
         /// <summary>
-        /// Determines whether the specified objects are equal.
+        ///     Determines whether the specified objects are equal.
         /// </summary>
         /// <param name="x">
-        /// The first object of type <see cref="IColumnBinding"/> to compare.
+        ///     The first object of type <see cref="IColumnBinding" /> to compare.
         /// </param>
         /// <param name="y">
-        /// The second object of type <see cref="IColumnBinding"/> to compare.
+        ///     The second object of type <see cref="IColumnBinding" /> to compare.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the specified objects are equal, otherwise <c>false</c>.
+        ///     <c>true</c> if the specified objects are equal, otherwise <c>false</c>.
         /// </returns>
         public bool Equals(IColumnBinding x, IColumnBinding y)
         {
@@ -60,22 +59,22 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Returns a hash code for the specified object.
+        ///     Returns a hash code for the specified object.
         /// </summary>
         /// <param name="obj">
-        /// The <see cref="IColumnBinding"/> for which a hash code is to be returned.
+        ///     The <see cref="IColumnBinding" /> for which a hash code is to be returned.
         /// </param>
         /// <returns>
-        /// A hash code for the specified object.
+        ///     A hash code for the specified object.
         /// </returns>
         /// <exception cref="ArgumentNullException">
-        /// The type of <paramref name="obj"/> is a reference type and <paramref name="obj"/> is null.
+        ///     The type of <paramref name="obj" /> is a reference type and <paramref name="obj" /> is null.
         /// </exception>
         public int GetHashCode(IColumnBinding obj)
         {
             if (obj == null)
             {
-                throw new ArgumentNullException("obj");
+                throw new ArgumentNullException(nameof(obj));
             }
 
             unchecked

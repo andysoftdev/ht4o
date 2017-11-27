@@ -18,23 +18,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence
 {
     /// <summary>
-    /// The nullable extensions.
+    ///     The nullable extensions.
     /// </summary>
     internal static class NullableExtensions
     {
         #region Public Methods and Operators
 
         /// <summary>
-        /// Gets a value indicating whether the value is false.
+        ///     Gets a value indicating whether the value is false.
         /// </summary>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
         /// <returns>
-        /// <c>true</c> if value is <c>false</c>; otherwise <c>false</c>.
+        ///     <c>true</c> if value is <c>false</c>; otherwise <c>false</c>.
         /// </returns>
         public static bool IsFalse(this bool? value)
         {
@@ -42,13 +43,13 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets a value indicating whether the value is null or false.
+        ///     Gets a value indicating whether the value is null or false.
         /// </summary>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
         /// <returns>
-        /// <c>true</c> if value is <c>null</c> or <c>false</c>; otherwise <c>false</c>.
+        ///     <c>true</c> if value is <c>null</c> or <c>false</c>; otherwise <c>false</c>.
         /// </returns>
         public static bool IsNullOrFalse(this bool? value)
         {
@@ -56,13 +57,13 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets a value indicating whether the value is null or true.
+        ///     Gets a value indicating whether the value is null or true.
         /// </summary>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
         /// <returns>
-        /// <c>true</c> if value is <c>null</c> or <c>true</c>; otherwise <c>false</c>.
+        ///     <c>true</c> if value is <c>null</c> or <c>true</c>; otherwise <c>false</c>.
         /// </returns>
         public static bool IsNullOrTrue(this bool? value)
         {
@@ -70,13 +71,13 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        /// Gets a value indicating whether the value is true.
+        ///     Gets a value indicating whether the value is true.
         /// </summary>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
         /// <returns>
-        /// <c>true</c> if value is <c>true</c>; otherwise <c>false</c>.
+        ///     <c>true</c> if value is <c>true</c>; otherwise <c>false</c>.
         /// </returns>
         public static bool IsTrue(this bool? value)
         {

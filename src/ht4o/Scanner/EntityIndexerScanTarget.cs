@@ -18,32 +18,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
 namespace Hypertable.Persistence.Scanner
 {
     using System;
     using System.Globalization;
-
     using Hypertable.Persistence.Reflection;
 
     /// <summary>
-    /// The entity indexer scan target.
+    ///     The entity indexer scan target.
     /// </summary>
     internal sealed class EntityIndexerScanTarget : EntityScanTarget
     {
         #region Fields
 
         /// <summary>
-        /// The target collection.
+        ///     The target collection.
         /// </summary>
         private readonly object collection;
 
         /// <summary>
-        /// The inspected enumerable.
+        ///     The inspected enumerable.
         /// </summary>
         private readonly InspectedEnumerable inspectedEnumerable;
 
         /// <summary>
-        /// The position in the indexed collection.
+        ///     The position in the indexed collection.
         /// </summary>
         private readonly int pos;
 
@@ -52,33 +52,35 @@ namespace Hypertable.Persistence.Scanner
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityIndexerScanTarget"/> class.
+        ///     Initializes a new instance of the <see cref="EntityIndexerScanTarget" /> class.
         /// </summary>
         /// <param name="entityType">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <param name="entitySpec">
-        /// The entity spec.
+        ///     The entity spec.
         /// </param>
         /// <param name="inspectedEnumerable">
-        /// The inspected enumerable.
+        ///     The inspected enumerable.
         /// </param>
         /// <param name="collection">
-        /// The collection.
+        ///     The collection.
         /// </param>
         /// <param name="pos">
-        /// The position in the indexed collection.
+        ///     The position in the indexed collection.
         /// </param>
         /// <exception cref="PersistenceException">
-        /// If the <paramref name="inspectedEnumerable"/> does not have an indexer.
+        ///     If the <paramref name="inspectedEnumerable" /> does not have an indexer.
         /// </exception>
-        internal EntityIndexerScanTarget(Type entityType, EntitySpec entitySpec, InspectedEnumerable inspectedEnumerable, object collection, int pos)
+        internal EntityIndexerScanTarget(Type entityType, EntitySpec entitySpec,
+            InspectedEnumerable inspectedEnumerable, object collection, int pos)
             : base(entityType, entitySpec)
         {
             if (!inspectedEnumerable.HasIndexer)
             {
                 throw new PersistenceException(
-                    string.Format(CultureInfo.InvariantCulture, @"Enumerable {0} has no index for type {1}.", inspectedEnumerable.InspectedType, inspectedEnumerable.ElementType));
+                    string.Format(CultureInfo.InvariantCulture, @"Enumerable {0} has no index for type {1}.",
+                        inspectedEnumerable.InspectedType, inspectedEnumerable.ElementType));
             }
 
             this.setter = this.Set;
@@ -92,13 +94,13 @@ namespace Hypertable.Persistence.Scanner
         #region Methods
 
         /// <summary>
-        /// Sets the value at the target position.
+        ///     Sets the value at the target position.
         /// </summary>
         /// <param name="target">
-        /// The target.
+        ///     The target.
         /// </param>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
         private void Set(object target, object value)
         {

@@ -150,10 +150,9 @@ namespace Hypertable.Persistence.Collections.Concurrent.Details
             }
         }
 
-        public object SyncRoot {
-            get {
-                throw new NotSupportedException();
-            }
+        public object SyncRoot
+        {
+            get { throw new NotSupportedException(); }
         }
 
         public ReadOnlyCollection<TValue> Values
@@ -573,7 +572,8 @@ namespace Hypertable.Persistence.Collections.Concurrent.Details
         #endregion
     }
 
-    internal class ConcurrentDictionary<TKey, TValue> : ConcurrentDictionary<TKey, TValue, Collections.EqualityComparer<TKey>>
+    internal class
+        ConcurrentDictionary<TKey, TValue> : ConcurrentDictionary<TKey, TValue, Collections.EqualityComparer<TKey>>
     {
         #region Constructors and Destructors
 
