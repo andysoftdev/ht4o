@@ -65,16 +65,7 @@ namespace Hypertable.Persistence.Reflection
                     {
                         type = Type.GetType(tn, false, false);
                     }
-                    catch (TypeLoadException)
-                    {
-                    }
-                    catch (FileNotFoundException)
-                    {
-                    }
-                    catch (FileLoadException)
-                    {
-                    }
-                    catch (BadImageFormatException)
+                    catch
                     {
                     }
 
