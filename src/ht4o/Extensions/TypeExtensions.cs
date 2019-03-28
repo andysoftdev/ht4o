@@ -86,11 +86,12 @@ namespace Hypertable.Persistence.Extensions
 
             var enumToObject = EnumToObject.GetOrAdd(
                 destinationType,
-                type =>
+                value,
+                (type, _value) =>
                 {
                     if (type.IsEnum)
                     {
-                        switch (System.Convert.GetTypeCode(value))
+                        switch (System.Convert.GetTypeCode(_value))
                         {
                             case TypeCode.Int32:
                                 return (v => Enum.ToObject(type, (int) v));
@@ -234,7 +235,15 @@ namespace Hypertable.Persistence.Extensions
             {
                 var methods = t.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic |
                                            BindingFlags.Public);
-                methodInfos.AddRange(methods.Where(methodInfo => methodInfo.IsDefined(attribute, false)));
+
+                foreach (var methodInfo in methods)
+                {
+                    if (methodInfo.IsDefined(attribute, false))
+                    {
+                        methodInfos.Add(methodInfo);
+                    }
+                }
+
                 t = t.BaseType;
             }
 
@@ -281,7 +290,15 @@ namespace Hypertable.Persistence.Extensions
                 return true;
             }
 
-            return type.GetInterfaces().Any(ifc => SameMetadataToken(ifc, typeInterface));
+            foreach (var ifc in type.GetInterfaces())
+            {
+                if (SameMetadataToken(ifc, typeInterface))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -296,7 +313,7 @@ namespace Hypertable.Persistence.Extensions
         internal static bool IsComplex(this Type type)
         {
             return ComplexTypes.GetOrAdd(type,
-                t => type != typeof(string) && type != typeof(Type).GetType() && type.IsClass);
+                t => t != typeof(string) && t != typeof(Type).GetType() && t.IsClass);
         }
 
         /// <summary>
@@ -401,7 +418,7 @@ namespace Hypertable.Persistence.Extensions
         /// </returns>
         internal static bool IsValueType(this Type type)
         {
-            return ValueTypes.GetOrAdd(type, t => type.IsValueType);
+            return ValueTypes.GetOrAdd(type, t => t.IsValueType);
         }
 
         /// <summary>

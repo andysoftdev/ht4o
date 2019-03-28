@@ -122,8 +122,11 @@ namespace Hypertable.Persistence
         /// </returns>
         internal EntityReference EntityReferenceForInspector(Inspector inspector)
         {
-            return this.entityReferences.GetOrAdd(inspector.InspectedType,
-                type => this.CreateEntityReference(inspector));
+            return this.entityReferences.GetOrAdd(
+                inspector.InspectedType,
+                this,
+                inspector,
+                (t, _this, i) => _this.CreateEntityReference(i));
         }
 
         /// <summary>
@@ -137,7 +140,7 @@ namespace Hypertable.Persistence
         /// </returns>
         internal EntityReference EntityReferenceForType(Type type)
         {
-            return this.entityReferences.GetOrAdd(type, this.NewEntityReference);
+            return this.entityReferences.GetOrAdd(type, this, (t, _this) => _this.NewEntityReference(t));
         }
 
         /// <summary>

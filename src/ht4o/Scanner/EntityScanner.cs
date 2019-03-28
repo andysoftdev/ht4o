@@ -123,7 +123,8 @@ namespace Hypertable.Persistence.Scanner
                 }
 
                 var tableScanSpec =
-                    this.tables.GetOrAdd(new Pair<string>(entityScanTarget.Namespace, entityScanTarget.TableName),
+                    this.tables.GetOrAdd(
+                        new Pair<string>(entityScanTarget.Namespace, entityScanTarget.TableName),
                         kvp => this.CreateTableScanAndFilter());
                 tableScanSpec.Add(entityScanTarget);
             }
@@ -149,7 +150,8 @@ namespace Hypertable.Persistence.Scanner
 
                 this.tables = new Map<Pair<string>, ITableScan>();
 
-                var tableScanSpec = this.tables.GetOrAdd(new Pair<string>(entitySpec.Namespace, entitySpec.TableName),
+                var tableScanSpec = this.tables.GetOrAdd(
+                    new Pair<string>(entitySpec.Namespace, entitySpec.TableName),
                     kvp => this.CreateTableScan(scanSpec));
                 tableScanSpec.Add(entitySpec);
             }

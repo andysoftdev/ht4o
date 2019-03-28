@@ -415,7 +415,9 @@ namespace Hypertable.Persistence.Reflection
                 ? null
                 : this.regexProperties.GetOrAdd(
                     regex.ToString(),
-                    _ => this.Properties.FirstOrDefault(p => regex.Match(p.Name).Success));
+                    this,
+                    regex,
+                    (n, _this, _regex) => _this.Properties.FirstOrDefault(p => _regex.Match(p.Name).Success));
         }
 
         /// <summary>

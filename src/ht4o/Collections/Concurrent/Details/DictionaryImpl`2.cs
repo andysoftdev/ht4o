@@ -106,6 +106,10 @@ namespace Hypertable.Persistence.Collections.Concurrent.Details
 
         internal abstract TValue GetOrAdd(TKey key, Func<TKey, TValue> valueFactory);
 
+        internal abstract TValue GetOrAdd<TArgument>(TKey key, TArgument argument, Func<TKey, TArgument, TValue> valueFactory);
+
+        internal abstract TValue GetOrAdd<TArgument1, TArgument2>(TKey key, TArgument1 argument1, TArgument2 argument2, Func<TKey, TArgument1, TArgument2, TValue> valueFactory);
+
         internal abstract bool PutIfMatch(TKey key, object newVal, ref object oldValue, ValueMatch match);
 
         internal abstract object TryGetValue(TKey key);

@@ -63,7 +63,7 @@ namespace Hypertable.Persistence.Reflection
                     // This is necessary, for example, if there are generic parameters that are qualified with a version of the assembly that predates the one available
                     try
                     {
-                        type = Type.GetType(typeName, false, false);
+                        type = Type.GetType(tn, false, false);
                     }
                     catch (TypeLoadException)
                     {
@@ -78,7 +78,7 @@ namespace Hypertable.Persistence.Reflection
                     {
                     }
 
-                    return type ?? Type.GetType(typeName, Resolver.AssemblyResolver, Resolver.TypeResolver);
+                    return type ?? Type.GetType(tn, Resolver.AssemblyResolver, Resolver.TypeResolver);
                 });
         }
 

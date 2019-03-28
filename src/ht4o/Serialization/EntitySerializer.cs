@@ -180,7 +180,7 @@ namespace Hypertable.Persistence.Serialization
         /// </returns>
         internal override TypeSchema GetTypeSchema(Type type, Inspector inspector)
         {
-            return TypeSchemaDictionary.GetOrAdd(type, arg => new TypeSchema(inspector, true));
+            return TypeSchemaDictionary.GetOrAdd(type, inspector, (t, i) => new TypeSchema(i, true));
         }
 
         /// <summary>

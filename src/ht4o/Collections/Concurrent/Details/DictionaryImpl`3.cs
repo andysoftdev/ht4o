@@ -303,6 +303,280 @@ namespace Hypertable.Persistence.Collections.Concurrent.Details
             return result;
         }
 
+        internal sealed override TValue GetOrAdd<TArgument>(TKey key, TArgument argument, Func<TKey, TArgument, TValue> valueFactory) {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            if (valueFactory == null)
+                throw new ArgumentNullException(nameof(valueFactory));
+
+            object newValObj = null;
+            var result = default(TValue);
+
+            var curTable = this;
+            var fullHash = curTable.hash(key);
+
+        TRY_WITH_NEW_TABLE:
+
+            var curEntries = curTable._entries;
+            var lenMask = curEntries.Length - 1;
+            var idx = ReduceHashToIndex(fullHash, lenMask);
+
+            // Spin till we get a slot for the key or force a resizing.
+            var reprobeCnt = 0;
+            while (true) {
+                // hash, key and value are all CAS-ed down and follow a specific sequence of states.
+                // hence the order of their reads is irrelevant and they do not need to be volatile    
+                var entryHash = curEntries[idx].hash;
+                if (entryHash == 0) {
+                    // Found an unassigned slot - which means this 
+                    // key has never been in this table.
+                    // Slot is completely clean, claim the hash first
+                    Debug.Assert(fullHash != 0);
+                    entryHash = Interlocked.CompareExchange(ref curEntries[idx].hash, fullHash, 0);
+                    if (entryHash == 0) {
+                        entryHash = fullHash;
+                        if (entryHash == ZEROHASH) {
+                            // "added" entry for zero key
+                            curTable.allocatedSlotCount.Increment();
+                            break;
+                        }
+                    }
+                }
+
+                if (entryHash == fullHash)
+                    if (curTable.TryClaimSlotForPut(ref curEntries[idx].key, key))
+                        break;
+
+                // here we know that this slot does not map to our key
+                // and must reprobe or resize
+                // hitting reprobe limit or finding TOMBPRIMEHASH here means that the key is not in this table, 
+                // but there could be more in the new table
+                if ((++reprobeCnt >= ReprobeLimit(lenMask)) |
+                    (entryHash == TOMBPRIMEHASH)) {
+                    // start resize or get new table if resize is already in progress
+                    var newTable1 = curTable.Resize();
+                    // help along an existing copy
+                    curTable.HelpCopy();
+                    curTable = newTable1;
+                    goto TRY_WITH_NEW_TABLE;
+                }
+
+                curTable.ReprobeResizeCheck(reprobeCnt, lenMask);
+
+                // quadratic reprobing
+                idx = (idx + reprobeCnt) & lenMask;
+            }
+
+            // Found the proper Key slot, now update the Value.  
+            // We never put a null, so Value slots monotonically move from null to
+            // not-null (deleted Values use Tombstone).
+
+            // volatile read to make sure we read the element before we read the _newTable
+            // that would guarantee that as long as _newTable == null, entryValue cannot be a Prime.
+            var entryValue = Volatile.Read(ref curEntries[idx].value);
+
+            // See if we want to move to a new table (to avoid high average re-probe counts).  
+            // We only check on the initial set of a Value from null to
+            // not-null (i.e., once per key-insert).
+            var newTable = curTable._newTable;
+
+            // newTable == entryValue only when both are nulls
+            if (newTable == entryValue &&
+                curTable.TableIsCrowded(lenMask)) {
+                // Force the new table copy to start
+                newTable = curTable.Resize();
+                Debug.Assert(curTable._newTable != null && curTable._newTable == newTable);
+            }
+
+            // See if we are moving to a new table.
+            // If so, copy our slot and retry in the new table.
+            if (newTable != null) {
+                var newTable1 = curTable.CopySlotAndGetNewTable(idx, true);
+                Debug.Assert(newTable == newTable1);
+                curTable = newTable;
+                goto TRY_WITH_NEW_TABLE;
+            }
+
+            if (!EntryValueNullOrDead(entryValue))
+                goto GOT_PREV_VALUE;
+
+            // prev value is not null, dead or prime.
+            // let's try install new value
+            newValObj = newValObj ?? ToObjectValue(result = valueFactory(key, argument));
+            while (true) {
+                Debug.Assert(!(entryValue is Prime));
+
+                // Actually change the Value 
+                var prev = Interlocked.CompareExchange(ref curEntries[idx].value, newValObj, entryValue);
+                if (prev == entryValue) {
+                    // CAS succeeded - we did the update!
+                    // Adjust sizes
+                    curTable._size.Increment();
+                    goto DONE;
+                }
+                // Else CAS failed
+
+                // If a Prime'd value got installed, we need to re-run the put on the new table.
+                if (prev is Prime) {
+                    curTable = curTable.CopySlotAndGetNewTable(idx, true);
+                    goto TRY_WITH_NEW_TABLE;
+                }
+
+                // Otherwise we lost the CAS to another racing put.
+                entryValue = prev;
+                if (!EntryValueNullOrDead(entryValue))
+                    goto GOT_PREV_VALUE;
+            }
+
+        GOT_PREV_VALUE:
+            // PERF: this would be nice to have as a helper, 
+            // but it does not get inlined
+            if (default(TValue) == null && entryValue == NULLVALUE)
+                entryValue = null;
+            result = (TValue)entryValue;
+
+        DONE:
+            return result;
+        }
+
+        internal sealed override TValue GetOrAdd<TArgument1, TArgument2>(TKey key, TArgument1 argument1, TArgument2 argument2, Func<TKey, TArgument1, TArgument2, TValue> valueFactory) {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            if (valueFactory == null)
+                throw new ArgumentNullException(nameof(valueFactory));
+
+            object newValObj = null;
+            var result = default(TValue);
+
+            var curTable = this;
+            var fullHash = curTable.hash(key);
+
+        TRY_WITH_NEW_TABLE:
+
+            var curEntries = curTable._entries;
+            var lenMask = curEntries.Length - 1;
+            var idx = ReduceHashToIndex(fullHash, lenMask);
+
+            // Spin till we get a slot for the key or force a resizing.
+            var reprobeCnt = 0;
+            while (true) {
+                // hash, key and value are all CAS-ed down and follow a specific sequence of states.
+                // hence the order of their reads is irrelevant and they do not need to be volatile    
+                var entryHash = curEntries[idx].hash;
+                if (entryHash == 0) {
+                    // Found an unassigned slot - which means this 
+                    // key has never been in this table.
+                    // Slot is completely clean, claim the hash first
+                    Debug.Assert(fullHash != 0);
+                    entryHash = Interlocked.CompareExchange(ref curEntries[idx].hash, fullHash, 0);
+                    if (entryHash == 0) {
+                        entryHash = fullHash;
+                        if (entryHash == ZEROHASH) {
+                            // "added" entry for zero key
+                            curTable.allocatedSlotCount.Increment();
+                            break;
+                        }
+                    }
+                }
+
+                if (entryHash == fullHash)
+                    if (curTable.TryClaimSlotForPut(ref curEntries[idx].key, key))
+                        break;
+
+                // here we know that this slot does not map to our key
+                // and must reprobe or resize
+                // hitting reprobe limit or finding TOMBPRIMEHASH here means that the key is not in this table, 
+                // but there could be more in the new table
+                if ((++reprobeCnt >= ReprobeLimit(lenMask)) |
+                    (entryHash == TOMBPRIMEHASH)) {
+                    // start resize or get new table if resize is already in progress
+                    var newTable1 = curTable.Resize();
+                    // help along an existing copy
+                    curTable.HelpCopy();
+                    curTable = newTable1;
+                    goto TRY_WITH_NEW_TABLE;
+                }
+
+                curTable.ReprobeResizeCheck(reprobeCnt, lenMask);
+
+                // quadratic reprobing
+                idx = (idx + reprobeCnt) & lenMask;
+            }
+
+            // Found the proper Key slot, now update the Value.  
+            // We never put a null, so Value slots monotonically move from null to
+            // not-null (deleted Values use Tombstone).
+
+            // volatile read to make sure we read the element before we read the _newTable
+            // that would guarantee that as long as _newTable == null, entryValue cannot be a Prime.
+            var entryValue = Volatile.Read(ref curEntries[idx].value);
+
+            // See if we want to move to a new table (to avoid high average re-probe counts).  
+            // We only check on the initial set of a Value from null to
+            // not-null (i.e., once per key-insert).
+            var newTable = curTable._newTable;
+
+            // newTable == entryValue only when both are nulls
+            if (newTable == entryValue &&
+                curTable.TableIsCrowded(lenMask)) {
+                // Force the new table copy to start
+                newTable = curTable.Resize();
+                Debug.Assert(curTable._newTable != null && curTable._newTable == newTable);
+            }
+
+            // See if we are moving to a new table.
+            // If so, copy our slot and retry in the new table.
+            if (newTable != null) {
+                var newTable1 = curTable.CopySlotAndGetNewTable(idx, true);
+                Debug.Assert(newTable == newTable1);
+                curTable = newTable;
+                goto TRY_WITH_NEW_TABLE;
+            }
+
+            if (!EntryValueNullOrDead(entryValue))
+                goto GOT_PREV_VALUE;
+
+            // prev value is not null, dead or prime.
+            // let's try install new value
+            newValObj = newValObj ?? ToObjectValue(result = valueFactory(key, argument1, argument2));
+            while (true) {
+                Debug.Assert(!(entryValue is Prime));
+
+                // Actually change the Value 
+                var prev = Interlocked.CompareExchange(ref curEntries[idx].value, newValObj, entryValue);
+                if (prev == entryValue) {
+                    // CAS succeeded - we did the update!
+                    // Adjust sizes
+                    curTable._size.Increment();
+                    goto DONE;
+                }
+                // Else CAS failed
+
+                // If a Prime'd value got installed, we need to re-run the put on the new table.
+                if (prev is Prime) {
+                    curTable = curTable.CopySlotAndGetNewTable(idx, true);
+                    goto TRY_WITH_NEW_TABLE;
+                }
+
+                // Otherwise we lost the CAS to another racing put.
+                entryValue = prev;
+                if (!EntryValueNullOrDead(entryValue))
+                    goto GOT_PREV_VALUE;
+            }
+
+        GOT_PREV_VALUE:
+            // PERF: this would be nice to have as a helper, 
+            // but it does not get inlined
+            if (default(TValue) == null && entryValue == NULLVALUE)
+                entryValue = null;
+            result = (TValue)entryValue;
+
+        DONE:
+            return result;
+        }
+
         // Help along an existing resize operation.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void HelpCopyImpl(bool copy_all)

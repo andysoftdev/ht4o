@@ -1347,11 +1347,11 @@ namespace Hypertable.Persistence.Serialization
         {
             var tuple = TypeNameCache.GetOrAdd(
                 type,
-                _ =>
+                t =>
                 {
                     string assemblyName;
                     string typeName;
-                    binder.BindToName(type, out assemblyName, out typeName);
+                    binder.BindToName(t, out assemblyName, out typeName);
                     return new Tuple<string, string>(assemblyName, typeName);
                 });
 

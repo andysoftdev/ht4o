@@ -722,16 +722,18 @@ namespace Hypertable.Persistence
 
             var entityReference = this.preliminaryEntityReferences.GetOrAdd(
                 type,
-                _ =>
+                this,
+                inspector,
+                (t, _this, i) =>
                 {
-                    var columnBinding = this.GetColumnBindingForType(type);
-                    var keyBinding = this.GetKeyBindingForType(type, columnBinding);
+                    var columnBinding = _this.GetColumnBindingForType(t);
+                    var keyBinding = _this.GetKeyBindingForType(t, columnBinding);
 
                     ////TODO set (or not set) Ignore flag to other valid candidates
-                    if (!this.StrictExplicitKeyBinding && inspector.HasProperties)
+                    if (!_this.StrictExplicitKeyBinding && i.HasProperties)
                     {
                         // Has entity key?
-                        var property = inspector.Properties.FirstOrDefault(p => p.HasKey);
+                        var property = i.Properties.FirstOrDefault(p => p.HasKey);
                         if (property != null)
                         {
                             if (keyBinding == null)
@@ -743,7 +745,7 @@ namespace Hypertable.Persistence
                         }
 
                         // Has id attribute?
-                        property = inspector.Properties.FirstOrDefault(p => p.IdAttribute != null);
+                        property = i.Properties.FirstOrDefault(p => p.IdAttribute != null);
                         if (property != null)
                         {
                             if (keyBinding == null)
@@ -755,9 +757,9 @@ namespace Hypertable.Persistence
                         }
 
                         // Has id property?
-                        if (this.IdPropertyName != null)
+                        if (_this.IdPropertyName != null)
                         {
-                            property = inspector.GetProperty(this.IdPropertyName);
+                            property = i.GetProperty(_this.IdPropertyName);
                             if (property != null)
                             {
                                 if (keyBinding == null)
@@ -775,10 +777,10 @@ namespace Hypertable.Persistence
                         return null;
                     }
 
-                    var tableBinding = this.GetTableBindingForType(type);
+                    var tableBinding = _this.GetTableBindingForType(t);
                     if (tableBinding == null)
                     {
-                        var distinctTableBindings = this.DistinctTableBindingsForType(type).ToList();
+                        var distinctTableBindings = _this.DistinctTableBindingsForType(t).ToList();
                         if (distinctTableBindings.Count() != 1)
                         {
                             return null; // none or ambiguous table bindings
@@ -788,12 +790,12 @@ namespace Hypertable.Persistence
                     }
 
                     // Has timestamp?
-                    if (this.TimestampPropertyName != null)
+                    if (_this.TimestampPropertyName != null)
                     {
                         var partialKeyBinding = keyBinding as PartialKeyBinding;
                         if (partialKeyBinding != null)
                         {
-                            var property = inspector.GetProperty(this.TimestampPropertyName);
+                            var property = i.GetProperty(_this.TimestampPropertyName);
                             if (property != null && property.PropertyType == typeof(DateTime))
                             {
                                 property.Ignore = true;
@@ -802,7 +804,7 @@ namespace Hypertable.Persistence
                         }
                     }
 
-                    return new EntityReference(type, tableBinding, columnBinding, keyBinding);
+                    return new EntityReference(t, tableBinding, columnBinding, keyBinding);
                 });
 
             return entityReference != null ? new EntityReference(entityReference) : null;

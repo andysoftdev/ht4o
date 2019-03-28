@@ -401,6 +401,16 @@ namespace Hypertable.Persistence.Collections.Concurrent.Details
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public TValue GetOrAdd<TArgument>(TKey key, TArgument argument, Func<TKey, TArgument, TValue> valueFactory) {
+            return _table.GetOrAdd(key, argument, valueFactory);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public TValue GetOrAdd<TArgument1, TArgument2>(TKey key, TArgument1 argument1, TArgument2 argument2, Func<TKey, TArgument1, TArgument2, TValue> valueFactory) {
+            return _table.GetOrAdd(key, argument1, argument2, valueFactory);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Remove(TKey key)
         {
             object oldValObj = null;
