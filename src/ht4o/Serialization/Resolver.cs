@@ -45,7 +45,7 @@ namespace Hypertable.Persistence.Serialization
         /// <summary>
         ///     The obsolete property resolver.
         /// </summary>
-        private static Action<object, object> obsoletePropertyResolver;
+        private static Action<object, string, object> obsoletePropertyResolver;
 
         /// <summary>
         ///     The property name resolver.
@@ -76,7 +76,7 @@ namespace Hypertable.Persistence.Serialization
             typeResolver = (assembly, simpleTypeName, ignoreCase) =>
                 assembly.GetType(simpleTypeName, false, ignoreCase);
             instanceResolver = (serializedType, destinationType) => null;
-            obsoletePropertyResolver = (instance, value) => { };
+            obsoletePropertyResolver = (instance, proertyName, value) => { };
         }
 
         #endregion
@@ -131,7 +131,7 @@ namespace Hypertable.Persistence.Serialization
         /// <value>
         ///     The obsolete property resolver.
         /// </value>
-        public static Action<object, object> ObsoletePropertyResolver
+        public static Action<object, string, object> ObsoletePropertyResolver
         {
             get { return obsoletePropertyResolver; }
 

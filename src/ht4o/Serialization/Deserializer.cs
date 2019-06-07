@@ -1476,7 +1476,7 @@ namespace Hypertable.Persistence.Serialization
                     }
 
                     // Read unassignable values
-                    Resolver.ObsoletePropertyResolver(value, this.Deserialize(typeof(object), tag));
+                    Resolver.ObsoletePropertyResolver(value, typeSchemaProperties[i].PropertyName, this.Deserialize(typeof(object), tag));
                 }
             }
 
