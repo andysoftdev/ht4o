@@ -279,7 +279,7 @@ namespace Hypertable.Persistence.Scanner
             }
             else
             {
-                var bufferedCell = new BufferedCell(2048);
+                var bufferedCell = new BufferedCell(0);
 
                 var fetchedCell = new FetchedCell();
 
