@@ -293,7 +293,7 @@ namespace Hypertable.Persistence
         private void DeserializingEntity(EntityReference entityReference, Type destinationType, object entity)
         {
             this.entitiesFetched.TryAdd(this.fetchedCell.EntityScanTarget, entity);
-            entityReference.SetKey(entity, this.fetchedCell.Cell.Key);
+            entityReference.SetKey(entity, this.fetchedCell.Key);
         }
 
         /// <summary>
@@ -302,12 +302,12 @@ namespace Hypertable.Persistence
         /// <param name="fc">
         ///     The fetched cell.
         /// </param>
-        private void EntityFetched(ref FetchedCell fc)
+        private void EntityFetched(FetchedCell fc)
         {
             this.fetchedCell = fc;
             var entityScanTarget = fc.EntityScanTarget;
             var entity = EntityDeserializer.Deserialize(this,
-                typeof(object) /*TODO REMOVE ?? entityScanTarget.EntityType*/, fc.Cell.Value, this.DeserializingEntity);
+                typeof(object) /*TODO REMOVE ?? entityScanTarget.EntityType*/, fc.Value, fc.ValueLength, this.DeserializingEntity);
 
             if (!this.behaviors.DoNotCache())
             {

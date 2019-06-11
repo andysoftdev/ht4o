@@ -21,31 +21,45 @@
 
 namespace Hypertable.Persistence.Scanner
 {
-    //// TODO determine influence class/struct
-
     /// <summary>
     ///     Declares fetched cell.
     /// </summary>
-    internal struct FetchedCell
+    internal sealed class FetchedCell
     {
         #region Fields
 
         /// <summary>
-        ///     The fetched cell.
+        ///     The key.
         /// </summary>
-        internal readonly Cell Cell;
+        internal Key Key;
+
+        /// <summary>
+        ///     The value.
+        /// </summary>
+        internal byte[] Value;
+
+        /// <summary>
+        ///     The value length.
+        /// </summary>
+        internal int ValueLength;
 
         /// <summary>
         ///     The entity scan target.
         /// </summary>
-        internal readonly EntityScanTarget EntityScanTarget;
+        internal EntityScanTarget EntityScanTarget;
 
         #endregion
 
         #region Constructors and Destructors
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="FetchedCell" /> struct.
+        ///     Initializes a new instance of the <see cref="FetchedCell" /> class.
+        /// </summary>
+        internal FetchedCell() {
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="FetchedCell" /> class.
         /// </summary>
         /// <param name="cell">
         ///     The fetched cell.
@@ -55,7 +69,25 @@ namespace Hypertable.Persistence.Scanner
         /// </param>
         internal FetchedCell(Cell cell, EntityScanTarget entityScanTarget)
         {
-            this.Cell = cell;
+            this.Key = cell.Key;
+            this.Value = cell.Value;
+            this.ValueLength = cell.Value != null ? cell.Value.Length : 0;
+            this.EntityScanTarget = entityScanTarget;
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="FetchedCell" /> class.
+        /// </summary>
+        /// <param name="cell">
+        ///     The fetched cell.
+        /// </param>
+        /// <param name="entityScanTarget">
+        ///     The entity scan target.
+        /// </param>
+        internal FetchedCell(BufferedCell cell, EntityScanTarget entityScanTarget) {
+            this.Key = cell.Key;
+            this.Value = cell.Value;
+            this.ValueLength = cell.ValueLength;
             this.EntityScanTarget = entityScanTarget;
         }
 

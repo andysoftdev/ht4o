@@ -301,8 +301,9 @@ namespace Hypertable.Persistence.Serialization
             {
                 this.ThrowIfEndOfStream(2);
 
+                var v = (short)(this.ptr[0] | this.ptr[1] << 8);
                 this.ptr += 2;
-                return (short) (this.ptr[0] | this.ptr[1] << 8);
+                return v;
             }
         }
 
@@ -310,8 +311,9 @@ namespace Hypertable.Persistence.Serialization
         {
             this.ThrowIfEndOfStream(4);
 
+            var v = (int) (this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
             this.ptr += 4;
-            return (int) (this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
+            return v;
         }
 
         public override unsafe long ReadInt64()
@@ -370,8 +372,9 @@ namespace Hypertable.Persistence.Serialization
             {
                 this.ThrowIfEndOfStream(2);
 
+                var v = (ushort)(this.ptr[0] | this.ptr[1] << 8);
                 this.ptr += 2;
-                return (ushort) (this.ptr[0] | this.ptr[1] << 8);
+                return v;
             }
         }
 
@@ -381,8 +384,9 @@ namespace Hypertable.Persistence.Serialization
             {
                 this.ThrowIfEndOfStream(4);
 
+                var v = (uint)(this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
                 this.ptr += 4;
-                return (uint) (this.ptr[0] | this.ptr[1] << 8 | this.ptr[2] << 16 | this.ptr[3] << 24);
+                return v;
             }
         }
 

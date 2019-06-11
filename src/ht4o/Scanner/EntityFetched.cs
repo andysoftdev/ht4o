@@ -27,5 +27,5 @@ namespace Hypertable.Persistence.Scanner
     /// <param name="fetchedCell">
     ///     The fetched cell.
     /// </param>
-    internal delegate void EntityFetched(ref FetchedCell fetchedCell);
+    internal delegate void EntityFetched(FetchedCell fetchedCell);
 }
