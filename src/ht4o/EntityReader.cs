@@ -60,11 +60,6 @@ namespace Hypertable.Persistence
         /// </summary>
         private readonly EntitySpecSet entitySpecsFetched;
 
-        /// <summary>
-        ///     The fetched cell.
-        /// </summary>
-        private FetchedCell fetchedCell;
-
         #endregion
 
         #region Constructors and Destructors
@@ -279,24 +274,6 @@ namespace Hypertable.Persistence
         }
 
         /// <summary>
-        ///     The deserializing entity callback.
-        /// </summary>
-        /// <param name="entityReference">
-        ///     The entity reference.
-        /// </param>
-        /// <param name="destinationType">
-        ///     The destination type.
-        /// </param>
-        /// <param name="entity">
-        ///     The entity.
-        /// </param>
-        private void DeserializingEntity(EntityReference entityReference, Type destinationType, object entity)
-        {
-            this.entitiesFetched.TryAdd(this.fetchedCell.EntityScanTarget, entity);
-            entityReference.SetKey(entity, this.fetchedCell.Key);
-        }
-
-        /// <summary>
         ///     The entity fetched callback.
         /// </summary>
         /// <param name="fc">
@@ -304,10 +281,17 @@ namespace Hypertable.Persistence
         /// </param>
         private void EntityFetched(FetchedCell fc)
         {
-            this.fetchedCell = fc;
+            var fetchedCell = fc;
             var entityScanTarget = fc.EntityScanTarget;
-            var entity = EntityDeserializer.Deserialize(this,
-                typeof(object) /*TODO REMOVE ?? entityScanTarget.EntityType*/, fc.Value, fc.ValueLength, this.DeserializingEntity);
+            var entity = EntityDeserializer.Deserialize(
+                this,
+                typeof(object) /*TODO REMOVE ?? entityScanTarget.EntityType*/,
+                fc.Value,
+                fc.ValueLength,
+                (reference, type, value) => {
+                    this.entitiesFetched.TryAdd(fetchedCell.EntityScanTarget, value);
+                    reference.SetKey(value, fetchedCell.Key);
+                });
 
             if (!this.behaviors.DoNotCache())
             {
