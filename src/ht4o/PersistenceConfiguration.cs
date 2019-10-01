@@ -57,8 +57,8 @@ namespace Hypertable.Persistence
         {
             this.Binding = new BindingContext();
 
-            ////TODO default to true?
             ////this.UseAsyncTableScanner = true;
+            this.UseParallelDeserialization = true;
         }
 
         /// <summary>
@@ -81,6 +81,7 @@ namespace Hypertable.Persistence
             this.Binding = new BindingContext(configuration.Binding);
             this.mutatorSpec = new MutatorSpec(configuration.MutatorSpec);
             this.UseAsyncTableScanner = configuration.UseAsyncTableScanner;
+            this.UseParallelDeserialization = configuration.UseParallelDeserialization;
             this.ReviewScanSpec = configuration.ReviewScanSpec;
         }
 
@@ -115,6 +116,7 @@ namespace Hypertable.Persistence
             this.Binding = bindingContext;
             this.mutatorSpec = new MutatorSpec(configuration.MutatorSpec);
             this.UseAsyncTableScanner = configuration.UseAsyncTableScanner;
+            this.UseParallelDeserialization = configuration.UseParallelDeserialization;
             this.ReviewScanSpec = configuration.ReviewScanSpec;
         }
 
@@ -185,6 +187,14 @@ namespace Hypertable.Persistence
         ///     If <c>true</c> the entity scanner uses an async table scanner, otherwise <c>false</c>.
         /// </value>
         public bool UseAsyncTableScanner { get; set; }
+
+        /// <summary>
+        ///     Gets or sets a value indicating whether to use parallel deserialization.
+        /// </summary>
+        /// <value>
+        ///     If <c>true</c> the entity scanner may deserialize entities in parallel, otherwise <c>false</c>.
+        /// </value>
+        public bool UseParallelDeserialization{ get; set; }
 
         #endregion
 

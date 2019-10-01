@@ -26,6 +26,8 @@ namespace Hypertable.Persistence.Scanner
     using System.Diagnostics;
     using System.Globalization;
     using System.Linq;
+    using System.Runtime.Serialization.Formatters;
+    using System.Threading;
     using System.Threading.Tasks;
     using Hypertable.Persistence.Collections;
     using Hypertable.Persistence.Scanner.TableScan;
@@ -36,6 +38,11 @@ namespace Hypertable.Persistence.Scanner
     internal sealed class EntityScanner
     {
         #region Fields
+
+        /// <summary>
+        ///     The processor count.
+        /// </summary>
+        private static int FetchTaskCount = Math.Max(Environment.ProcessorCount - 1, 7);
 
         /// <summary>
         ///     The entity context.
@@ -51,6 +58,11 @@ namespace Hypertable.Persistence.Scanner
         ///     Indicating whether to use an async table scanner or not.
         /// </summary>
         private readonly bool useAsyncTableScanner;
+
+        /// <summary>
+        ///     Indicating whether to use parallel deserialization or not.
+        /// </summary>
+        private readonly bool useParallelDeserialization;
 
         /// <summary>
         ///     The table scans.
@@ -72,6 +84,7 @@ namespace Hypertable.Persistence.Scanner
             this.entityContext = entityContext;
             this.useAsyncTableScanner = entityContext.Configuration.UseAsyncTableScanner &&
                                         entityContext.HasFeature(ContextFeature.AsyncTableScanner);
+            this.useParallelDeserialization = entityContext.Configuration.UseParallelDeserialization;
         }
 
         #endregion
@@ -166,25 +179,19 @@ namespace Hypertable.Persistence.Scanner
         /// <param name="entityFetched">
         ///     The entity fetched delegate.
         /// </param>
-        internal void Fetch(TryGetFetchedEntity tryGetFetchedEntity, EntityFetched entityFetched)
-        {
+        internal void Fetch(TryGetFetchedEntity tryGetFetchedEntity, EntityFetched entityFetched) {
             IEnumerable<KeyValuePair<Pair<string>, ITableScan>> tablesToFetch;
-            lock (this.syncRoot)
-            {
+            lock (this.syncRoot) {
                 tablesToFetch = this.tables;
                 this.tables = null;
             }
 
-            foreach (var tableItem in tablesToFetch)
-            {
+            foreach (var tableItem in tablesToFetch) {
                 var tableScan = tableItem.Value;
-                foreach (var entityScanTarget in tableScan.EntityScanTargets.ToList())
-                {
+                foreach (var entityScanTarget in tableScan.EntityScanTargets.ToList()) {
                     object entity;
-                    if (tryGetFetchedEntity(entityScanTarget, out entity))
-                    {
-                        if (entity == null || entityScanTarget.EntityType.IsAssignableFrom(entity.GetType()))
-                        {
+                    if (tryGetFetchedEntity(entityScanTarget, out entity)) {
+                        if (entity == null || entityScanTarget.EntityType.IsAssignableFrom(entity.GetType())) {
                             entityScanTarget.SetValue(entity);
                         }
 
@@ -199,48 +206,37 @@ namespace Hypertable.Persistence.Scanner
             var reviewScanSpec = this.entityContext.Configuration.ReviewScanSpec;
 
             ////TODO compare async vs sync on multi-core
-            if (this.useAsyncTableScanner)
-            {
+            if (this.useAsyncTableScanner) {
                 using (var asynResult = new AsyncResult(
-                    (ctx, cells) =>
-                    {
-                        try
-                        {
-                            var tableItem = (KeyValuePair<Pair<string>, ITableScan>) ctx.Param;
+                    (ctx, cells) => {
+                        try {
+                            var tableItem = (KeyValuePair<Pair<string>, ITableScan>)ctx.Param;
 
                             ////TODO check what's the fasted way to process the fetched cells on multi-core
-                            if (cells.Count > 256)
-                            {
+                            if (cells.Count > 256) {
                                 ParallelProcessFetchedCells(tableItem, cells, entityFetched);
                             }
-                            else
-                            {
+                            else {
                                 SequentialProcessFetchedCells(tableItem, cells, entityFetched);
                             }
                         }
-                        catch (AggregateException aggregateException)
-                        {
-                            foreach (var exception in aggregateException.Flatten().InnerExceptions)
-                            {
+                        catch (AggregateException aggregateException) {
+                            foreach (var exception in aggregateException.Flatten().InnerExceptions) {
                                 Logging.TraceException(exception);
                             }
 
                             throw;
                         }
-                        catch (Exception exception)
-                        {
+                        catch (Exception exception) {
                             Logging.TraceException(exception);
                             throw;
                         }
 
                         return AsyncCallbackResult.Continue;
-                    }))
-                {
-                    foreach (var tableItem in tablesToFetch)
-                    {
+                    })) {
+                    foreach (var tableItem in tablesToFetch) {
                         var table = this.entityContext.GetTable(tableItem.Key.First, tableItem.Key.Second);
-                        if (table == null)
-                        {
+                        if (table == null) {
                             throw new PersistenceException(
                                 string.Format(CultureInfo.InvariantCulture, @"Table {0}/{1} does not exists",
                                     tableItem.Key.First.TrimEnd('/'), tableItem.Key.Second));
@@ -248,8 +244,7 @@ namespace Hypertable.Persistence.Scanner
 
                         var scanSpec = tableItem.Value.CreateScanSpec();
 
-                        if (reviewScanSpec != null)
-                        {
+                        if (reviewScanSpec != null) {
                             reviewScanSpec(table, scanSpec);
                         }
 
@@ -263,31 +258,21 @@ namespace Hypertable.Persistence.Scanner
                     }
 
                     asynResult.Join();
-                    if (asynResult.Error != null)
-                    {
+                    if (asynResult.Error != null) {
                         throw asynResult.Error;
                     }
 
-                    foreach (var tableItem in tablesToFetch)
-                    {
-                        if (tableItem.Value.IsEmpty.IsFalse())
-                        {
+                    foreach (var tableItem in tablesToFetch) {
+                        if (tableItem.Value.IsEmpty.IsFalse()) {
                             //// TODO remaining cells should be deleted
                         }
                     }
                 }
             }
-            else
-            {
-                var bufferedCell = new BufferedCell(0);
-
-                var fetchedCell = new FetchedCell();
-
-                foreach (var tableItem in tablesToFetch)
-                {
+            else if (this.useParallelDeserialization) {
+                foreach (var tableItem in tablesToFetch) {
                     var table = this.entityContext.GetTable(tableItem.Key.First, tableItem.Key.Second);
-                    if (table == null)
-                    {
+                    if (table == null) {
                         throw new PersistenceException(
                             string.Format(CultureInfo.InvariantCulture, @"Table {0}/{1} does not exists",
                                 tableItem.Key.First.TrimEnd('/'), tableItem.Key.Second));
@@ -295,8 +280,7 @@ namespace Hypertable.Persistence.Scanner
 
                     var scanSpec = tableItem.Value.CreateScanSpec();
 
-                    if (reviewScanSpec != null)
-                    {
+                    if (reviewScanSpec != null) {
                         reviewScanSpec(table, scanSpec);
                     }
 
@@ -306,13 +290,96 @@ namespace Hypertable.Persistence.Scanner
                         () => string.Format(CultureInfo.InvariantCulture, @"Scan {0} on table {1}", scanSpec,
                             table.Name));
 
-                    using (var scanner = table.CreateScanner(scanSpec))
-                    {
-                        while (scanner.Move(bufferedCell))
-                        {
+                    if (scanSpec.RowCount == 0 || scanSpec.RowCount > 32) {
+                        var fetchedCells = new BlockingQueue<FetchedCell>();
+
+                        Action ProcessFetchedCells = () => {
+                            while (true) {
+                                var fetchedCell = fetchedCells.Dequeue();
+                                if (fetchedCell == null) {
+                                    break;
+                                }
+
+                                entityFetched(fetchedCell);
+                            }
+                        };
+
+                        var tasks = new Task[FetchTaskCount];
+                        for (var i = 0; i < tasks.Length; ++i) {
+                            tasks[i] = Task.Run(ProcessFetchedCells);
+                        }
+
+                        using (var scanner = table.CreateScanner(scanSpec)) {
+                            Cell cell;
+                            while (scanner.Next(out cell)) {
+                                EntityScanTarget entityScanTarget;
+                                if (tableItem.Value.TryRemoveScanTarget(cell.Key, out entityScanTarget)) {
+                                    fetchedCells.Enqueue(new FetchedCell(cell, entityScanTarget));
+                                }
+                            }
+
+                            if (tableItem.Value.IsEmpty.IsFalse()) {
+                                //// TODO remaining cells should be deleted
+                            }
+                        }
+
+                        for (var i = 0; i < tasks.Length; ++i) {
+                            fetchedCells.Enqueue(null);
+                        }
+
+                        Task.WaitAll(tasks);
+                    }
+                    else {
+                        var bufferedCell = new BufferedCell(0);
+                        var fetchedCell = new FetchedCell();
+
+                        using (var scanner = table.CreateScanner(scanSpec)) {
+                            while (scanner.Move(bufferedCell)) {
+                                EntityScanTarget entityScanTarget;
+                                if (tableItem.Value.TryRemoveScanTarget(bufferedCell.Key, out entityScanTarget)) {
+                                    fetchedCell.Key = bufferedCell.Key;
+                                    fetchedCell.Value = bufferedCell.Value;
+                                    fetchedCell.ValueLength = bufferedCell.ValueLength;
+                                    fetchedCell.EntityScanTarget = entityScanTarget;
+                                    entityFetched(fetchedCell);
+                                }
+                            }
+
+                            if (tableItem.Value.IsEmpty.IsFalse()) {
+                                //// TODO remaining cells should be deleted
+                            }
+                        }
+                    }
+                }
+            }
+            else {
+                var bufferedCell = new BufferedCell(0);
+                var fetchedCell = new FetchedCell();
+
+                foreach (var tableItem in tablesToFetch) {
+                    var table = this.entityContext.GetTable(tableItem.Key.First, tableItem.Key.Second);
+                    if (table == null) {
+                        throw new PersistenceException(
+                            string.Format(CultureInfo.InvariantCulture, @"Table {0}/{1} does not exists",
+                                tableItem.Key.First.TrimEnd('/'), tableItem.Key.Second));
+                    }
+
+                    var scanSpec = tableItem.Value.CreateScanSpec();
+
+                    if (reviewScanSpec != null) {
+                        reviewScanSpec(table, scanSpec);
+                    }
+
+                    //// TODO add/remove more infos + time, other places???
+                    Logging.TraceEvent(
+                        TraceEventType.Verbose,
+                        () => string.Format(CultureInfo.InvariantCulture, @"Scan {0} on table {1}", scanSpec,
+                            table.Name));
+
+                    using (var scanner = table.CreateScanner(scanSpec)) {
+                        while (scanner.Move(bufferedCell)) {
                             EntityScanTarget entityScanTarget;
-                            if (tableItem.Value.TryRemoveScanTarget(bufferedCell.Key, out entityScanTarget))
-                            {
+                            if (tableItem.Value.TryRemoveScanTarget(bufferedCell.Key, out entityScanTarget)) {
                                 fetchedCell.Key = bufferedCell.Key;
                                 fetchedCell.Value = bufferedCell.Value;
                                 fetchedCell.ValueLength = bufferedCell.ValueLength;
@@ -321,8 +388,7 @@ namespace Hypertable.Persistence.Scanner
                             }
                         }
 
-                        if (tableItem.Value.IsEmpty.IsFalse())
-                        {
+                        if (tableItem.Value.IsEmpty.IsFalse()) {
                             //// TODO remaining cells should be deleted
                         }
                     }
@@ -410,9 +476,47 @@ namespace Hypertable.Persistence.Scanner
         /// </returns>
         private ITableScan CreateTableScanAndFilter()
         {
-            return this.useAsyncTableScanner
+            return this.useAsyncTableScanner || this.useParallelDeserialization
                 ? (ITableScan) new ConcurrentTableScanAndFilter()
                 : new TableScanAndFilter();
+        }
+
+        #endregion
+
+        #region Nested Types
+
+        private sealed class BlockingQueue<T>
+        {
+            private int count;
+
+            private readonly Queue<T> queue = new Queue<T>();
+
+            public T Dequeue()
+            {
+                lock (this.queue)
+                {
+                    while (this.count <= 0)
+                    {
+                        Monitor.Wait(this.queue);
+                    }
+
+                    this.count--;
+
+                    return this.queue.Dequeue();
+                }
+            }
+
+            public void Enqueue(T data)
+            {
+                lock (this.queue)
+                {
+                    this.queue.Enqueue(data);
+
+                    this.count++;
+
+                    Monitor.Pulse(this.queue);
+                }
+            }
         }
 
         #endregion
