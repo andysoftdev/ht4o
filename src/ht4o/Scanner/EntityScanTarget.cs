@@ -39,6 +39,11 @@ namespace Hypertable.Persistence.Scanner
         protected Action<object, object> setter;
 
         /// <summary>
+        ///     The sync synchronization object.
+        /// </summary>
+        private readonly object syncRoot = new object();
+
+        /// <summary>
         ///     The scan target.
         /// </summary>
         private readonly object target;
@@ -196,12 +201,15 @@ namespace Hypertable.Persistence.Scanner
         /// </param>
         internal void AddScanTargetRef(EntityScanTarget entityScanTarget)
         {
-            if (this.scanTargetRefs == null)
+            lock (this.syncRoot)
             {
-                this.scanTargetRefs = new ChunkedCollection<EntityScanTarget>();
-            }
+                if (this.scanTargetRefs == null)
+                {
+                    this.scanTargetRefs = new ChunkedCollection<EntityScanTarget>();
+                }
 
-            this.scanTargetRefs.Add(entityScanTarget);
+                this.scanTargetRefs.Add(entityScanTarget);
+            }
         }
 
         /// <summary>
