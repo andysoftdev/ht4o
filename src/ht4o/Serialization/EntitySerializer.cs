@@ -116,7 +116,7 @@ namespace Hypertable.Persistence.Serialization
         internal static byte[] Serialize(EntityContext entityContext, Type serializeType, object value, int capacity,
             SerializingEntity serializingEntity)
         {
-            using (var memoryStream = new MemoryStream(capacity))
+            using (var memoryStream = new WritableMemoryStream(capacity))
             {
                 using (var binaryWriter = new BufferedBinaryWriter(memoryStream))
                 {

@@ -23,10 +23,10 @@ namespace Hypertable.Persistence.Serialization
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
+    using Hypertable.Persistence.Serialization;
     using Hypertable.Persistence.Reflection;
 
     /// <summary>
@@ -234,7 +234,7 @@ namespace Hypertable.Persistence.Serialization
         /// </summary>
         private byte[] GetSerializedSchema()
         {
-            using (var ms = new MemoryStream())
+            using (var ms = new WritableMemoryStream())
             {
                 using (var binaryWriter = new BufferedBinaryWriter(ms, System.Text.Encoding.ASCII))
                 {

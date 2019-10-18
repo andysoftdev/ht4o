@@ -91,6 +91,10 @@
       <HintPath>$(Ht4n)</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Buffers.4.5.0\lib\netstandard1.1\System.Buffers.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
@@ -144,6 +148,7 @@
     <Compile Include="ColumnBindingComparer.cs" />
     <Compile Include="Reflection\InspectedSerializable.cs" />
     <Compile Include="Serialization\BinaryArrayReader.cs" />
+    <Compile Include="Serialization\WritableMemoryStream.cs" />
     <Compile Include="Serialization\BufferedBinaryWriter.cs" />
     <Compile Include="Serialization\ArrayFlags.cs" />
     <Compile Include="Serialization\EncoderConfiguration.cs" />
@@ -208,6 +213,7 @@
     <Compile Include="Serialization\Tags.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
     <None Include="Settings.StyleCop" />
   </ItemGroup>
   <ItemGroup />

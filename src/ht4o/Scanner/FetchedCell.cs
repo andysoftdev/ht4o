@@ -21,75 +21,19 @@
 
 namespace Hypertable.Persistence.Scanner
 {
+    using Hypertable;
+
     /// <summary>
     ///     Declares fetched cell.
     /// </summary>
-    internal sealed class FetchedCell
+    internal sealed class FetchedCell : PooledCell
     {
         #region Fields
-
-        /// <summary>
-        ///     The key.
-        /// </summary>
-        internal Key Key;
-
-        /// <summary>
-        ///     The value.
-        /// </summary>
-        internal byte[] Value;
-
-        /// <summary>
-        ///     The value length.
-        /// </summary>
-        internal int ValueLength;
 
         /// <summary>
         ///     The entity scan target.
         /// </summary>
         internal EntityScanTarget EntityScanTarget;
-
-        #endregion
-
-        #region Constructors and Destructors
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="FetchedCell" /> class.
-        /// </summary>
-        internal FetchedCell() {
-        }
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="FetchedCell" /> class.
-        /// </summary>
-        /// <param name="cell">
-        ///     The fetched cell.
-        /// </param>
-        /// <param name="entityScanTarget">
-        ///     The entity scan target.
-        /// </param>
-        internal FetchedCell(Cell cell, EntityScanTarget entityScanTarget)
-        {
-            this.Key = cell.Key;
-            this.Value = cell.Value;
-            this.ValueLength = cell.Value != null ? cell.Value.Length : 0;
-            this.EntityScanTarget = entityScanTarget;
-        }
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="FetchedCell" /> class.
-        /// </summary>
-        /// <param name="cell">
-        ///     The fetched cell.
-        /// </param>
-        /// <param name="entityScanTarget">
-        ///     The entity scan target.
-        /// </param>
-        internal FetchedCell(BufferedCell cell, EntityScanTarget entityScanTarget) {
-            this.Key = cell.Key;
-            this.Value = cell.Value;
-            this.ValueLength = cell.ValueLength;
-            this.EntityScanTarget = entityScanTarget;
-        }
 
         #endregion
     }

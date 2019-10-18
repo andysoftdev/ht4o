@@ -223,7 +223,7 @@ namespace Hypertable.Persistence.Serialization
         /// </returns>
         public static byte[] ToByteArray(Type serializeType, object value, int capacity)
         {
-            using (var memoryStream = new MemoryStream(capacity))
+            using (var memoryStream = new WritableMemoryStream(capacity))
             {
                 using (var binaryWriter = new BufferedBinaryWriter(memoryStream))
                 {

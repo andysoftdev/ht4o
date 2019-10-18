@@ -300,7 +300,12 @@ namespace Hypertable.Persistence.Scanner
                                     break;
                                 }
 
-                                entityFetched(fetchedCell);
+                                try {
+                                    entityFetched(fetchedCell, fetchedCell.EntityScanTarget);
+                                }
+                                finally {
+                                    PooledCell.Return(fetchedCell.Value);
+                                }
                             }
                         };
 
@@ -310,11 +315,14 @@ namespace Hypertable.Persistence.Scanner
                         }
 
                         using (var scanner = table.CreateScanner(scanSpec)) {
-                            Cell cell;
-                            while (scanner.Next(out cell)) {
-                                EntityScanTarget entityScanTarget;
-                                if (tableItem.Value.TryRemoveScanTarget(cell.Key, out entityScanTarget)) {
-                                    fetchedCells.Enqueue(new FetchedCell(cell, entityScanTarget));
+                            var fetchedCell = new FetchedCell();
+                            while (scanner.Move(fetchedCell)) {
+                                if (tableItem.Value.TryRemoveScanTarget(fetchedCell.Key, out fetchedCell.EntityScanTarget)) {
+                                    fetchedCells.Enqueue(fetchedCell);
+                                    fetchedCell = new FetchedCell();
+                                }
+                                else {
+                                    PooledCell.Return(fetchedCell.Value);
                                 }
                             }
 
@@ -331,17 +339,12 @@ namespace Hypertable.Persistence.Scanner
                     }
                     else {
                         var bufferedCell = new BufferedCell(0);
-                        var fetchedCell = new FetchedCell();
 
                         using (var scanner = table.CreateScanner(scanSpec)) {
                             while (scanner.Move(bufferedCell)) {
                                 EntityScanTarget entityScanTarget;
                                 if (tableItem.Value.TryRemoveScanTarget(bufferedCell.Key, out entityScanTarget)) {
-                                    fetchedCell.Key = bufferedCell.Key;
-                                    fetchedCell.Value = bufferedCell.Value;
-                                    fetchedCell.ValueLength = bufferedCell.ValueLength;
-                                    fetchedCell.EntityScanTarget = entityScanTarget;
-                                    entityFetched(fetchedCell);
+                                    entityFetched(bufferedCell, entityScanTarget);
                                 }
                             }
 
@@ -354,7 +357,6 @@ namespace Hypertable.Persistence.Scanner
             }
             else {
                 var bufferedCell = new BufferedCell(0);
-                var fetchedCell = new FetchedCell();
 
                 foreach (var tableItem in tablesToFetch) {
                     var table = this.entityContext.GetTable(tableItem.Key.First, tableItem.Key.Second);
@@ -380,11 +382,7 @@ namespace Hypertable.Persistence.Scanner
                         while (scanner.Move(bufferedCell)) {
                             EntityScanTarget entityScanTarget;
                             if (tableItem.Value.TryRemoveScanTarget(bufferedCell.Key, out entityScanTarget)) {
-                                fetchedCell.Key = bufferedCell.Key;
-                                fetchedCell.Value = bufferedCell.Value;
-                                fetchedCell.ValueLength = bufferedCell.ValueLength;
-                                fetchedCell.EntityScanTarget = entityScanTarget;
-                                entityFetched(fetchedCell);
+                                entityFetched(bufferedCell, entityScanTarget);
                             }
                         }
 
@@ -418,8 +416,7 @@ namespace Hypertable.Persistence.Scanner
                     EntityScanTarget entityScanTarget;
                     if (tableItem.Value.TryRemoveScanTarget(cell.Key, out entityScanTarget))
                     {
-                        var fetchedCell = new FetchedCell(cell, entityScanTarget);
-                        entityFetched(fetchedCell);
+                        entityFetched(cell, entityScanTarget);
                     }
                 });
         }
@@ -439,17 +436,12 @@ namespace Hypertable.Persistence.Scanner
         private static void SequentialProcessFetchedCells(KeyValuePair<Pair<string>, ITableScan> tableItem,
             IEnumerable<Cell> cells, EntityFetched entityFetched)
         {
-            var fetchedCell = new FetchedCell();
             foreach (var cell in cells)
             {
                 EntityScanTarget entityScanTarget;
                 if (tableItem.Value.TryRemoveScanTarget(cell.Key, out entityScanTarget))
                 {
-                    fetchedCell.Key = cell.Key;
-                    fetchedCell.Value = cell.Value;
-                    fetchedCell.ValueLength = cell.Value != null ? cell.Value.Length : 0;
-                    fetchedCell.EntityScanTarget = entityScanTarget;
-                    entityFetched(fetchedCell);
+                    entityFetched(cell, entityScanTarget);
                 }
             }
         }

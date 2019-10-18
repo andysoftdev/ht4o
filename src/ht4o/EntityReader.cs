@@ -24,6 +24,7 @@ namespace Hypertable.Persistence
     using System;
     using System.Collections;
     using System.Linq;
+    using Hypertable;
     using Hypertable.Persistence.Collections;
     using Hypertable.Persistence.Scanner;
     using Hypertable.Persistence.Serialization;
@@ -276,21 +277,22 @@ namespace Hypertable.Persistence
         /// <summary>
         ///     The entity fetched callback.
         /// </summary>
-        /// <param name="fc">
+        /// <param name="cell">
         ///     The fetched cell.
         /// </param>
-        private void EntityFetched(FetchedCell fc)
+        /// <param name="entityScanTarget">
+        ///     The entity scan target.
+        /// </param>
+        private void EntityFetched(ICell cell, EntityScanTarget entityScanTarget)
         {
-            var fetchedCell = fc;
-            var entityScanTarget = fc.EntityScanTarget;
             var entity = EntityDeserializer.Deserialize(
                 this,
                 typeof(object) /*TODO REMOVE ?? entityScanTarget.EntityType*/,
-                fc.Value,
-                fc.ValueLength,
+                cell.Value,
+                cell.ValueLength,
                 (reference, type, value) => {
-                    this.entitiesFetched.TryAdd(fetchedCell.EntityScanTarget, value);
-                    reference.SetKey(value, fetchedCell.Key);
+                    this.entitiesFetched.TryAdd(entityScanTarget, value);
+                    reference.SetKey(value, cell.Key);
                 });
 
             if (!this.behaviors.DoNotCache())

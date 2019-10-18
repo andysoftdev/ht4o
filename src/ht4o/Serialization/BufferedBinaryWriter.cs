@@ -48,7 +48,7 @@ namespace Hypertable.Persistence.Serialization
 
         private readonly unsafe byte* endPtr;
 
-        private readonly MemoryPage memoryPage;
+        private MemoryPage memoryPage;
 
         private unsafe byte* ptr;
 
@@ -396,8 +396,12 @@ namespace Hypertable.Persistence.Serialization
 
         protected override void Dispose(bool disposing)
         {
-            this.WriteBuffer();
-            Pool.ReturnPage(this.memoryPage);
+            if (this.memoryPage != null) {
+                this.WriteBuffer();
+                Pool.ReturnPage(this.memoryPage);
+                this.memoryPage = null;
+            }
+
             base.Dispose(disposing);
         }
 
