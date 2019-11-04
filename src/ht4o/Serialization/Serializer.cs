@@ -225,7 +225,7 @@ namespace Hypertable.Persistence.Serialization
         {
             using (var memoryStream = new WritableMemoryStream(capacity))
             {
-                using (var binaryWriter = new BufferedBinaryWriter(memoryStream))
+                using (var binaryWriter = new BufferedBinaryWriter(memoryStream, true))
                 {
                     new Serializer(binaryWriter).Write(serializeType, value);
                 }
@@ -299,7 +299,7 @@ namespace Hypertable.Persistence.Serialization
         /// </param>
         public void Serialize(Stream stream, Type serializeType, object value)
         {
-            using (this.binaryWriter = new BufferedBinaryWriter(stream))
+            using (this.binaryWriter = new BufferedBinaryWriter(stream, true))
             {
                 this.Write(serializeType, value);
             }

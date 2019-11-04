@@ -34,6 +34,8 @@ namespace Hypertable.Persistence.Serialization
 
         private static readonly MemoryPagePool Pool = new MemoryPagePool();
 
+        private static readonly UTF8Encoding UTF8Encoding = new UTF8Encoding(false, true);
+
         #endregion
 
         #region Fields
@@ -56,13 +58,13 @@ namespace Hypertable.Persistence.Serialization
 
         #region Constructors and Destructors
 
-        public BufferedBinaryWriter(Stream output)
-            : this(output, new UTF8Encoding(false, true))
+        public BufferedBinaryWriter(Stream output, bool leaveOpen)
+            : this(output, UTF8Encoding, leaveOpen)
         {
         }
 
-        public unsafe BufferedBinaryWriter(Stream output, Encoding encoding)
-            : base(output, encoding)
+        public unsafe BufferedBinaryWriter(Stream output, Encoding encoding, bool leaveOpen)
+            : base(output, encoding, leaveOpen)
         {
             this.memoryPage = Pool.GetPage();
 

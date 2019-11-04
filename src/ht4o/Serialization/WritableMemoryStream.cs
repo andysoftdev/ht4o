@@ -126,13 +126,7 @@ namespace Hypertable.Persistence.Serialization
         #region Methods
 
         protected override void Dispose(bool disposing) {
-            if (this.buffer != null) {
-                this.bufferHandle.Free();
-                if (this.buffer.Length <= MaxArrayLength) {
-                    Pool.Return(this.buffer);
-                }
-                this.buffer = null;
-            }
+            this.Return();
 
             base.Dispose(disposing);
         }
@@ -154,21 +148,14 @@ namespace Hypertable.Persistence.Serialization
         private unsafe void EnsureBuffer(int requiredCapacity) {
             var newCapacity = this.position + requiredCapacity;
             if (newCapacity > this.buffer.Length) {
-                var newLength = 2 * this.buffer.Length;
-                while (newLength < newCapacity) {
-                    newLength *= 2;
-                }
-
+                var newLength = newCapacity + DefaultCapacity;
                 var newBuffer = this.Rent(newLength);
                 var newBufferHandle = GCHandle.Alloc(newBuffer, GCHandleType.Pinned);
                 var newPtr = (byte*)newBufferHandle.AddrOfPinnedObject();
 
                 memcpyPtrArray(newPtr, this.buffer, new UIntPtr((uint)this.position));
 
-                this.bufferHandle.Free();
-                if (this.buffer.Length <= MaxArrayLength) {
-                    Pool.Return(this.buffer);
-                }
+                this.Return();
 
                 this.buffer = newBuffer;
                 this.bufferHandle = newBufferHandle;
@@ -177,12 +164,22 @@ namespace Hypertable.Persistence.Serialization
             }
         }
 
-        private byte[] Rent(int requiredCapacity) {
-            if (requiredCapacity > MaxArrayLength) {
-                return new byte[requiredCapacity];
+        private byte[] Rent(int length) {
+            if (length > MaxArrayLength) {
+                return new byte[length];
             }
 
-            return Pool.Rent(requiredCapacity);
+            return Pool.Rent(length);
+        }
+
+        private void Return() {
+            if (this.buffer != null) {
+                this.bufferHandle.Free();
+                if (this.buffer.Length <= MaxArrayLength) {
+                    Pool.Return(this.buffer);
+                }
+                this.buffer = null;
+            }
         }
 
         private unsafe void Write(byte[] buffer, int count) {
