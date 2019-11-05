@@ -30,11 +30,9 @@ namespace Hypertable.Persistence.Serialization
     {
         #region Static Fields and Constants
 
-        public static int DefaultCapacity = 4 * 1024;
+        public static readonly int DefaultCapacity = 4 * 1024;
 
-        public static int MaxArrayLength = 8 * 1024 * 1014;
-
-        private static readonly ArrayPool<byte> Pool = ArrayPool<byte>.Create();
+        private static readonly ArrayPool<byte> Pool = ArrayPool<byte>.Shared;
 
         #endregion
 
@@ -165,19 +163,13 @@ namespace Hypertable.Persistence.Serialization
         }
 
         private byte[] Rent(int length) {
-            if (length > MaxArrayLength) {
-                return new byte[length];
-            }
-
             return Pool.Rent(length);
         }
 
         private void Return() {
             if (this.buffer != null) {
                 this.bufferHandle.Free();
-                if (this.buffer.Length <= MaxArrayLength) {
-                    Pool.Return(this.buffer);
-                }
+                Pool.Return(this.buffer);
                 this.buffer = null;
             }
         }
