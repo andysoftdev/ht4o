@@ -23,6 +23,7 @@ namespace Hypertable.Persistence.Serialization
 {
     using System;
     using System.Buffers;
+    using System.Collections.Generic;
     using System.IO;
     using System.Runtime.InteropServices;
 
@@ -30,36 +31,32 @@ namespace Hypertable.Persistence.Serialization
     {
         #region Static Fields and Constants
 
-        public static readonly int DefaultCapacity = 4 * 1024;
+        public static readonly int DefaultCapacity = 16 * 1024;
 
-        private static readonly ArrayPool<byte> Pool = ArrayPool<byte>.Shared;
+        private readonly List<byte[]> chunks = new List<byte[]>(32);
 
-        #endregion
+        private int length;
 
-        #region Fields
-
-        private byte[] buffer;
-
-        private GCHandle bufferHandle;
+        private byte[] chunk;
 
         private int position;
 
-        private unsafe byte* ptr;
-
-        private unsafe byte* basePtr;
+        private static readonly ArrayPool<byte> Pool = ArrayPool<byte>.Shared;
 
         #endregion
 
         #region Constructors and Destructors
 
         public unsafe WritableMemoryStream(int capacity) {
-            this.buffer = this.Rent(Math.Max(capacity, DefaultCapacity));
-            this.bufferHandle = GCHandle.Alloc(this.buffer, GCHandleType.Pinned);
-            this.basePtr = this.ptr = (byte*)this.bufferHandle.AddrOfPinnedObject();
+            if (capacity / DefaultCapacity > this.chunks.Capacity) {
+                this.chunks.Capacity = capacity / DefaultCapacity + 1;
+            }
+
+            this.AddChunk();
         }
 
-        public WritableMemoryStream()
-            : this(DefaultCapacity) {
+        public WritableMemoryStream() {
+            this.AddChunk();
         }
 
         #endregion
@@ -72,11 +69,11 @@ namespace Hypertable.Persistence.Serialization
 
         public override bool CanWrite => true;
 
-        public override long Length => this.position;
+        public override long Length => this.length;
 
         public override long Position {
             get {
-                return this.position;
+                return this.length;
             }
 
             set {
@@ -100,15 +97,28 @@ namespace Hypertable.Persistence.Serialization
         }
 
         public override void SetLength(long value) {
-            this.EnsureBuffer((int)value);
+            if (value / DefaultCapacity > this.chunks.Capacity) {
+                this.chunks.Capacity = (int)(value / DefaultCapacity + 1);
+            }
         }
 
-        public unsafe byte[] ToArray() {
-            var result = new byte[this.position];
-            if (this.position > 0) {
-                memcpyArrayPtr(result, this.basePtr, new UIntPtr((uint)this.position));
+        public byte[] ToArray() {
+            var array = new byte[this.length];
+
+            if (this.length > 0) {
+                int index = 0;
+                foreach (var c in chunks) {
+                    var l = c.Length;
+                    if (index + l > this.length) {
+                        l = this.length - index;
+                    }
+
+                    Array.Copy(c, 0, array, index, l);
+                    index += l;
+                }
             }
-            return result;
+
+            return array;
         }
 
         public override void Write(byte[] buffer, int offset, int count) {
@@ -116,7 +126,21 @@ namespace Hypertable.Persistence.Serialization
                 throw new NotImplementedException();
             }
 
-            this.Write(buffer, count);
+            for (int tail = this.position + count; tail > this.chunk.Length; tail = this.position + count) {
+                var fill = this.chunk.Length - this.position;
+
+                Array.Copy(buffer, offset, this.chunk, this.position, fill);
+                this.length += fill;
+
+                this.AddChunk();
+
+                offset += fill;
+                count -= fill;
+            }
+
+            Array.Copy(buffer, offset, this.chunk, this.position, count);
+            this.position += count;
+            this.length += count;
         }
 
         #endregion
@@ -124,61 +148,19 @@ namespace Hypertable.Persistence.Serialization
         #region Methods
 
         protected override void Dispose(bool disposing) {
-            this.Return();
+            this.chunk = null;
+
+            foreach (var c in chunks) {
+                Pool.Return(c);
+            }
 
             base.Dispose(disposing);
         }
 
-        [DllImport(
-            "msvcrt.dll",
-            EntryPoint = "memcpy",
-            CallingConvention = CallingConvention.Cdecl,
-            SetLastError = false)]
-        private static extern unsafe IntPtr memcpyPtrArray(byte* dest, byte[] src, UIntPtr count);
-
-        [DllImport(
-            "msvcrt.dll",
-            EntryPoint = "memcpy",
-            CallingConvention = CallingConvention.Cdecl,
-            SetLastError = false)]
-        private static extern unsafe IntPtr memcpyArrayPtr(byte[] dest, byte* src, UIntPtr count);
-
-        private unsafe void EnsureBuffer(int requiredCapacity) {
-            var newCapacity = this.position + requiredCapacity;
-            if (newCapacity > this.buffer.Length) {
-                var newLength = newCapacity + DefaultCapacity;
-                var newBuffer = this.Rent(newLength);
-                var newBufferHandle = GCHandle.Alloc(newBuffer, GCHandleType.Pinned);
-                var newPtr = (byte*)newBufferHandle.AddrOfPinnedObject();
-
-                memcpyPtrArray(newPtr, this.buffer, new UIntPtr((uint)this.position));
-
-                this.Return();
-
-                this.buffer = newBuffer;
-                this.bufferHandle = newBufferHandle;
-                this.basePtr = newPtr;
-                this.ptr = newPtr + this.position;
-            }
-        }
-
-        private byte[] Rent(int length) {
-            return Pool.Rent(length);
-        }
-
-        private void Return() {
-            if (this.buffer != null) {
-                this.bufferHandle.Free();
-                Pool.Return(this.buffer);
-                this.buffer = null;
-            }
-        }
-
-        private unsafe void Write(byte[] buffer, int count) {
-            this.EnsureBuffer(count);
-            memcpyPtrArray(this.ptr, buffer, new UIntPtr((uint)count));
-            this.position += count;
-            this.ptr += count;
+        private void AddChunk() {
+            this.chunk = Pool.Rent(DefaultCapacity);
+            this.chunks.Add(this.chunk);
+            this.position = 0;
         }
 
         #endregion
