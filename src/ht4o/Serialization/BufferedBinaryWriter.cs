@@ -461,7 +461,7 @@ namespace Hypertable.Persistence.Serialization
         {
             #region Constants
 
-            public const int Size = 512;
+            public const int Size = 1024;
 
             #endregion
 
