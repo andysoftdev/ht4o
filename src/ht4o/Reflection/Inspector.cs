@@ -392,9 +392,15 @@ namespace Hypertable.Persistence.Reflection
             if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(alternateName))
             {
                 this.inspectedProperties.TryGetValue(name, out inspectedProperty);
-                if (inspectedProperty != null && !this.inspectedProperties.ContainsKey(alternateName))
+                if (inspectedProperty != null)
                 {
-                    this.inspectedProperties.Add(alternateName, inspectedProperty);
+                    lock (this.inspectedProperties)
+                    {
+                        if (!this.inspectedProperties.ContainsKey(alternateName))
+                        {
+                            this.inspectedProperties.Add(alternateName, inspectedProperty);
+                        }
+                    }
                 }
             }
             return inspectedProperty;
