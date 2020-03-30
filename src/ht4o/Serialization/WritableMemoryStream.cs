@@ -41,7 +41,7 @@ namespace Hypertable.Persistence.Serialization
 
         private int position;
 
-        private static readonly ArrayPool<byte> Pool = ArrayPool<byte>.Shared;
+        private static readonly ArrayPool<byte> Pool = ArrayPool<byte>.Create(DefaultCapacity, 1024);
 
         #endregion
 
