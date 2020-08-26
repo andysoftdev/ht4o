@@ -22,6 +22,7 @@
 namespace Hypertable.Persistence
 {
     using System;
+    using System.Collections.Generic;
     using System.Globalization;
     using Hypertable.Persistence.Collections;
     using Hypertable.Persistence.Scanner;
@@ -96,6 +97,11 @@ namespace Hypertable.Persistence
         /// </summary>
         private Type tableMutatorType;
 
+        /// <summary>
+        ///     The keys to ignore.
+        /// </summary>
+        private readonly ISet<Key> ignoreKeys;
+
         #endregion
 
         #region Constructors and Destructors
@@ -112,6 +118,9 @@ namespace Hypertable.Persistence
         /// <param name="entity">
         ///     The entity.
         /// </param>
+        /// <param name="ignoreKeys">
+        ///     The keys to ignore.
+        /// </param>
         /// <param name="behaviors">
         ///     The behaviors.
         /// </param>
@@ -124,7 +133,7 @@ namespace Hypertable.Persistence
         /// <exception cref="ArgumentException">
         ///     If <see cref="Behaviors.BypassWriteCache" /> has been combined with <see cref="Behaviors.CreateLazy" />.
         /// </exception>
-        private EntityWriter(EntityContext entityContext, Type entityType, object entity, Behaviors behaviors,
+        private EntityWriter(EntityContext entityContext, Type entityType, object entity, ISet<Key> ignoreKeys, Behaviors behaviors,
             IdentitySet entitiesWritten)
         {
             if (behaviors.IsCreateLazy())
@@ -141,6 +150,7 @@ namespace Hypertable.Persistence
             }
 
             this.entityContext = entityContext;
+            this.ignoreKeys = ignoreKeys;
             this.behaviors = behaviors;
             this.entityType = entityType;
             this.entity = entity;
@@ -152,46 +162,6 @@ namespace Hypertable.Persistence
         #endregion
 
         #region Methods
-
-        /// <summary>
-        ///     Persist the given entity using the behavior specified.
-        /// </summary>
-        /// <param name="entityContext">
-        ///     The entity context.
-        /// </param>
-        /// <param name="entity">
-        ///     The entity to persist.
-        /// </param>
-        /// <param name="behaviors">
-        ///     The behaviors.
-        /// </param>
-        /// <typeparam name="T">
-        ///     The entity type.
-        /// </typeparam>
-        internal static void Persist<T>(EntityContext entityContext, T entity, Behaviors behaviors) where T : class
-        {
-            Persist(entityContext, typeof(T), entity, behaviors);
-        }
-
-        /// <summary>
-        ///     Persist the given entity using the behavior specified.
-        /// </summary>
-        /// <param name="entityContext">
-        ///     The entity context.
-        /// </param>
-        /// <param name="entityType">
-        ///     The entity Type.
-        /// </param>
-        /// <param name="entity">
-        ///     The entity to persist.
-        /// </param>
-        /// <param name="behaviors">
-        ///     The behaviors.
-        /// </param>
-        internal static void Persist(EntityContext entityContext, Type entityType, object entity, Behaviors behaviors)
-        {
-            Persist(entityContext, entityType, entity, behaviors, new IdentitySet());
-        }
 
         /// <summary>
         ///     Persist the given entity using the behavior specified.
@@ -217,25 +187,111 @@ namespace Hypertable.Persistence
         private static Key Persist(EntityContext entityContext, Type entityType, object entity, Behaviors behaviors,
             IdentitySet entitiesWritten)
         {
-            var entityWriter = new EntityWriter(entityContext, entityType, entity, behaviors, entitiesWritten);
+            var entityWriter = new EntityWriter(entityContext, entityType, entity, null, behaviors, entitiesWritten);
             return entityWriter.Persist();
+        }
+
+        /// <summary>
+        ///     Persist the given entity using the behavior specified.
+        /// </summary>
+        /// <param name="entityContext">
+        ///     The entity context.
+        /// </param>
+        /// <param name="entity">
+        ///     The entity to persist.
+        /// </param>
+        /// <param name="ignoreKeys">
+        ///     The keys to ignore.
+        /// </param>
+        /// <param name="behaviors">
+        ///     The behaviors.
+        /// </param>
+        /// <typeparam name="T">
+        ///     The entity type.
+        /// </typeparam>
+        internal static void Persist<T>(EntityContext entityContext, T entity, ISet<Key> ignoreKeys, Behaviors behaviors) where T : class {
+            Persist(entityContext, typeof(T), entity, ignoreKeys, behaviors);
+        }
+
+        /// <summary>
+        ///     Persist the given entity using the behavior specified.
+        /// </summary>
+        /// <param name="entityContext">
+        ///     The entity context.
+        /// </param>
+        /// <param name="entityType">
+        ///     The entity Type.
+        /// </param>
+        /// <param name="entity">
+        ///     The entity to persist.
+        /// </param>
+        /// <param name="ignoreKeys">
+        ///     The keys to ignore.
+        /// </param>
+        /// <param name="behaviors">
+        ///     The behaviors.
+        /// </param>
+        internal static void Persist(EntityContext entityContext, Type entityType, object entity, ISet<Key> ignoreKeys, Behaviors behaviors) {
+            Persist(entityContext, entityType, entity, ignoreKeys, behaviors, new IdentitySet(), true, true);
+        }
+
+        /// <summary>
+        ///     Persist the given entity using the behavior specified.
+        /// </summary>
+        /// <param name="entityContext">
+        ///     The entity context.
+        /// </param>
+        /// <param name="entityType">
+        ///     The entity type.
+        /// </param>
+        /// <param name="entity">
+        ///     The entity.
+        /// </param>
+        /// <param name="ignoreKeys">
+        ///     The keys to ignore.
+        /// </param>
+        /// <param name="behaviors">
+        ///     The behaviors.
+        /// </param>
+        /// <param name="entitiesWritten">
+        ///     The entities written.
+        /// </param>
+        /// <param name="write">
+        ///    if <c>true</c> writes the entity, otherwise only traversing.
+        /// </param>
+        /// <param name="isRoot">
+        ///    if <c>true</c> if entity is the root, otherwise <c>false</c>.
+        /// </param>
+        /// <returns>
+        ///     The entity key.
+        /// </returns>
+        private static Key Persist(EntityContext entityContext, Type entityType, object entity, ISet<Key> ignoreKeys, Behaviors behaviors,
+            IdentitySet entitiesWritten, bool write = true, bool isRoot = false) {
+            var entityWriter = new EntityWriter(entityContext, entityType, entity, ignoreKeys, behaviors, entitiesWritten);
+            return entityWriter.Persist(write, isRoot);
         }
 
         /// <summary>
         ///     Persist the entity.
         /// </summary>
+        /// <param name="write">
+        ///    if <c>true</c> writes the entity, otherwise only traversing.
+        /// </param>
         /// <returns>
         ///     The entity key.
         /// </returns>
+        /// <param name="isRoot">
+        ///    if <c>true</c> if entity is the root, otherwise <c>false</c>.
+        /// </param>
         /// <exception cref="PersistenceException">
         ///     If entity is not recognized as a valid entity.
         /// </exception>
-        private Key Persist()
+        private Key Persist(bool write = true, bool isRoot = false)
         {
             if (this.entitiesWritten.Add(this.entity))
             {
                 var value = EntitySerializer.Serialize(this.entityContext, this.entityType, this.entity,
-                    SerializationBase.DefaultCapacity, this.SerializingEntity);
+                    SerializationBase.DefaultCapacity, write, this.SerializingEntity);
                 if (this.entityReference == null)
                 {
                     throw new PersistenceException(string.Format(CultureInfo.InvariantCulture,
@@ -249,21 +305,23 @@ namespace Hypertable.Persistence
                     ? new EntitySpec(this.entityReference, new Key(this.key))
                     : null;
 
-                if (dontCache || this.entitySpecsWritten.Add(entitySpec) || this.behaviors.BypassWriteCache())
+                if (dontCache || this.entitySpecsWritten.Add(entitySpec) || (isRoot && this.behaviors.IsCreateNew()) || this.behaviors.BypassWriteCache())
                 {
-                    if (bypassEntitySpecsFetched || !this.entitySpecsFetched.Contains(entitySpec))
+                    if (write)
                     {
-                        var type = this.entityReference.EntityType;
-                        if (this.tableMutatorType != type)
+                        if (bypassEntitySpecsFetched || !this.entitySpecsFetched.Contains(entitySpec))
                         {
-                            this.tableMutatorType = type;
-                            this.tableMutator = this.entityContext.GetTableMutator(this.entityReference.Namespace,
-                                this.entityReference.TableName);
-                        }
+                            var type = this.entityReference.EntityType;
+                            if (this.tableMutatorType != type) {
+                                this.tableMutatorType = type;
+                                this.tableMutator = this.entityContext.GetTableMutator(this.entityReference.Namespace,
+                                    this.entityReference.TableName);
+                            }
 
-                        //// TODO verbosity?
-                        //// Logging.TraceEvent(TraceEventType.Verbose, () => string.Format(CultureInfo.InvariantCulture, @"Set {0}@{1}", this.tableMutator.Key, this.key));
-                        this.tableMutator.Set(this.key, value);
+                            //// TODO verbosity?
+                            //// Logging.TraceEvent(TraceEventType.Verbose, () => string.Format(CultureInfo.InvariantCulture, @"Set {0}@{1}", this.tableMutator.Key, this.key));
+                            this.tableMutator.Set(this.key, value);
+                        }
                     }
                 }
             }
@@ -291,6 +349,8 @@ namespace Hypertable.Persistence
         /// </returns>
         private Key SerializingEntity(bool isRoot, EntityReference er, Type serializeType, object e)
         {
+            var write = true;
+
             if (isRoot)
             {
                 this.entityReference = er;
@@ -332,8 +392,16 @@ namespace Hypertable.Persistence
 
                 return this.key;
             }
+            else if (this.ignoreKeys != null && (this.behaviors & Behaviors.CreateBehaviors) != Behaviors.CreateAlways)
+            {
+                var k = er.KeyBinding.KeyFromEntity(e);
+                if (k != null && this.ignoreKeys.Contains(k))
+                {
+                    write = false;
+                }
+            }
 
-            return Persist(this.entityContext, serializeType, e, this.behaviors, this.entitiesWritten);
+            return Persist(this.entityContext, serializeType, e, this.ignoreKeys, this.behaviors, this.entitiesWritten, write);
         }
 
         #endregion

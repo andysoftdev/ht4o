@@ -107,25 +107,39 @@ namespace Hypertable.Persistence.Serialization
         /// <param name="capacity">
         ///     The internal memory stream intial capacity.
         /// </param>
+        /// <param name="write">
+        ///     If <c>true</c> value will be serialized; otherwise only traversed, null will be returned.
+        /// </param>
         /// <param name="serializingEntity">
         ///     The serializing entity delegate.
         /// </param>
         /// <returns>
         ///     The serialized object.
         /// </returns>
-        internal static byte[] Serialize(EntityContext entityContext, Type serializeType, object value, int capacity,
+        internal static byte[] Serialize(EntityContext entityContext, Type serializeType, object value, int capacity, bool write,
             SerializingEntity serializingEntity)
         {
-            using (var memoryStream = new WritableMemoryStream(capacity))
+            if (write)
             {
-                using (var binaryWriter = new BufferedBinaryWriter(memoryStream, true))
+                using (var memoryStream = new WritableMemoryStream(capacity))
                 {
-                    new EntitySerializer(entityContext, binaryWriter, value, serializingEntity).Write(serializeType,
-                        value);
-                }
+                    using (var binaryWriter = new BufferedBinaryWriter(memoryStream, true))
+                    {
+                        var entitySerializer = new EntitySerializer(entityContext, binaryWriter, value, serializingEntity);
+                        entitySerializer.Write(serializeType, value);
+                    }
 
-                return memoryStream.ToArray();
+                    return memoryStream.ToArray();
+                }
             }
+
+            using (var binaryWriter = new FakeBinaryWriter())
+            {
+                var entitySerializer = new EntitySerializer(entityContext, binaryWriter, value, serializingEntity);
+                entitySerializer.Write(serializeType, value);
+            }
+
+            return null;
         }
 
         /// <summary>

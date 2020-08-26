@@ -1084,8 +1084,30 @@ namespace Hypertable.Persistence
         /// </returns>
         public T Persist<T>(T entity, Behaviors behaviors) where T : class
         {
+            return this.Persist<T>(entity, null, behaviors);
+        }
+
+        /// <summary>
+        ///     Stores an entity instance to the database.
+        /// </summary>
+        /// <param name="entity">
+        ///     The entity to store.
+        /// </param>
+        /// <param name="ignoreKeys">
+        ///     The keys to ignore.
+        /// </param>
+        /// <param name="behaviors">
+        ///     The behaviors.
+        /// </param>
+        /// <typeparam name="T">
+        ///     The entity type.
+        /// </typeparam>
+        /// <returns>
+        ///     The entity.
+        /// </returns>
+        public T Persist<T>(T entity, ISet<Key> ignoreKeys, Behaviors behaviors) where T : class {
             this.ThrowIfDisposed();
-            this.entityContext.Persist(entity, this.CheckBehaviors(behaviors));
+            this.entityContext.Persist(entity, ignoreKeys, this.CheckBehaviors(behaviors));
             return entity;
         }
 

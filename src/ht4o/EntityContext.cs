@@ -569,7 +569,7 @@ namespace Hypertable.Persistence
         public void Merge<T>(T entity) where T : class
         {
             ////TODO implement real merge
-            this.Persist(entity, Behaviors.CreateNew);
+            this.Persist(entity, null, Behaviors.CreateNew);
         }
 
         /// <summary>
@@ -578,30 +578,18 @@ namespace Hypertable.Persistence
         /// <param name="entity">
         ///     The entity to store.
         /// </param>
+        /// <param name="ignoreKeys">
+        ///     The keys to ignore.
+        /// </param>
         /// <param name="behaviors">
         ///     The behaviors.
         /// </param>
         /// <typeparam name="T">
         ///     The entity type.
         /// </typeparam>
-        public void Persist<T>(T entity, Behaviors behaviors) where T : class
+        public void Persist<T>(T entity, ISet<Key> ignoreKeys, Behaviors behaviors) where T : class
         {
-            if (behaviors.IsCreateNew() && !behaviors.DoNotCache() && !behaviors.BypassWriteCache())
-            {
-                var entityReference = this.EntityReferenceForType(entity.GetType());
-                if (entityReference != null)
-                {
-                    bool newEntity;
-                    var key = entityReference.GetKeyFromEntity(entity, out newEntity);
-                    if (!newEntity)
-                    {
-                        var entitySpec = new EntitySpec(entityReference, key);
-                        this.entitySpecsWritten.Remove(entitySpec);
-                    }
-                }
-            }
-
-            EntityWriter.Persist(this, entity, behaviors);
+            EntityWriter.Persist(this, entity, ignoreKeys, behaviors);
         }
 
         /// <summary>

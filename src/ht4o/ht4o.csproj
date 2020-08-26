@@ -148,6 +148,7 @@
     <Compile Include="ColumnBindingComparer.cs" />
     <Compile Include="Reflection\InspectedSerializable.cs" />
     <Compile Include="Serialization\BinaryArrayReader.cs" />
+    <Compile Include="Serialization\FakeBinaryWriter.cs" />
     <Compile Include="Serialization\WritableMemoryStream.cs" />
     <Compile Include="Serialization\BufferedBinaryWriter.cs" />
     <Compile Include="Serialization\ArrayFlags.cs" />
