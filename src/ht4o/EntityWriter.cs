@@ -27,8 +27,7 @@ namespace Hypertable.Persistence
     using Hypertable.Persistence.Collections;
     using Hypertable.Persistence.Scanner;
     using Hypertable.Persistence.Serialization;
-    using EntitySpecSet =
-        Hypertable.Persistence.Collections.Concurrent.ConcurrentSet<Hypertable.Persistence.Scanner.EntitySpec>;
+    using EntitySpecSet = Hypertable.Persistence.Collections.Concurrent.ConcurrentSet<Hypertable.Persistence.Scanner.EntitySpec>;
 
     /// <summary>
     ///     The entity writer.
@@ -48,11 +47,6 @@ namespace Hypertable.Persistence
         private readonly IdentitySet entitiesWritten;
 
         /// <summary>
-        ///     The entity.
-        /// </summary>
-        private readonly object entity;
-
-        /// <summary>
         ///     The entity context.
         /// </summary>
         private readonly EntityContext entityContext;
@@ -66,11 +60,6 @@ namespace Hypertable.Persistence
         ///     The entity specs written.
         /// </summary>
         private readonly EntitySpecSet entitySpecsWritten;
-
-        /// <summary>
-        ///     The entity type.
-        /// </summary>
-        private readonly Type entityType;
 
         /// <summary>
         ///     The entity reference.
@@ -133,7 +122,7 @@ namespace Hypertable.Persistence
         /// <exception cref="ArgumentException">
         ///     If <see cref="Behaviors.BypassWriteCache" /> has been combined with <see cref="Behaviors.CreateLazy" />.
         /// </exception>
-        private EntityWriter(EntityContext entityContext, Type entityType, object entity, ISet<Key> ignoreKeys, Behaviors behaviors,
+        private EntityWriter(EntityContext entityContext, ISet<Key> ignoreKeys, Behaviors behaviors,
             IdentitySet entitiesWritten)
         {
             if (behaviors.IsCreateLazy())
@@ -152,8 +141,6 @@ namespace Hypertable.Persistence
             this.entityContext = entityContext;
             this.ignoreKeys = ignoreKeys;
             this.behaviors = behaviors;
-            this.entityType = entityType;
-            this.entity = entity;
             this.entitiesWritten = entitiesWritten;
             this.entitySpecsWritten = entityContext.EntitySpecsWritten;
             this.entitySpecsFetched = entityContext.EntitySpecsFetched;
@@ -187,8 +174,8 @@ namespace Hypertable.Persistence
         private static Key Persist(EntityContext entityContext, Type entityType, object entity, Behaviors behaviors,
             IdentitySet entitiesWritten)
         {
-            var entityWriter = new EntityWriter(entityContext, entityType, entity, null, behaviors, entitiesWritten);
-            return entityWriter.Persist();
+            var entityWriter = new EntityWriter(entityContext, null, behaviors, entitiesWritten);
+            return entityWriter.Persist(entityType, entity);
         }
 
         /// <summary>
@@ -267,35 +254,42 @@ namespace Hypertable.Persistence
         /// </returns>
         private static Key Persist(EntityContext entityContext, Type entityType, object entity, ISet<Key> ignoreKeys, Behaviors behaviors,
             IdentitySet entitiesWritten, bool write = true, bool isRoot = false) {
-            var entityWriter = new EntityWriter(entityContext, entityType, entity, ignoreKeys, behaviors, entitiesWritten);
-            return entityWriter.Persist(write, isRoot);
+            var entityWriter = new EntityWriter(entityContext, ignoreKeys, behaviors, entitiesWritten);
+            return entityWriter.Persist(entityType, entity, write, isRoot);
         }
 
         /// <summary>
         ///     Persist the entity.
         /// </summary>
+        /// <param name="entityType">
+        ///     The entity type.
+        /// </param>
+        /// <param name="entity">
+        ///     The entity.
+        /// </param>
         /// <param name="write">
         ///    if <c>true</c> writes the entity, otherwise only traversing.
+        /// </param>
+        /// <param name="isRoot">
+        ///    if <c>true</c> if entity is the root, otherwise <c>false</c>.
         /// </param>
         /// <returns>
         ///     The entity key.
         /// </returns>
-        /// <param name="isRoot">
-        ///    if <c>true</c> if entity is the root, otherwise <c>false</c>.
-        /// </param>
         /// <exception cref="PersistenceException">
         ///     If entity is not recognized as a valid entity.
         /// </exception>
-        private Key Persist(bool write = true, bool isRoot = false)
+        private Key Persist(Type entityType, object entity, bool write = true, bool isRoot = false)
         {
-            if (this.entitiesWritten.Add(this.entity))
+            if (this.entitiesWritten.Add(entity))
             {
-                var value = EntitySerializer.Serialize(this.entityContext, this.entityType, this.entity,
+                write = write && (this.newEntity || !this.behaviors.WriteNewOnly());
+                var value = EntitySerializer.Serialize(this.entityContext, entityType, entity,
                     SerializationBase.DefaultCapacity, write, this.SerializingEntity);
                 if (this.entityReference == null)
                 {
                     throw new PersistenceException(string.Format(CultureInfo.InvariantCulture,
-                        @"{0} is not a valid entity", this.entityType));
+                        @"{0} is not a valid entity", entityType));
                 }
 
                 var dontCache = this.behaviors.DoNotCache();

@@ -105,6 +105,17 @@ namespace Hypertable.Persistence
             return (behaviors & Behaviors.CreateBehaviors) == Behaviors.Default;
         }
 
+        /// <summary>
+        ///     Gets a value indicating whether the behavior is write new only.
+        /// </summary>
+        /// <return>
+        ///     <c>true</c> if write new only behaviors, otherwise <c>false</c>.
+        /// </return>
+        public static bool WriteNewOnly(this Behaviors behaviors)
+        {
+            return (behaviors & Behaviors.WriteNewOnly) > 0;
+        }
+
         #endregion
     }
 }
