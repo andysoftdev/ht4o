@@ -52,16 +52,6 @@ namespace Hypertable.Persistence
         private readonly EntityContext entityContext;
 
         /// <summary>
-        ///     The entity specs fetched.
-        /// </summary>
-        private readonly EntitySpecSet entitySpecsFetched;
-
-        /// <summary>
-        ///     The entity specs written.
-        /// </summary>
-        private readonly EntitySpecSet entitySpecsWritten;
-
-        /// <summary>
         ///     The entity reference.
         /// </summary>
         private EntityReference entityReference;
@@ -142,8 +132,6 @@ namespace Hypertable.Persistence
             this.ignoreKeys = ignoreKeys;
             this.behaviors = behaviors;
             this.entitiesWritten = entitiesWritten;
-            this.entitySpecsWritten = entityContext.EntitySpecsWritten;
-            this.entitySpecsFetched = entityContext.EntitySpecsFetched;
         }
 
         #endregion
@@ -299,11 +287,11 @@ namespace Hypertable.Persistence
                     ? new EntitySpec(this.entityReference, new Key(this.key))
                     : null;
 
-                if (dontCache || this.entitySpecsWritten.Add(entitySpec) || (isRoot && this.behaviors.IsCreateNew()) || this.behaviors.BypassWriteCache())
+                if (dontCache || this.entityContext.EntitySpecsWritten.Add(entitySpec) || (isRoot && this.behaviors.IsCreateNew()) || this.behaviors.BypassWriteCache())
                 {
                     if (write)
                     {
-                        if (bypassEntitySpecsFetched || !this.entitySpecsFetched.Contains(entitySpec))
+                        if (bypassEntitySpecsFetched || !this.entityContext.EntitySpecsFetched.Contains(entitySpec))
                         {
                             var type = this.entityReference.EntityType;
                             if (this.tableMutatorType != type) {
@@ -363,10 +351,10 @@ namespace Hypertable.Persistence
                             var entitySpec = new EntitySpec(this.entityReference, new Key(this.key));
 
                             ////TODO needs to check if the entity has been modified (write,write again)
-                            if (!this.entitySpecsWritten.Contains(entitySpec))
+                            if (!this.entityContext.EntitySpecsWritten.Contains(entitySpec))
                             {
                                 ////TODO needs to check if the entity has been modified (read, write)
-                                if (this.behaviors.BypassReadCache() || !this.entitySpecsFetched.Contains(entitySpec))
+                                if (this.behaviors.BypassReadCache() || !this.entityContext.EntitySpecsFetched.Contains(entitySpec))
                                 {
                                     this.key = er.GenerateKey(e);
                                 }
