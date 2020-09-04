@@ -62,18 +62,23 @@ namespace Hypertable.Persistence
         WriteNewOnly = 1 << 8,
 
         /// <summary>
+        ///     Writes an entity only once.
+        /// </summary>
+        WriteOnce = 1 << 9,
+
+        /// <summary>
         ///     Don't cache entities written nor entities read.
         /// </summary>
-        DoNotCache = 1 << 9,
+        DoNotCache = 1 << 10,
 
         /// <summary>
         ///     Bypasses the entity keys written cache, cannot be combined with Behaviors.CreateLazy.
         /// </summary>
-        BypassWriteCache = 1 << 10,
+        BypassWriteCache = 1 << 11,
 
         /// <summary>
         ///     Bypasses the entity read cache. If set fetched entities won't be insert into the read cache.
         /// </summary>
-        BypassReadCache = 1 << 11
+        BypassReadCache = 1 << 12
     }
 }

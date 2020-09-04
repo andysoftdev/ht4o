@@ -116,6 +116,16 @@ namespace Hypertable.Persistence
             return (behaviors & Behaviors.WriteNewOnly) > 0;
         }
 
+        /// <summary>
+        ///     Gets a value indicating whether the behavior is write once.
+        /// </summary>
+        /// <return>
+        ///     <c>true</c> if write once behaviors, otherwise <c>false</c>.
+        /// </return>
+        public static bool WriteOnce(this Behaviors behaviors) {
+            return (behaviors & Behaviors.WriteOnce) > 0;
+        }
+
         #endregion
     }
 }

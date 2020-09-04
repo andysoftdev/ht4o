@@ -26,11 +26,12 @@ namespace Hypertable.Persistence
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
-    using Hypertable.Persistence.Scanner;
     using EntitySpecSet =
         Hypertable.Persistence.Collections.Concurrent.ConcurrentSet<Hypertable.Persistence.Scanner.EntitySpec>;
     using TableMutatorDictionary =
         Hypertable.Persistence.Collections.Concurrent.ConcurrentStringDictionary<ITableMutator>;
+    using ConcurrentIdentitySet =
+        Hypertable.Persistence.Collections.Concurrent.ConcurrentSet<object, Hypertable.Persistence.Collections.IdentityComparer>;
 
     /// <summary>
     ///     The entity context.
@@ -68,6 +69,11 @@ namespace Hypertable.Persistence
         ///     The entity specs written.
         /// </summary>
         private EntitySpecSet entitySpecsWritten = new EntitySpecSet();
+
+        /// <summary>
+        ///     Keeps track of the entities written.
+        /// </summary>
+        private ISet<object> entitiesWritten = new ConcurrentIdentitySet();
 
         #endregion
 
@@ -149,6 +155,14 @@ namespace Hypertable.Persistence
         ///     The entity specs written set.
         /// </value>
         internal EntitySpecSet EntitySpecsWritten => this.entitySpecsWritten;
+
+        /// <summary>
+        ///     Gets the entities written.
+        /// </summary>
+        /// <value>
+        ///     The written entities.
+        /// </value>
+        internal ISet<object> EntitiesWritten => this.entitiesWritten;
 
         #endregion
 
@@ -590,6 +604,10 @@ namespace Hypertable.Persistence
         public void Persist<T>(T entity, ISet<Key> ignoreKeys, Behaviors behaviors) where T : class
         {
             EntityWriter.Persist(this, entity, ignoreKeys, behaviors);
+
+            if (behaviors.BypassWriteCache()) {
+                this.entitiesWritten.Remove(entity);
+            }
         }
 
         /// <summary>
@@ -859,6 +877,9 @@ namespace Hypertable.Persistence
 
                 this.entitySpecsWritten.Clear();
                 this.entitySpecsWritten = null;
+
+                this.entitiesWritten.Clear();
+                this.entitiesWritten = null;
 
                 this.disposed = true;
             }

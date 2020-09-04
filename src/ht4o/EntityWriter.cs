@@ -44,7 +44,7 @@ namespace Hypertable.Persistence
         /// <summary>
         ///     Keeps track of the entities written.
         /// </summary>
-        private readonly IdentitySet entitiesWritten;
+        private readonly ISet<object> entitiesWritten;
 
         /// <summary>
         ///     The entity context.
@@ -113,7 +113,7 @@ namespace Hypertable.Persistence
         ///     If <see cref="Behaviors.BypassWriteCache" /> has been combined with <see cref="Behaviors.CreateLazy" />.
         /// </exception>
         private EntityWriter(EntityContext entityContext, ISet<Key> ignoreKeys, Behaviors behaviors,
-            IdentitySet entitiesWritten)
+            ISet<object> entitiesWritten)
         {
             if (behaviors.IsCreateLazy())
             {
@@ -160,7 +160,7 @@ namespace Hypertable.Persistence
         ///     The entity key.
         /// </returns>
         private static Key Persist(EntityContext entityContext, Type entityType, object entity, Behaviors behaviors,
-            IdentitySet entitiesWritten)
+            ISet<object> entitiesWritten)
         {
             var entityWriter = new EntityWriter(entityContext, null, behaviors, entitiesWritten);
             return entityWriter.Persist(entityType, entity);
@@ -185,29 +185,8 @@ namespace Hypertable.Persistence
         ///     The entity type.
         /// </typeparam>
         internal static void Persist<T>(EntityContext entityContext, T entity, ISet<Key> ignoreKeys, Behaviors behaviors) where T : class {
-            Persist(entityContext, typeof(T), entity, ignoreKeys, behaviors);
-        }
-
-        /// <summary>
-        ///     Persist the given entity using the behavior specified.
-        /// </summary>
-        /// <param name="entityContext">
-        ///     The entity context.
-        /// </param>
-        /// <param name="entityType">
-        ///     The entity Type.
-        /// </param>
-        /// <param name="entity">
-        ///     The entity to persist.
-        /// </param>
-        /// <param name="ignoreKeys">
-        ///     The keys to ignore.
-        /// </param>
-        /// <param name="behaviors">
-        ///     The behaviors.
-        /// </param>
-        internal static void Persist(EntityContext entityContext, Type entityType, object entity, ISet<Key> ignoreKeys, Behaviors behaviors) {
-            Persist(entityContext, entityType, entity, ignoreKeys, behaviors, new IdentitySet(), true, true);
+            var entitiesWritten = behaviors.WriteOnce() ? entityContext.EntitiesWritten : new IdentitySet();
+            Persist(entityContext, typeof(T), entity, ignoreKeys, behaviors, entitiesWritten, true, true);
         }
 
         /// <summary>
@@ -241,7 +220,7 @@ namespace Hypertable.Persistence
         ///     The entity key.
         /// </returns>
         private static Key Persist(EntityContext entityContext, Type entityType, object entity, ISet<Key> ignoreKeys, Behaviors behaviors,
-            IdentitySet entitiesWritten, bool write = true, bool isRoot = false) {
+            ISet<object> entitiesWritten, bool write = true, bool isRoot = false) {
             var entityWriter = new EntityWriter(entityContext, ignoreKeys, behaviors, entitiesWritten);
             return entityWriter.Persist(entityType, entity, write, isRoot);
         }
@@ -271,7 +250,6 @@ namespace Hypertable.Persistence
         {
             if (this.entitiesWritten.Add(entity))
             {
-                write = write && (this.newEntity || !this.behaviors.WriteNewOnly());
                 var value = EntitySerializer.Serialize(this.entityContext, entityType, entity,
                     SerializationBase.DefaultCapacity, write, this.SerializingEntity);
                 if (this.entityReference == null)
@@ -279,6 +257,8 @@ namespace Hypertable.Persistence
                     throw new PersistenceException(string.Format(CultureInfo.InvariantCulture,
                         @"{0} is not a valid entity", entityType));
                 }
+
+                write = write && (this.newEntity || !this.behaviors.WriteNewOnly());
 
                 var dontCache = this.behaviors.DoNotCache();
                 var bypassEntitySpecsFetched =
@@ -389,3 +369,4 @@ namespace Hypertable.Persistence
         #endregion
     }
 }
+ 
