@@ -53,7 +53,7 @@ namespace Hypertable.Persistence.Reflection
         /// <summary>
         ///     Indicating whether the inspected type has a default constructor.
         /// </summary>
-        private readonly Func<object> constructor;
+        private readonly Func<object> createInstance;
 
         /// <summary>
         ///     The enumerable.
@@ -123,7 +123,7 @@ namespace Hypertable.Persistence.Reflection
 
             if (!typeof(Enumerable).IsAssignableFrom(type))
             {
-                this.constructor = DelegateFactory.CreateConstructor(type);
+                this.createInstance = DelegateFactory.CreateInstance(type);
 
                 ////TODO control isSerializable/ISerializable by settings fields or props?
                 this.inspectedProperties = ReflectionExtensions.HasAttribute<SerializableAttribute>(type)
@@ -337,9 +337,7 @@ namespace Hypertable.Persistence.Reflection
         {
             if (!this.InspectedType.IsInterface && !this.InspectedType.IsAbstract)
             {
-                return this.constructor != null
-                    ? this.constructor()
-                    : FormatterServices.GetUninitializedObject(this.InspectedType);
+                return this.createInstance();
             }
 
             return null;
@@ -443,8 +441,8 @@ namespace Hypertable.Persistence.Reflection
             var methods = type.GetMethodsWithAttribute<T>();
             if (methods != null)
             {
-                var handler = new DynamicMethod("Handler" + methods[0].Name, typeof(void),
-                    new[] {typeof(object), typeof(StreamingContext)}, methods[0].Module, true);
+                var handler = new DynamicMethod("ht4o_Handler" + methods[0].Name, typeof(void),
+                    new[] { typeof(object), typeof(StreamingContext) }, methods[0].Module, true) { InitLocals = false };
                 var generator = handler.GetILGenerator();
 
                 foreach (var m in methods)

@@ -97,8 +97,8 @@ namespace Hypertable.Persistence.Reflection
             }
 
             var method = new DynamicMethod(
-                "Ctor" + constructorInfo.Name, typeof(object),
-                new[] {typeof(SerializationInfo), typeof(StreamingContext)}, constructorInfo.Module, true);
+                "ht4o_Ctor" + constructorInfo.Name, typeof(object),
+                new[] {typeof(SerializationInfo), typeof(StreamingContext)}, constructorInfo.Module, true) { InitLocals = false };
             var generator = method.GetILGenerator();
 
             generator.Emit(OpCodes.Ldarg_0);

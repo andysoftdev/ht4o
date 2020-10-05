@@ -25,6 +25,7 @@ namespace Hypertable.Persistence.Reflection
     using System.Linq.Expressions;
     using System.Reflection;
     using System.Reflection.Emit;
+    using System.Runtime.Serialization;
     using Hypertable.Persistence.Extensions;
 
     /// <summary>
@@ -51,17 +52,86 @@ namespace Hypertable.Persistence.Reflection
                 return null;
             }
 
-            var instanceType = methodInfo.DeclaringType;
-            var argumentType = methodInfo.GetParameters()[0].ParameterType;
+            var method = new DynamicMethod(
+                "ht4o_Action" + methodInfo.Name,
+                typeof(void),
+                new[] { typeof(object), typeof(object) },
+                methodInfo.Module,
+                true) { InitLocals = false };
 
-            var instance = Expression.Parameter(typeof(object));
-            var argument = Expression.Parameter(typeof(object));
-            var createExpression =
-                Expression.Lambda<Action<object, object>>(
-                    Expression.Call(ConvertOrUnbox(instance, instanceType), methodInfo,
-                        ConvertOrUnbox(argument, argumentType)), instance, argument);
+            var generator = method.GetILGenerator();
 
-            return createExpression.Compile();
+            generator.Emit(OpCodes.Ldarg_0);
+            if (methodInfo.DeclaringType.IsValueType) {
+                generator.Emit(OpCodes.Unbox, methodInfo.DeclaringType);
+            }
+
+            generator.Emit(OpCodes.Ldarg_1);
+            if (methodInfo.GetParameters()[0].ParameterType.IsValueType) {
+                generator.Emit(OpCodes.Unbox_Any, methodInfo.GetParameters()[0].ParameterType);
+            }
+
+            generator.Emit(OpCodes.Call, methodInfo);
+            generator.Emit(OpCodes.Ret);
+
+            return (Action<object, object>)method.CreateDelegate(typeof(Action<object, object>));
+        }
+
+        /// <summary>
+        ///     Returns an IL-compiled function that creates instances of <paramref name="instanceType" /> using its parameter-less
+        ///     constructor.
+        /// </summary>
+        /// <param name="instanceType">
+        ///     Type of the instance.
+        /// </param>
+        /// <returns>
+        ///     The function.
+        /// </returns>
+        public static Func<object> CreateInstance(Type instanceType) {
+            if (instanceType == null) {
+                throw new ArgumentNullException(nameof(instanceType));
+            }
+
+            if (instanceType.IsAbstract || instanceType.IsInterface) {
+                return null;
+            }
+
+            var method = new DynamicMethod(
+                "ht4o_CreateInstance" + instanceType.Name,
+                typeof(object),
+                Type.EmptyTypes,
+                typeof(DelegateFactory).Module,
+                true) { InitLocals = false };
+
+            var generator = method.GetILGenerator();
+
+            if (!instanceType.IsValueType) {
+                var constructor = instanceType.GetConstructor(
+                    BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance,
+                    null,
+                    Type.EmptyTypes,
+                    null);
+
+                if (constructor != null) {
+                    generator.Emit(OpCodes.Newobj, constructor);
+                }
+                else {
+                    generator.Emit(OpCodes.Ldtoken, instanceType);
+                    generator.Emit(OpCodes.Call, typeof(Type).GetMethod(nameof(Type.GetTypeFromHandle)));
+                    generator.Emit(OpCodes.Call, typeof(FormatterServices).GetMethod(nameof(FormatterServices.GetUninitializedObject)));
+                }
+            }
+            else {
+                var instanceTypeLoc = generator.DeclareLocal(instanceType);
+                generator.Emit(OpCodes.Ldloca_S, instanceTypeLoc);
+                generator.Emit(OpCodes.Initobj, instanceType);
+                generator.Emit(OpCodes.Ldloca_S, instanceTypeLoc);
+                generator.Emit(OpCodes.Box, instanceType);
+            }
+
+            generator.Emit(OpCodes.Ret);
+
+            return (Func<object>)method.CreateDelegate(typeof(Func<object>));
         }
 
         /// <summary>
@@ -123,20 +193,33 @@ namespace Hypertable.Persistence.Reflection
                 return null;
             }
 
-            var instanceType = methodInfo.DeclaringType;
-            var argumentType = methodInfo.GetParameters()[0].ParameterType;
+            var method = new DynamicMethod(
+               "ht4o_Func" + methodInfo.Name,
+               typeof(object),
+               new[] { typeof(object), typeof(object) },
+               methodInfo.Module,
+               true) { InitLocals = false };
 
-            var instance = Expression.Parameter(typeof(object));
-            var argument = Expression.Parameter(typeof(object));
-            var createExpression =
-                Expression.Lambda<Func<object, object, object>>(
-                    Expression.Convert(
-                        Expression.Call(ConvertOrUnbox(instance, instanceType), methodInfo,
-                            ConvertOrUnbox(argument, argumentType)), typeof(object)),
-                    instance,
-                    argument);
+            var generator = method.GetILGenerator();
 
-            return createExpression.Compile();
+            generator.Emit(OpCodes.Ldarg_0);
+            if (methodInfo.DeclaringType.IsValueType) {
+                generator.Emit(OpCodes.Unbox, methodInfo.DeclaringType);
+            }
+
+            generator.Emit(OpCodes.Ldarg_1);
+            if (methodInfo.GetParameters()[0].ParameterType.IsValueType) {
+                generator.Emit(OpCodes.Unbox_Any, methodInfo.GetParameters()[0].ParameterType);
+            }
+
+            generator.Emit(OpCodes.Call, methodInfo);
+            if (methodInfo.ReturnType.IsValueType) {
+                generator.Emit(OpCodes.Box, methodInfo.ReturnType);
+            }
+
+            generator.Emit(OpCodes.Ret);
+
+            return (Func<object, object, object>)method.CreateDelegate(typeof(Func<object, object, object>));
         }
 
         /// <summary>
@@ -155,15 +238,32 @@ namespace Hypertable.Persistence.Reflection
                 return null;
             }
 
-            var instanceType = propertyInfo.DeclaringType;
+            if (propertyInfo.GetGetMethod(true) == null) {
+                throw new ArgumentException($"Property {propertyInfo.Name} has no getter");
+            }
 
-            var instance = Expression.Parameter(typeof(object));
-            var createExpression =
-                Expression.Lambda<Func<object, object>>(
-                    Expression.Convert(Expression.Property(ConvertOrUnbox(instance, instanceType), propertyInfo),
-                        typeof(object)), instance);
+            var method = new DynamicMethod(
+                "ht4o_Getter" + propertyInfo.Name,
+                typeof(object),
+                new[] { typeof(object) },
+                propertyInfo.Module,
+                true) { InitLocals = false };
 
-            return createExpression.Compile();
+            var generator = method.GetILGenerator();
+
+            generator.Emit(OpCodes.Ldarg_0);
+            if (propertyInfo.DeclaringType.IsValueType) {
+                generator.Emit(OpCodes.Unbox, propertyInfo.DeclaringType);
+            }
+
+            generator.Emit(OpCodes.Call, propertyInfo.GetGetMethod(true));
+            if (propertyInfo.PropertyType.IsValueType) {
+                generator.Emit(OpCodes.Box, propertyInfo.PropertyType);
+            }
+
+            generator.Emit(OpCodes.Ret);
+
+            return (Func<object, object>)method.CreateDelegate(typeof(Func<object, object>));
         }
 
         /// <summary>
@@ -182,14 +282,28 @@ namespace Hypertable.Persistence.Reflection
                 return null;
             }
 
-            var instanceType = fieldInfo.DeclaringType;
+            var method = new DynamicMethod(
+                "ht4o_Getter" + fieldInfo.Name,
+                typeof(object),
+                new[] { typeof(object) },
+                fieldInfo.Module,
+                true) { InitLocals = false };
 
-            var instance = Expression.Parameter(typeof(object));
-            var createExpression = Expression.Lambda<Func<object, object>>(
-                Expression.Convert(Expression.Field(ConvertOrUnbox(instance, instanceType), fieldInfo), typeof(object)),
-                instance);
+            var generator = method.GetILGenerator();
 
-            return createExpression.Compile();
+            generator.Emit(OpCodes.Ldarg_0);
+            if (fieldInfo.DeclaringType.IsValueType) {
+                generator.Emit(OpCodes.Unbox, fieldInfo.DeclaringType);
+            }
+
+            generator.Emit(OpCodes.Ldfld, fieldInfo);
+            if (fieldInfo.FieldType.IsValueType) {
+                generator.Emit(OpCodes.Box, fieldInfo.FieldType);
+            }
+
+            generator.Emit(OpCodes.Ret);
+
+            return (Func<object, object>)method.CreateDelegate(typeof(Func<object, object>));
         }
 
         /// <summary>
@@ -208,17 +322,30 @@ namespace Hypertable.Persistence.Reflection
                 return null;
             }
 
-            var instanceType = propertyInfo.DeclaringType;
+            var method = new DynamicMethod(
+                "ht4o_IndexerGetter" + propertyInfo.Name,
+                typeof(object),
+                new[] { typeof(object), typeof(int) },
+                propertyInfo.Module,
+                true) { InitLocals = false };
 
-            var instance = Expression.Parameter(typeof(object));
-            var index = Expression.Parameter(typeof(int));
-            var createExpression =
-                Expression.Lambda<Func<object, int, object>>(
-                    Expression.Convert(
-                        Expression.MakeIndex(ConvertOrUnbox(instance, instanceType), propertyInfo, new[] {index}),
-                        typeof(object)), instance, index);
+            var generator = method.GetILGenerator();
 
-            return createExpression.Compile();
+            generator.Emit(OpCodes.Ldarg_0);
+            if (propertyInfo.DeclaringType.IsValueType) {
+                generator.Emit(OpCodes.Unbox, propertyInfo.DeclaringType);
+            }
+
+            generator.Emit(OpCodes.Ldarg_1);
+
+            generator.Emit(OpCodes.Call, propertyInfo.GetGetMethod(true));
+            if (propertyInfo.PropertyType.IsValueType) {
+                generator.Emit(OpCodes.Box, propertyInfo.PropertyType);
+            }
+
+            generator.Emit(OpCodes.Ret);
+
+            return (Func<object, int, object>)method.CreateDelegate(typeof(Func<object, int, object>));
         }
 
         /// <summary>
@@ -237,22 +364,31 @@ namespace Hypertable.Persistence.Reflection
                 return null;
             }
 
-            var instanceType = propertyInfo.DeclaringType;
-            var elementType = propertyInfo.PropertyType;
+            var method = new DynamicMethod(
+                "ht4o_IndexerSetter" + propertyInfo.Name,
+                typeof(void),
+                new[] { typeof(object), typeof(int), typeof(object) },
+                propertyInfo.Module,
+                true) { InitLocals = false };
 
-            var instance = Expression.Parameter(typeof(object));
-            var index = Expression.Parameter(typeof(int));
-            var newValue = Expression.Parameter(typeof(object));
-            var createExpression =
-                Expression.Lambda<Action<object, int, object>>(
-                    Expression.Assign(
-                        Expression.MakeIndex(ConvertOrUnbox(instance, instanceType), propertyInfo, new[] {index}),
-                        ConvertOrUnbox(newValue, elementType)),
-                    instance,
-                    index,
-                    newValue);
+            var generator = method.GetILGenerator();
 
-            return createExpression.Compile();
+            generator.Emit(OpCodes.Ldarg_0);
+            if (propertyInfo.DeclaringType.IsValueType) {
+                generator.Emit(OpCodes.Unbox, propertyInfo.DeclaringType);
+            }
+
+            generator.Emit(OpCodes.Ldarg_1);
+
+            generator.Emit(OpCodes.Ldarg_2);
+            if (propertyInfo.PropertyType.IsValueType) {
+                generator.Emit(OpCodes.Unbox_Any, propertyInfo.PropertyType);
+            }
+
+            generator.Emit(OpCodes.Call, propertyInfo.GetSetMethod(true));
+            generator.Emit(OpCodes.Ret);
+
+            return (Action<object, int, object>)method.CreateDelegate(typeof(Action<object, int, object>));
         }
 
         /// <summary>
@@ -271,17 +407,33 @@ namespace Hypertable.Persistence.Reflection
                 return null;
             }
 
-            var instanceType = propertyInfo.DeclaringType;
-            var propertyType = propertyInfo.PropertyType;
+            if (propertyInfo.GetSetMethod(true) == null) {
+                throw new ArgumentException($"Property {propertyInfo.Name} has no setter");
+            }
 
-            var instance = Expression.Parameter(typeof(object));
-            var newValue = Expression.Parameter(typeof(object));
-            var createExpression =
-                Expression.Lambda<Action<object, object>>(
-                    Expression.Assign(Expression.Property(ConvertOrUnbox(instance, instanceType), propertyInfo),
-                        ConvertOrUnbox(newValue, propertyType)), instance, newValue);
+            var method = new DynamicMethod(
+                "ht4o_Setter" + propertyInfo.Name,
+                typeof(void),
+                new[] { typeof(object), typeof(object) },
+                propertyInfo.Module,
+                true) { InitLocals = false };
 
-            return createExpression.Compile();
+            var generator = method.GetILGenerator();
+
+            generator.Emit(OpCodes.Ldarg_0);
+            if (propertyInfo.DeclaringType.IsValueType) {
+                generator.Emit(OpCodes.Unbox, propertyInfo.DeclaringType);
+            }
+
+            generator.Emit(OpCodes.Ldarg_1);
+            if (propertyInfo.PropertyType.IsValueType) {
+                generator.Emit(OpCodes.Unbox_Any, propertyInfo.PropertyType);
+            }
+
+            generator.Emit(OpCodes.Call, propertyInfo.GetSetMethod(true));
+            generator.Emit(OpCodes.Ret);
+
+            return (Action<object, object>)method.CreateDelegate(typeof(Action<object, object>));
         }
 
         /// <summary>
@@ -300,42 +452,29 @@ namespace Hypertable.Persistence.Reflection
                 return null;
             }
 
-            if (fieldInfo.IsInitOnly)
-            {
-                var method = new DynamicMethod("Setter" + fieldInfo.Name, typeof(void),
-                    new[] {typeof(object), typeof(object)}, fieldInfo.Module, true);
+            var method = new DynamicMethod(
+                "ht4o_Setter" + fieldInfo.Name,
+                typeof(void),
+                new[] { typeof(object), typeof(object) },
+                fieldInfo.Module,
+                true) { InitLocals = false };
 
-                var generator = method.GetILGenerator();
+            var generator = method.GetILGenerator();
 
-                generator.Emit(OpCodes.Ldarg_0);
-                if (fieldInfo.DeclaringType.IsValueType())
-                {
-                    generator.Emit(OpCodes.Unbox, fieldInfo.DeclaringType);
-                }
-
-                generator.Emit(OpCodes.Ldarg_1);
-                if (fieldInfo.FieldType.IsValueType())
-                {
-                    generator.Emit(OpCodes.Unbox_Any, fieldInfo.FieldType);
-                }
-
-                generator.Emit(OpCodes.Stfld, fieldInfo);
-                generator.Emit(OpCodes.Ret);
-
-                return (Action<object, object>) method.CreateDelegate(typeof(Action<object, object>));
+            generator.Emit(OpCodes.Ldarg_0);
+            if (fieldInfo.DeclaringType.IsValueType) {
+                generator.Emit(OpCodes.Unbox, fieldInfo.DeclaringType);
             }
 
-            var instanceType = fieldInfo.DeclaringType;
-            var propertyType = fieldInfo.FieldType;
+            generator.Emit(OpCodes.Ldarg_1);
+            if (fieldInfo.FieldType.IsValueType) {
+                generator.Emit(OpCodes.Unbox_Any, fieldInfo.FieldType);
+            }
 
-            var instance = Expression.Parameter(typeof(object));
-            var newValue = Expression.Parameter(typeof(object));
-            var createExpression =
-                Expression.Lambda<Action<object, object>>(
-                    Expression.Assign(Expression.Field(ConvertOrUnbox(instance, instanceType), fieldInfo),
-                        ConvertOrUnbox(newValue, propertyType)), instance, newValue);
+            generator.Emit(OpCodes.Stfld, fieldInfo);
+            generator.Emit(OpCodes.Ret);
 
-            return createExpression.Compile();
+            return (Action<object, object>)method.CreateDelegate(typeof(Action<object, object>));
         }
 
         #endregion
@@ -399,6 +538,6 @@ namespace Hypertable.Persistence.Reflection
                 : Expression.Convert(instance, instanceType);
         }
 
-        #endregion
+#endregion
     }
 }
