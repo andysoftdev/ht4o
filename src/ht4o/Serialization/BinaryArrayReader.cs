@@ -27,8 +27,15 @@ namespace Hypertable.Persistence.Serialization
     using System.Runtime.InteropServices;
     using System.Text;
 
-    internal sealed class BinaryArrayReader : BinaryReader
-    {
+    internal sealed class BinaryArrayReader : BinaryReader {
+        #region Static Fields
+
+        private static readonly UTF8Encoding UTF8Encoding = new UTF8Encoding(false, true);
+
+        private static readonly MemoryStream UnusedMemoryStream = new MemoryStream();
+
+        #endregion
+
         #region Fields
 
         public readonly unsafe byte* endPtr;
@@ -54,40 +61,32 @@ namespace Hypertable.Persistence.Serialization
         #region Constructors and Destructors
 
         public BinaryArrayReader(byte[] buffer)
-            : this(buffer, 0)
-        {
+            : this(buffer, 0) {
         }
 
         public BinaryArrayReader(byte[] buffer, int index)
-            : this(buffer, index, buffer.Length - index)
-        {
+            : this(buffer, index, buffer.Length - index) {
         }
 
         public BinaryArrayReader(byte[] buffer, int index, int count)
-            : this(buffer, index, count, new UTF8Encoding())
-        {
+            : this(buffer, index, count, UTF8Encoding) {
         }
 
         public unsafe BinaryArrayReader(byte[] buffer, int index, int count, Encoding encoding)
-            : base(new MemoryStream(), encoding)
-        {
-            if (buffer == null)
-            {
+            : base(UnusedMemoryStream, encoding, true) {
+            if (buffer == null) {
                 throw new ArgumentNullException(nameof(buffer));
             }
 
-            if (index < 0)
-            {
+            if (index < 0) {
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
 
-            if (count < 0)
-            {
+            if (count < 0) {
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
 
-            if (buffer.Length - index < count)
-            {
+            if (buffer.Length - index < count) {
                 throw new ArgumentException("The buffer length minus index is less than count.");
             }
 
@@ -99,7 +98,32 @@ namespace Hypertable.Persistence.Serialization
             this.readCharByteCount = encoding is UnicodeEncoding ? 2 : 1;
 
             this.bufferHandle = GCHandle.Alloc(this.buffer, GCHandleType.Pinned);
-            this.basePtr = (byte*) this.bufferHandle.AddrOfPinnedObject() + index;
+            this.basePtr = (byte*)this.bufferHandle.AddrOfPinnedObject() + index;
+            this.endPtr = this.basePtr + count;
+
+            this.ptr = this.basePtr;
+        }
+
+        public unsafe BinaryArrayReader(IntPtr buffer, int count)
+            : this(buffer, count, UTF8Encoding) {
+        }
+
+        public unsafe BinaryArrayReader(IntPtr buffer, int count, Encoding encoding)
+            : base(UnusedMemoryStream, encoding, true) {
+            if (buffer == IntPtr.Zero) {
+                throw new ArgumentNullException(nameof(buffer));
+            }
+
+            if (count < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(count));
+            }
+
+            this.encoding = encoding;
+            this.decoder = encoding.GetDecoder();
+            this.readCharByteCount = encoding is UnicodeEncoding ? 2 : 1;
+
+            this.basePtr = (byte*)buffer;
             this.endPtr = this.basePtr + count;
 
             this.ptr = this.basePtr;
@@ -361,8 +385,13 @@ namespace Hypertable.Persistence.Serialization
                 var byteCount = this.ReadStringLength();
                 this.ThrowIfEndOfStream(byteCount);
                 var index = (int) (this.ptr - this.basePtr) + this.offset;
+                if (byteCount == 0) {
+                    return string.Empty;
+                }
+
+                var s = new string((sbyte*)this.ptr, 0, byteCount, this.encoding);
                 this.ptr += byteCount;
-                return byteCount > 0 ? this.encoding.GetString(this.buffer, index, byteCount) : string.Empty;
+                return s;
             }
         }
 
@@ -411,7 +440,9 @@ namespace Hypertable.Persistence.Serialization
 
         protected override void Dispose(bool disposing)
         {
-            this.bufferHandle.Free();
+            if (this.bufferHandle.IsAllocated) {
+                this.bufferHandle.Free();
+            }
             base.Dispose(disposing);
         }
 

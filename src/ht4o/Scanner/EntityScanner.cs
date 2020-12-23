@@ -26,7 +26,6 @@ namespace Hypertable.Persistence.Scanner
     using System.Diagnostics;
     using System.Globalization;
     using System.Linq;
-    using System.Runtime.Serialization.Formatters;
     using System.Threading;
     using System.Threading.Tasks;
     using Hypertable.Persistence.Collections;
@@ -58,6 +57,11 @@ namespace Hypertable.Persistence.Scanner
         ///     Indicating whether to use an async table scanner or not.
         /// </summary>
         private readonly bool useAsyncTableScanner;
+
+        /// <summary>
+        ///     Indicating whether to use the internal cell buffer or not.
+        /// </summary>
+        private readonly bool useCellBuffer = true;
 
         /// <summary>
         ///     Indicating whether to use parallel deserialization or not.
@@ -301,7 +305,7 @@ namespace Hypertable.Persistence.Scanner
                                 }
 
                                 try {
-                                    entityFetched(fetchedCell, fetchedCell.EntityScanTarget);
+                                    entityFetched(fetchedCell, null, IntPtr.Zero, 0, fetchedCell.EntityScanTarget);
                                 }
                                 finally {
                                     PooledCell.Return(fetchedCell.Value);
@@ -337,6 +341,24 @@ namespace Hypertable.Persistence.Scanner
 
                         Task.WaitAll(tasks);
                     }
+                    else if (this.useCellBuffer) {
+                        Func<Key, IntPtr, int, bool> callback = (key, buffer, length) => {
+                            EntityScanTarget entityScanTarget;
+                            if (tableItem.Value.TryRemoveScanTarget(key, out entityScanTarget)) {
+                                entityFetched(null, key, buffer, length, entityScanTarget);
+                            }
+
+                            return true;
+                        };
+
+                        using (var scanner = table.CreateScanner(scanSpec)) {
+                            while (scanner.Next(callback));
+
+                            if (tableItem.Value.IsEmpty.IsFalse()) {
+                                //// TODO remaining cells should be deleted
+                            }
+                        }
+                    }
                     else {
                         var bufferedCell = new BufferedCell(0);
 
@@ -344,13 +366,52 @@ namespace Hypertable.Persistence.Scanner
                             while (scanner.Move(bufferedCell)) {
                                 EntityScanTarget entityScanTarget;
                                 if (tableItem.Value.TryRemoveScanTarget(bufferedCell.Key, out entityScanTarget)) {
-                                    entityFetched(bufferedCell, entityScanTarget);
+                                    entityFetched(bufferedCell, null, IntPtr.Zero, 0, entityScanTarget);
                                 }
                             }
 
                             if (tableItem.Value.IsEmpty.IsFalse()) {
                                 //// TODO remaining cells should be deleted
                             }
+                        }
+                    }
+                }
+            }
+            else if (this.useCellBuffer) {
+                foreach (var tableItem in tablesToFetch) {
+                    var table = this.entityContext.GetTable(tableItem.Key.First, tableItem.Key.Second);
+                    if (table == null) {
+                        throw new PersistenceException(
+                            string.Format(CultureInfo.InvariantCulture, @"Table {0}/{1} does not exists",
+                                tableItem.Key.First.TrimEnd('/'), tableItem.Key.Second));
+                    }
+
+                    var scanSpec = tableItem.Value.CreateScanSpec();
+
+                    if (reviewScanSpec != null) {
+                        reviewScanSpec(table, scanSpec);
+                    }
+
+                    //// TODO add/remove more infos + time, other places???
+                    Logging.TraceEvent(
+                        TraceEventType.Verbose,
+                        () => string.Format(CultureInfo.InvariantCulture, @"Scan {0} on table {1}", scanSpec,
+                            table.Name));
+
+                    Func<Key, IntPtr, int, bool> callback = (key, buffer, length) => {
+                        EntityScanTarget entityScanTarget;
+                        if (tableItem.Value.TryRemoveScanTarget(key, out entityScanTarget)) {
+                            entityFetched(null, key, buffer, length, entityScanTarget);
+                        }
+
+                        return true;
+                    };
+
+                    using (var scanner = table.CreateScanner(scanSpec)) {
+                        while (scanner.Next(callback));
+
+                        if (tableItem.Value.IsEmpty.IsFalse()) {
+                            //// TODO remaining cells should be deleted
                         }
                     }
                 }
@@ -382,7 +443,7 @@ namespace Hypertable.Persistence.Scanner
                         while (scanner.Move(bufferedCell)) {
                             EntityScanTarget entityScanTarget;
                             if (tableItem.Value.TryRemoveScanTarget(bufferedCell.Key, out entityScanTarget)) {
-                                entityFetched(bufferedCell, entityScanTarget);
+                                entityFetched(bufferedCell, null, IntPtr.Zero, 0, entityScanTarget);
                             }
                         }
 
@@ -416,7 +477,7 @@ namespace Hypertable.Persistence.Scanner
                     EntityScanTarget entityScanTarget;
                     if (tableItem.Value.TryRemoveScanTarget(cell.Key, out entityScanTarget))
                     {
-                        entityFetched(cell, entityScanTarget);
+                        entityFetched(cell, null, IntPtr.Zero, 0, entityScanTarget);
                     }
                 });
         }
@@ -441,7 +502,7 @@ namespace Hypertable.Persistence.Scanner
                 EntityScanTarget entityScanTarget;
                 if (tableItem.Value.TryRemoveScanTarget(cell.Key, out entityScanTarget))
                 {
-                    entityFetched(cell, entityScanTarget);
+                    entityFetched(cell, null, IntPtr.Zero, 0, entityScanTarget);
                 }
             }
         }

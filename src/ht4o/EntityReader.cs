@@ -278,22 +278,46 @@ namespace Hypertable.Persistence
         ///     The entity fetched callback.
         /// </summary>
         /// <param name="cell">
-        ///     The fetched cell.
+        ///     The fetched cell, if null then key, buffer, length must be provided.
+        /// </param>
+        /// <param name="key">
+        ///     The cell key.
+        /// </param>
+        /// <param name="buffer">
+        ///     The cell buffer.
+        /// </param>
+        /// <param name="length">
+        ///     The cell buffer length.
         /// </param>
         /// <param name="entityScanTarget">
         ///     The entity scan target.
         /// </param>
-        private void EntityFetched(ICell cell, EntityScanTarget entityScanTarget)
+        private void EntityFetched(ICell cell, Key key, IntPtr buffer, int length, EntityScanTarget entityScanTarget)
         {
-            var entity = EntityDeserializer.Deserialize(
-                this,
-                typeof(object) /*TODO REMOVE ?? entityScanTarget.EntityType*/,
-                cell.Value,
-                cell.ValueLength,
-                (reference, type, value) => {
-                    this.entitiesFetched.TryAdd(entityScanTarget, value);
-                    reference.SetKey(value, cell.Key);
-                });
+            object entity;
+
+            if (cell != null) {
+                entity = EntityDeserializer.Deserialize(
+                    this,
+                    typeof(object),
+                    cell.Value,
+                    cell.ValueLength,
+                    (reference, type, value) => {
+                        this.entitiesFetched.TryAdd(entityScanTarget, value);
+                        reference.SetKey(value, cell.Key);
+                    });
+            }
+            else {
+                entity = EntityDeserializer.Deserialize(
+                    this,
+                    typeof(object),
+                    buffer,
+                    length,
+                    (reference, type, value) => {
+                        this.entitiesFetched.TryAdd(entityScanTarget, value);
+                        reference.SetKey(value, key);
+                    });
+            }
 
             if (!this.behaviors.DoNotCache())
             {

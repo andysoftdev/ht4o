@@ -21,16 +21,26 @@
 
 namespace Hypertable.Persistence.Scanner
 {
+    using System;
     using Hypertable;
 
     /// <summary>
     ///     The entity fetched delegate.
     /// </summary>
     /// <param name="cell">
-    ///     The fetched cell.
+    ///     The fetched cell, if null then key, buffer, length must be provided.
+    /// </param>
+    /// <param name="key">
+    ///     The cell key.
+    /// </param>
+    /// <param name="buffer">
+    ///     The cell buffer.
+    /// </param>
+    /// <param name="length">
+    ///     The cell buffer length.
     /// </param>
     /// <param name="entityScanTarget">
     ///     The entity scan target.
     /// </param>
-    internal delegate void EntityFetched(ICell cell, EntityScanTarget entityScanTarget);
+    internal delegate void EntityFetched(ICell cell, Key key, IntPtr buffer, int length, EntityScanTarget entityScanTarget);
 }

@@ -124,6 +124,35 @@ namespace Hypertable.Persistence.Serialization
         /// <param name="destinationType">
         ///     The destination type.
         /// </param>
+        /// <param name="buffer">
+        ///     The serialized object.
+        /// </param>
+        /// <param name="length">
+        ///     The buffer length.
+        /// </param>
+        /// <param name="deserializingEntity">
+        ///     The deserializing entity delegate.
+        /// </param>
+        /// <returns>
+        ///     The deserialized object.
+        /// </returns>
+        internal static object Deserialize(EntityReader entityReader, Type destinationType, IntPtr buffer, int length,
+            DeserializingEntity deserializingEntity) {
+            using (var binaryReader = new BinaryArrayReader(buffer, length)) {
+                return new EntityDeserializer(entityReader, binaryReader, deserializingEntity).Deserialize(
+                    destinationType, Decoder.ReadTag(binaryReader));
+            }
+        }
+
+        /// <summary>
+        ///     Deserialize an object.
+        /// </summary>
+        /// <param name="entityReader">
+        ///     The entity reader.
+        /// </param>
+        /// <param name="destinationType">
+        ///     The destination type.
+        /// </param>
         /// <param name="serialized">
         ///     The serialized object.
         /// </param>
