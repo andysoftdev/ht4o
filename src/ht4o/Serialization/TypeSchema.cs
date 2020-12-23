@@ -26,7 +26,6 @@ namespace Hypertable.Persistence.Serialization
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
-    using Hypertable.Persistence.Serialization;
     using Hypertable.Persistence.Reflection;
 
     /// <summary>
@@ -234,6 +233,7 @@ namespace Hypertable.Persistence.Serialization
         /// </summary>
         private byte[] GetSerializedSchema()
         {
+#if HT4O_BUFFEREDBINARYWRITER
             using (var ms = new WritableMemoryStream())
             {
                 using (var binaryWriter = new BufferedBinaryWriter(ms, System.Text.Encoding.ASCII, true))
@@ -249,8 +249,20 @@ namespace Hypertable.Persistence.Serialization
 
                 return ms.ToArray();
             }
+#else
+            using (var binaryWriter = new HeapBinaryWriter(System.Text.Encoding.ASCII)) {
+                Encoder.WriteTag(binaryWriter, Tags.TypeSchema2);
+                Encoder.WriteByte(binaryWriter, TypeSchema.Version, false);
+                Encoder.WriteCount(binaryWriter, this.Properties.Length);
+                foreach (var typeSchemaProperty in this.Properties) {
+                    Encoder.WriteString(binaryWriter, typeSchemaProperty.PropertyName, false);
+                }
+
+                return binaryWriter.ToArray();
+            }
+#endif
         }
 
-        #endregion
+#endregion
     }
 }

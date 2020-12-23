@@ -121,6 +121,7 @@ namespace Hypertable.Persistence.Serialization
         {
             if (write)
             {
+#if HT4O_BUFFEREDBINARYWRITER
                 using (var memoryStream = new WritableMemoryStream(capacity))
                 {
                     using (var binaryWriter = new BufferedBinaryWriter(memoryStream, true))
@@ -131,6 +132,13 @@ namespace Hypertable.Persistence.Serialization
 
                     return memoryStream.ToArray();
                 }
+#else
+                using (var binaryWriter = new HeapBinaryWriter()) {
+                    var entitySerializer = new EntitySerializer(entityContext, binaryWriter, value, serializingEntity);
+                    entitySerializer.Write(serializeType, value);
+                    return binaryWriter.ToArray();
+                }
+#endif
             }
 
             using (var binaryWriter = new FakeBinaryWriter())
@@ -341,6 +349,6 @@ namespace Hypertable.Persistence.Serialization
             this.BinaryWriter.Write(key.Row);
         }
 
-        #endregion
+#endregion
     }
 }

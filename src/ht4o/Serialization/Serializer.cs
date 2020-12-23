@@ -223,6 +223,7 @@ namespace Hypertable.Persistence.Serialization
         /// </returns>
         public static byte[] ToByteArray(Type serializeType, object value, int capacity)
         {
+#if HT4O_BUFFEREDBINARYWRITER
             using (var memoryStream = new WritableMemoryStream(capacity))
             {
                 using (var binaryWriter = new BufferedBinaryWriter(memoryStream, true))
@@ -232,6 +233,12 @@ namespace Hypertable.Persistence.Serialization
 
                 return memoryStream.ToArray();
             }
+#else
+            using (var binaryWriter = new HeapBinaryWriter(capacity)) {
+                new Serializer(binaryWriter).Write(serializeType, value);
+                return binaryWriter.ToArray();
+            }
+#endif
         }
 
         /// <summary>
@@ -299,10 +306,18 @@ namespace Hypertable.Persistence.Serialization
         /// </param>
         public void Serialize(Stream stream, Type serializeType, object value)
         {
+#if HT4O_BUFFEREDBINARYWRITER
             using (this.binaryWriter = new BufferedBinaryWriter(stream, true))
             {
                 this.Write(serializeType, value);
             }
+#else
+            using (this.binaryWriter = new HeapBinaryWriter()) {
+                this.Write(serializeType, value);
+                var bytes = ((HeapBinaryWriter)this.binaryWriter).ToArray();
+                stream.Write(bytes, 0, bytes.Length);
+            }
+#endif
         }
 
         /// <summary>
@@ -316,9 +331,9 @@ namespace Hypertable.Persistence.Serialization
             this.Write(value?.GetType() ?? typeof(object), value);
         }
 
-        #endregion
+#endregion
 
-        #region Methods
+#region Methods
 
         /// <summary>
         ///     Determine if the type tag requires an collection element tag.
@@ -1579,16 +1594,16 @@ namespace Hypertable.Persistence.Serialization
             return entry.Value.TypeSchema;
         }
 
-        #endregion
+#endregion
 
-        #region Nested Types
+#region Nested Types
 
         /// <summary>
         ///     The type schema reference.
         /// </summary>
         private struct TypeSchemaRef
         {
-            #region Fields
+#region Fields
 
             /// <summary>
             ///     The reference.
@@ -1600,9 +1615,9 @@ namespace Hypertable.Persistence.Serialization
             /// </summary>
             public TypeSchema TypeSchema;
 
-            #endregion
+#endregion
         }
 
-        #endregion
+#endregion
     }
 }
