@@ -295,6 +295,22 @@ namespace Hypertable.Persistence.Serialization
         /// <summary>
         ///     Serializes the object specified.
         /// </summary>
+        /// <typeparam name="T">
+        ///     Type of the object to serialize.
+        /// </typeparam>
+        /// <param name="binaryWriter">
+        ///     The binary writer.
+        /// </param>
+        /// <param name="value">
+        ///     The object to serialize.
+        /// </param>
+        public void Serialize<T>(BinaryWriter binaryWriter, T value) {
+            this.Serialize(binaryWriter, typeof(T), value);
+        }
+
+        /// <summary>
+        ///     Serializes the object specified.
+        /// </summary>
         /// <param name="stream">
         ///     The stream.
         /// </param>
@@ -306,18 +322,27 @@ namespace Hypertable.Persistence.Serialization
         /// </param>
         public void Serialize(Stream stream, Type serializeType, object value)
         {
-#if HT4O_BUFFEREDBINARYWRITER
             using (this.binaryWriter = new BufferedBinaryWriter(stream, true))
             {
                 this.Write(serializeType, value);
             }
-#else
-            using (this.binaryWriter = new HeapBinaryWriter()) {
-                this.Write(serializeType, value);
-                var bytes = ((HeapBinaryWriter)this.binaryWriter).ToArray();
-                stream.Write(bytes, 0, bytes.Length);
-            }
-#endif
+        }
+
+        /// <summary>
+        ///     Serializes the object specified.
+        /// </summary>
+        /// <param name="binaryWriter">
+        ///     The binary writer.
+        /// </param>
+        /// <param name="serializeType">
+        ///     The serialize type.
+        /// </param>
+        /// <param name="value">
+        ///     The object to serialize.
+        /// </param>
+        public void Serialize(BinaryWriter binaryWriter, Type serializeType, object value) {
+            this.binaryWriter = binaryWriter;
+            this.Write(serializeType, value);
         }
 
         /// <summary>
@@ -327,13 +352,13 @@ namespace Hypertable.Persistence.Serialization
         ///     The object to write.
         /// </param>
         public void WriteObject(object value)
-        {
-            this.Write(value?.GetType() ?? typeof(object), value);
-        }
+            {
+                this.Write(value?.GetType() ?? typeof(object), value);
+            }
 
-#endregion
+        #endregion
 
-#region Methods
+        #region Methods
 
         /// <summary>
         ///     Determine if the type tag requires an collection element tag.
@@ -1594,16 +1619,16 @@ namespace Hypertable.Persistence.Serialization
             return entry.Value.TypeSchema;
         }
 
-#endregion
+        #endregion
 
-#region Nested Types
+        #region Nested Types
 
         /// <summary>
         ///     The type schema reference.
         /// </summary>
         private struct TypeSchemaRef
         {
-#region Fields
+            #region Fields
 
             /// <summary>
             ///     The reference.
@@ -1615,9 +1640,9 @@ namespace Hypertable.Persistence.Serialization
             /// </summary>
             public TypeSchema TypeSchema;
 
-#endregion
+            #endregion
         }
 
-#endregion
+        #endregion
     }
 }

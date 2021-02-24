@@ -45,14 +45,17 @@ namespace Hypertable.Persistence.Serialization
         private readonly Encoding encoding;
 
         private IntPtr buffer;
-
+#if X64
+        private long length;
+#else
         private int length;
+#endif
 
         private unsafe byte* ptr;
 
-        #endregion
+#endregion
 
-        #region Constructors and Destructors
+#region Constructors and Destructors
 
         public HeapBinaryWriter()
             : this(0, UTF8Encoding) {
@@ -69,9 +72,9 @@ namespace Hypertable.Persistence.Serialization
         public unsafe HeapBinaryWriter(int capacity, Encoding encoding) {
             this.length = (capacity / PageSize + 1) * PageSize;
 #if !HT4O_SERIALIZATION
-            this.buffer = Hypertable.Heap.Alloc(length);
+            this.buffer = Hypertable.Heap.Alloc(this.length);
 #else
-            this.buffer = Marshal.AllocHGlobal(length);
+            this.buffer = Marshal.AllocHGlobal(this.length);
 #endif
             this.ptr = (byte*)this.buffer;
 
@@ -84,12 +87,21 @@ namespace Hypertable.Persistence.Serialization
 
         #region Properties
 
+#if X64
+        private unsafe long Count {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get {
+                return this.ptr - (byte*)this.buffer;
+            }
+        }
+#else
         private unsafe int Count {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get {
                 return (int)(this.ptr - (byte*)this.buffer);
             }
         }
+#endif
 
         #endregion
 
@@ -358,9 +370,9 @@ namespace Hypertable.Persistence.Serialization
             }
         }
 
-        #endregion
+#endregion
 
-        #region Methods
+#region Methods
 
         protected override void Dispose(bool disposing) {
             if (this.buffer != IntPtr.Zero) {
@@ -393,6 +405,10 @@ namespace Hypertable.Persistence.Serialization
 #else
                 this.buffer = Marshal.ReAllocHGlobal(this.buffer, new IntPtr(length));
 #endif
+
+                if (this.buffer == null) {
+                    throw new OutOfMemoryException($"HeapBinaryWriter cannot allocate {length} bytes");
+                }
                 this.ptr = (byte*)this.buffer + count;
             }
         }
@@ -407,6 +423,6 @@ namespace Hypertable.Persistence.Serialization
             *this.ptr++ = (byte)v;
         }
 
-        #endregion
+#endregion
     }
 }
