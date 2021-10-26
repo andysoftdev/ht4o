@@ -230,7 +230,6 @@ namespace Hypertable.Persistence
 #if DEBUG
                 var listeners = new List<TraceListener>();
                 listeners.AddRange(Trace.Listeners.OfType<TraceListener>());
-                listeners.AddRange(Debug.Listeners.OfType<TraceListener>());
 
                 foreach (var listener in listeners)
                 {

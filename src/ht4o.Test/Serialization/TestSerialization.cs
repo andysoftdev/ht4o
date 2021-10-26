@@ -1291,6 +1291,15 @@ namespace Hypertable.Persistence.Test.Serialization
     {
         #region Public Methods and Operators
 
+        [ClassInitialize]
+#pragma warning disable IDE0060 // Remove unused parameter
+        public static void ClassInitialize(TestContext unused)
+#pragma warning restore IDE0060 // Remove unused parameter
+        {
+            // Required for Double String serialization
+            System.Globalization.CultureInfo.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
+        }
+
         /// <summary>
         /// The test anonymous object array.
         /// </summary>
