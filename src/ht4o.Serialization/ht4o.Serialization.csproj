@@ -5,43 +5,44 @@
     <AssemblyName>ht4o.Serialization</AssemblyName>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <PlatformToolset Condition="'$(PlatformToolset)' == ''">v140</PlatformToolset>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\dist\$(VisualStudioVersion)\AnyCPU\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;;CODE_ANALYSIS;HT4O_SERIALIZATION</DefineConstants>
+    <OutputPath>..\..\dist\$(PlatformToolset)\AnyCPU\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;HT4O_SERIALIZATION</DefineConstants>
     <NoWarn>1587</NoWarn>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <RunCodeAnalysis>false</RunCodeAnalysis>
-    <CodeAnalysisLogFile>..\..\dist\$(VisualStudioVersion)\Win32\Debug\ht4o.Serialization.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisLogFile>..\..\dist\$(PlatformToolset)\AnyCPU\Debug\ht4o.Serialization.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
     <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
     <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>..\..\ht4o.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
-    <DocumentationFile>..\..\dist\$(VisualStudioVersion)\AnyCPU\Debug\ht4o.Serialization.xml</DocumentationFile>
+    <DocumentationFile>..\..\dist\$(PlatformToolset)\AnyCPU\Debug\ht4o.Serialization.xml</DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <OutputPath>..\..\dist\$(VisualStudioVersion)\AnyCPU\Release\</OutputPath>
+    <OutputPath>..\..\dist\$(PlatformToolset)\AnyCPU\Release\</OutputPath>
     <DefineConstants>TRACE;HT4O_SERIALIZATION</DefineConstants>
     <Optimize>true</Optimize>
     <NoWarn>1587</NoWarn>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <CodeAnalysisLogFile>..\..\dist\$(VisualStudioVersion)\Win32\Release\ht4o.Serialization.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisLogFile>..\..\dist\$(PlatformToolset)\AnyCPU\Release\ht4o.Serialization.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
     <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
     <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>ht4o.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
-    <DocumentationFile>..\..\dist\$(VisualStudioVersion)\AnyCPU\Release\ht4o.Serialization.xml</DocumentationFile>
+    <DocumentationFile>..\..\dist\$(PlatformToolset)\AnyCPU\Release\ht4o.Serialization.xml</DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>

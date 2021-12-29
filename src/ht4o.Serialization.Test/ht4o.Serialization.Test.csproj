@@ -5,12 +5,12 @@
     <AssemblyName>ht4o.Serialization.Test</AssemblyName>
     <TargetFramework>net48</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <PlatformToolset Condition="'$(PlatformToolset)' == ''">v140</PlatformToolset>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\dist\$(VisualStudioVersion)\$(Platform)\$(Configuration)\tests</OutputPath>
-    <IntermediateOutputPath>..\..\build\$(VisualStudioVersion)\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
+    <OutputPath>..\..\dist\$(PlatformToolset)\$(Platform)\$(Configuration)\tests</OutputPath>
     <DefineConstants>TRACE;DEBUG</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -22,8 +22,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <OutputPath>..\..\dist\$(VisualStudioVersion)\$(Platform)\$(Configuration)\tests</OutputPath>
-    <IntermediateOutputPath>..\..\build\$(VisualStudioVersion)\$(AssemblyName)\$(Platform)\$(Configuration)</IntermediateOutputPath>
+    <OutputPath>..\..\dist\$(PlatformToolset)\$(Platform)\$(Configuration)\tests</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -41,7 +40,7 @@
     <PackageReference Include="MSTest.TestFramework" Version="2.1.1" />
   </ItemGroup>
   <ItemGroup>
-    <CodeAnalysisDependentAssemblyPaths Condition=" '$(VS100COMNTOOLS)' != '' " Include="$(VS100COMNTOOLS)..\IDE\PrivateAssemblies">
+    <CodeAnalysisDependentAssemblyPaths Condition="'$(VS100COMNTOOLS)' != '' " Include="$(VS100COMNTOOLS)..\IDE\PrivateAssemblies">
       <Visible>False</Visible>
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
