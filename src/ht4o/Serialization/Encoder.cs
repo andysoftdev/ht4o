@@ -250,7 +250,26 @@ namespace Hypertable.Persistence.Serialization
             int typeCode;
             if (!TypeCodes.TryGetValue(type, out typeCode))
             {
-                return false;
+                if (!EncoderConfiguration.UseBaseTypeCode)
+                {
+                    return false;
+                }
+
+                var baseType = type.BaseType;
+                while (baseType != typeof(object))
+                {
+                    if (TypeCodes.TryGetValue(baseType, out typeCode))
+                    {
+                        break;
+                    }
+
+                    baseType = baseType.BaseType;
+                }
+
+                if (baseType == typeof(object) || !TypeCodes.TryAdd(type, typeCode))
+                {
+                    return false;
+                }
             }
 
             if (writeTag)

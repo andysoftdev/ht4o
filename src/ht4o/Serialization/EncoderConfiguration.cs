@@ -156,6 +156,14 @@ namespace Hypertable.Persistence.Serialization
         public bool StrictExplicitTypeCodes { get; set; }
 
         /// <summary>
+        ///     Gets or sets a value indicating whether to use base type code.
+        /// </summary>
+        /// <value>
+        ///     The use of base type code.
+        /// </value>
+        public bool UseBaseTypeCode { get; set; }
+
+        /// <summary>
         ///     Gets or sets the type writer.
         /// </summary>
         /// <value>
