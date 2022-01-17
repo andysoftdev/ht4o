@@ -93,6 +93,11 @@ namespace Hypertable.Persistence.Serialization
         /// </summary>
         private int identityValue;
 
+        /// <summary>
+        ///     The default streaming context.
+        /// </summary>
+        private StreamingContext streamingContext;
+
         #endregion
 
         #region Constructors and Destructors
@@ -101,7 +106,7 @@ namespace Hypertable.Persistence.Serialization
         ///     Initializes a new instance of the <see cref="Serializer" /> class.
         /// </summary>
         public Serializer()
-            : this(null, null)
+            : this(null, null, null)
         {
         }
 
@@ -112,7 +117,7 @@ namespace Hypertable.Persistence.Serialization
         ///     The encoder configuration.
         /// </param>
         public Serializer(EncoderConfiguration configuration)
-            : this(null, configuration)
+            : this(null, configuration, null)
         {
         }
 
@@ -123,7 +128,7 @@ namespace Hypertable.Persistence.Serialization
         ///     The binary writer.
         /// </param>
         protected Serializer(BinaryWriter binaryWriter)
-            : this(binaryWriter, null)
+            : this(binaryWriter, null, null)
         {
         }
 
@@ -136,10 +141,14 @@ namespace Hypertable.Persistence.Serialization
         /// <param name="configuration">
         ///     The encoder configuration.
         /// </param>
-        protected Serializer(BinaryWriter binaryWriter, EncoderConfiguration configuration)
+        /// <param name="streamingContext">
+        ///     The streaming context object.
+        /// </param>
+        protected Serializer(BinaryWriter binaryWriter, EncoderConfiguration configuration, object streamingContext)
         {
             this.binaryWriter = binaryWriter;
             this.configuration = EncoderConfiguration.CreateFrom(configuration);
+            this.streamingContext = new StreamingContext(StreamingContextStates.Persistence, streamingContext);
 
             this.encoderInfos.Add(typeof(Type).GetType(), new EncoderInfo(Tags.Type, this.WriteType));
             this.encoderInfos.Add(typeof(DateTime), new EncoderInfo(Tags.DateTime, this.WriteDateTime));
@@ -571,9 +580,6 @@ namespace Hypertable.Persistence.Serialization
             {
                 return;
             }
-
-            var streamingContext =
-                inspector.HasSerializationHandlers ? new StreamingContext() : default(StreamingContext);
 
             inspector.OnSerializing?.Invoke(value, streamingContext);
 

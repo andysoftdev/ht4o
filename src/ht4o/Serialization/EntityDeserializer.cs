@@ -43,9 +43,9 @@ namespace Hypertable.Persistence.Serialization
         private readonly DeserializingEntity deserializingEntity;
 
         /// <summary>
-        ///     The entity binding context.
+        ///     The entity context.
         /// </summary>
-        private readonly EntityBindingContext entityBindingContext;
+        private readonly EntityContext entityContext;
 
         /// <summary>
         ///     The entity reader.
@@ -75,11 +75,11 @@ namespace Hypertable.Persistence.Serialization
         /// </param>
         private EntityDeserializer(EntityReader entityReader, BinaryReader binaryReader,
             DeserializingEntity deserializingEntity)
-            : base(binaryReader)
+            : base(binaryReader, entityReader.EntityScanner.EntityContext.Configuration.Context)
         {
             this.entityReader = entityReader;
             this.entityScanner = entityReader.EntityScanner;
-            this.entityBindingContext = this.entityScanner.EntityContext;
+            this.entityContext = this.entityScanner.EntityContext;
             this.deserializingEntity = deserializingEntity;
         }
 
@@ -189,7 +189,7 @@ namespace Hypertable.Persistence.Serialization
             object target)
         {
             var entityReference =
-                inspector != null ? this.entityBindingContext.EntityReferenceForInspector(inspector) : null;
+                inspector != null ? this.entityContext.EntityReferenceForInspector(inspector) : null;
             if (entityReference != null)
             {
                 this.deserializingEntity(entityReference, destinationType, target);
@@ -423,7 +423,7 @@ namespace Hypertable.Persistence.Serialization
                 case Tags.EntityKey:
                 {
                     var type = this.ReadType();
-                    var entityReference = this.entityBindingContext.EntityReferenceForType(type);
+                    var entityReference = this.entityContext.EntityReferenceForType(type);
                     if (entityReference == null)
                     {
                         throw new PersistenceException(string.Format(CultureInfo.InvariantCulture,
@@ -446,7 +446,7 @@ namespace Hypertable.Persistence.Serialization
                 case Tags.EntityRow:
                 {
                     var type = this.ReadType();
-                    var entityReference = this.entityBindingContext.EntityReferenceForType(type);
+                    var entityReference = this.entityContext.EntityReferenceForType(type);
                     if (entityReference == null)
                     {
                         throw new PersistenceException(string.Format(CultureInfo.InvariantCulture,

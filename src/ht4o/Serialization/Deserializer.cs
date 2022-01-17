@@ -41,7 +41,7 @@ namespace Hypertable.Persistence.Serialization
     /// </summary>
     public class Deserializer : SerializationBase
     {
-        #region Constants
+        #region Constants and Static Fields
 
         /// <summary>
         ///     The default references capacity.
@@ -82,6 +82,11 @@ namespace Hypertable.Persistence.Serialization
         /// </summary>
         private readonly List<TypeSchema> typeSchemaRefs = new List<TypeSchema>(32);
 
+        /// <summary>
+        ///     The default streaming context.
+        /// </summary>
+        private StreamingContext streamingContext;
+
         #endregion
 
         #region Constructors and Destructors
@@ -93,8 +98,23 @@ namespace Hypertable.Persistence.Serialization
         ///     The binary reader.
         /// </param>
         protected Deserializer(BinaryReader binaryReader)
+            : this(binaryReader, null)
+        {
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="Deserializer" /> class.
+        /// </summary>
+        /// <param name="binaryReader">
+        ///     The binary reader.
+        /// </param>
+        /// <param name="streamingContext">
+        ///     The streaming context object.
+        /// </param>
+        protected Deserializer(BinaryReader binaryReader, object streamingContext)
         {
             this.binaryReader = binaryReader;
+            this.streamingContext = new StreamingContext(StreamingContextStates.Persistence, streamingContext);
         }
 
         #endregion
@@ -1432,9 +1452,6 @@ namespace Hypertable.Persistence.Serialization
                 throw new SerializationException(string.Format(CultureInfo.InvariantCulture,
                     @"Unable to create inspector for type {0}/{1}", type, destinationType));
             }
-
-            var streamingContext =
-                inspector.HasSerializationHandlers ? new StreamingContext() : default(StreamingContext);
 
             inspector.OnDeserializing?.Invoke(value, streamingContext);
 

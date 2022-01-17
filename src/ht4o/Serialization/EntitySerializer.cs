@@ -81,7 +81,7 @@ namespace Hypertable.Persistence.Serialization
         /// </param>
         private EntitySerializer(EntityContext entityContext, BinaryWriter binaryWriter, object root,
             SerializingEntity serializingEntity)
-            : base(binaryWriter)
+            : base(binaryWriter, null, entityContext.Configuration.Context)
         {
             this.entityContext = entityContext;
             this.root = root;

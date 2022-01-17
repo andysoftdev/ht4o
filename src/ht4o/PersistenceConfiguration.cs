@@ -83,6 +83,7 @@ namespace Hypertable.Persistence
             this.UseAsyncTableScanner = configuration.UseAsyncTableScanner;
             this.UseParallelDeserialization = configuration.UseParallelDeserialization;
             this.ReviewScanSpec = configuration.ReviewScanSpec;
+            this.Context = configuration.Context;
         }
 
         /// <summary>
@@ -118,6 +119,7 @@ namespace Hypertable.Persistence
             this.UseAsyncTableScanner = configuration.UseAsyncTableScanner;
             this.UseParallelDeserialization = configuration.UseParallelDeserialization;
             this.ReviewScanSpec = configuration.ReviewScanSpec;
+            this.Context = configuration.Context;
         }
 
         #endregion
@@ -195,6 +197,14 @@ namespace Hypertable.Persistence
         ///     If <c>true</c> the entity scanner may deserialize entities in parallel, otherwise <c>false</c>.
         /// </value>
         public bool UseParallelDeserialization{ get; set; }
+
+        /// <summary>
+        ///     Gets or sets a context, any additional information to be associated with the persistence configuration and the streaming context.
+        /// </summary>
+        /// <value>
+        ///     Any additional information to be associated with the persistence configuration and the streaming context.
+        /// </value>
+        public object Context { get; set; }
 
         #endregion
 
