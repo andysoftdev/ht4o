@@ -81,6 +81,11 @@ namespace Hypertable.Persistence
         /// </summary>
         private readonly ISet<Key> ignoreKeys;
 
+        /// <summary>
+        ///     The review key callback.
+        /// </summary>
+        Action<object, Key> reviewKey;
+
         #endregion
 
         #region Constructors and Destructors
@@ -132,6 +137,7 @@ namespace Hypertable.Persistence
             this.ignoreKeys = ignoreKeys;
             this.behaviors = behaviors;
             this.entitiesWritten = entitiesWritten;
+            this.reviewKey = entityContext.Configuration.ReviewKey;
         }
 
         #endregion
@@ -278,6 +284,11 @@ namespace Hypertable.Persistence
                                 this.tableMutatorType = type;
                                 this.tableMutator = this.entityContext.GetTableMutator(this.entityReference.Namespace,
                                     this.entityReference.TableName);
+                            }
+
+                            if (this.reviewKey != null)
+                            {
+                                this.reviewKey(entity, this.key);
                             }
 
                             //// TODO verbosity?

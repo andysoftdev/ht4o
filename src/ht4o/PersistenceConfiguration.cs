@@ -22,6 +22,7 @@
 namespace Hypertable.Persistence
 {
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     ///     The persistence configuration.
@@ -83,6 +84,7 @@ namespace Hypertable.Persistence
             this.UseAsyncTableScanner = configuration.UseAsyncTableScanner;
             this.UseParallelDeserialization = configuration.UseParallelDeserialization;
             this.ReviewScanSpec = configuration.ReviewScanSpec;
+            this.ReviewKey = configuration.ReviewKey;
             this.Context = configuration.Context;
         }
 
@@ -119,6 +121,7 @@ namespace Hypertable.Persistence
             this.UseAsyncTableScanner = configuration.UseAsyncTableScanner;
             this.UseParallelDeserialization = configuration.UseParallelDeserialization;
             this.ReviewScanSpec = configuration.ReviewScanSpec;
+            this.ReviewKey = configuration.ReviewKey;
             this.Context = configuration.Context;
         }
 
@@ -162,12 +165,23 @@ namespace Hypertable.Persistence
         ///     Gets or sets the review scan spec action, if set the action is called before any scan.
         /// </summary>
         /// <value>
-        ///     The scanner callback.
+        ///     The review scan spec callback.
         /// </value>
         /// <remarks>
         ///     Allows scan spec updates right before a table scan starts.
         /// </remarks>
         public Action<ITable, ScanSpec> ReviewScanSpec { get; set; }
+
+        /// <summary>
+        ///     Gets or sets the review key action, if set the action is called before any object is stored.
+        /// </summary>
+        /// <value>
+        ///     The review key callback.
+        /// </value>
+        /// <remarks>
+        ///     Allows key updates right before writing to storage.
+        /// </remarks>
+        public Action<object, Key> ReviewKey { get; set; }
 
         /// <summary>
         ///     Gets or sets the root namespace.
