@@ -59,7 +59,7 @@ namespace Hypertable.Persistence.Serialization
         /// <summary>
         ///     The type writer.
         /// </summary>
-        private Action<BinaryWriter, Type, EncoderConfiguration> typeWriter;
+        private Action<BinaryWriter, Type, object, EncoderConfiguration> typeWriter;
 
         #endregion
 
@@ -169,7 +169,7 @@ namespace Hypertable.Persistence.Serialization
         /// <value>
         ///     The type writer.
         /// </value>
-        public Action<BinaryWriter, Type, EncoderConfiguration> TypeWriter
+        public Action<BinaryWriter, Type, object, EncoderConfiguration> TypeWriter
         {
             get { return this.typeWriter; }
 

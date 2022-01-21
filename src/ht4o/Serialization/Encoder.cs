@@ -728,15 +728,15 @@ namespace Hypertable.Persistence.Serialization
         /// <param name="binaryWriter">
         ///     The binary writer.
         /// </param>
-        /// <param name="value">
+        /// <param name="type">
         ///     The value.
         /// </param>
         /// <param name="writeTag">
         ///     If <c>true</c> the encoder writes the leading type tag, otherwise <c>false</c>.
         /// </param>
-        public static void WriteType(BinaryWriter binaryWriter, Type value, bool writeTag)
+        public static void WriteType(BinaryWriter binaryWriter, Type type, bool writeTag)
         {
-            WriteType(binaryWriter, value, EncoderConfiguration, writeTag);
+            WriteType(binaryWriter, type, null, EncoderConfiguration, writeTag);
         }
 
         /// <summary>
@@ -953,6 +953,9 @@ namespace Hypertable.Persistence.Serialization
         /// <param name="binaryWriter">
         ///     The binary writer.
         /// </param>
+        /// <param name="type">
+        ///     The value.
+        /// </param>
         /// <param name="value">
         ///     The value.
         /// </param>
@@ -962,13 +965,13 @@ namespace Hypertable.Persistence.Serialization
         /// <param name="writeTag">
         ///     If <c>true</c> the encoder writes the leading type tag, otherwise <c>false</c>.
         /// </param>
-        internal static void WriteType(BinaryWriter binaryWriter, Type value, EncoderConfiguration configuration,
+        internal static void WriteType(BinaryWriter binaryWriter, Type type, object value, EncoderConfiguration configuration,
             bool writeTag)
         {
             if (configuration.StrictExplicitTypeCodes)
             {
                 throw new SerializationException(string.Format(CultureInfo.InvariantCulture,
-                    @"Missing type code for type {0}", value));
+                    @"Missing type code for type {0}", type));
             }
 
             if (writeTag)
@@ -976,7 +979,7 @@ namespace Hypertable.Persistence.Serialization
                 WriteTag(binaryWriter, Tags.Type);
             }
 
-            configuration.TypeWriter(binaryWriter, value, configuration);
+            configuration.TypeWriter(binaryWriter, type, value, configuration);
         }
 
         /// <summary>
@@ -1342,10 +1345,13 @@ namespace Hypertable.Persistence.Serialization
         /// <param name="type">
         ///     The type.
         /// </param>
+        /// <param name="value">
+        ///     The value.
+        /// </param>
         /// <param name="configuration">
         ///     The encoder configuration.
         /// </param>
-        private static void WriteType(BinaryWriter binaryWriter, Type type, EncoderConfiguration configuration)
+        private static void WriteType(BinaryWriter binaryWriter, Type type, object value, EncoderConfiguration configuration)
         {
             WriteType(binaryWriter, type, configuration.Binder);
         }

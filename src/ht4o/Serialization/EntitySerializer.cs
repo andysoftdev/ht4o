@@ -235,7 +235,7 @@ namespace Hypertable.Persistence.Serialization
                 return;
             }
 
-            this.WriteObjectTrailer(type, inspector).WriteObject(this, value);
+            this.WriteObjectTrailer(type, value, inspector).WriteObject(this, value);
         }
 
         /// <summary>
@@ -305,7 +305,7 @@ namespace Hypertable.Persistence.Serialization
         {
             var binaryWriter = this.BinaryWriter;
             Encoder.WriteTag(binaryWriter, Tags.EntityKey);
-            this.WriteType(entityReference.EntityType);
+            this.WriteType(entityReference.EntityType, key);
             this.BinaryWriter.Write(key.Row);
             this.WriteString(key.ColumnFamily);
             this.WriteString(key.ColumnQualifier);
@@ -324,7 +324,7 @@ namespace Hypertable.Persistence.Serialization
         {
             var binaryWriter = this.BinaryWriter;
             Encoder.WriteTag(binaryWriter, Tags.EntityRef);
-            this.WriteType(entityReference.EntityType);
+            this.WriteType(entityReference.EntityType, key);
             this.WriteString(entityReference.Namespace);
             this.WriteString(entityReference.TableName);
             this.BinaryWriter.Write(key.Row);
@@ -345,7 +345,7 @@ namespace Hypertable.Persistence.Serialization
         {
             var binaryWriter = this.BinaryWriter;
             Encoder.WriteTag(binaryWriter, Tags.EntityRow);
-            this.WriteType(entityReference.EntityType);
+            this.WriteType(entityReference.EntityType, key);
             this.BinaryWriter.Write(key.Row);
         }
 

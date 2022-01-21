@@ -583,7 +583,7 @@ namespace Hypertable.Persistence.Serialization
 
             inspector.OnSerializing?.Invoke(value, streamingContext);
 
-            this.WriteObjectTrailer(type, inspector).WriteObject(this, value);
+            this.WriteObjectTrailer(type, value, inspector).WriteObject(this, value);
 
             inspector.OnSerialized?.Invoke(value, streamingContext);
         }
@@ -594,16 +594,19 @@ namespace Hypertable.Persistence.Serialization
         /// <param name="type">
         ///     The object type.
         /// </param>
+        /// <param name="value">
+        ///     The object to write.
+        /// </param>
         /// <param name="inspector">
         ///     The inspector.
         /// </param>
         /// <returns>
         ///     The type schema.
         /// </returns>
-        internal TypeSchema WriteObjectTrailer(Type type, Inspector inspector)
+        internal TypeSchema WriteObjectTrailer(Type type, object value, Inspector inspector)
         {
             Encoder.WriteTag(this.binaryWriter, Tags.Object);
-            this.WriteType(type);
+            this.WriteType(type, value);
             return this.WriteTypeSchema(type, inspector);
         }
 
@@ -637,14 +640,15 @@ namespace Hypertable.Persistence.Serialization
             inspector.OnSerializing?.Invoke(value, streamingContext);
 
             Encoder.WriteTag(this.binaryWriter, Tags.SerializationInfo);
-            this.WriteType(type);
+            this.WriteType(type, value);
             Encoder.WriteCount(this.binaryWriter, info.MemberCount);
             var enumerator = info.GetEnumerator();
             while (enumerator.MoveNext())
             {
                 this.WriteString(enumerator.Name);
-                this.WriteType(enumerator.ObjectType);
-                this.WriteObject(enumerator.Value);
+                value = enumerator.Value;
+                this.WriteType(enumerator.ObjectType, value);
+                this.WriteObject(value);
             }
 
             inspector.OnSerialized?.Invoke(value, streamingContext);
@@ -746,7 +750,10 @@ namespace Hypertable.Persistence.Serialization
         /// <param name="type">
         ///     The type.
         /// </param>
-        protected void WriteType(Type type)
+        /// <param name="value">
+        ///     The value.
+        /// </param>
+        protected void WriteType(Type type, object value)
         {
             if (!Encoder.TryWriteTypeCode(this.binaryWriter, type, true))
             {
@@ -755,7 +762,7 @@ namespace Hypertable.Persistence.Serialization
                     return;
                 }
 
-                Encoder.WriteType(this.binaryWriter, type, this.configuration, true);
+                Encoder.WriteType(this.binaryWriter, type, value, this.configuration, true);
             }
         }
 
@@ -878,7 +885,7 @@ namespace Hypertable.Persistence.Serialization
         /// </param>
         private static void WriteType(Serializer serializer, Type type)
         {
-            serializer.WriteType(type);
+            serializer.WriteType(type, null);
         }
 
         /// <summary>
@@ -1095,7 +1102,7 @@ namespace Hypertable.Persistence.Serialization
 
                     if (flags.HasFlag(DictionaryFlags.Typed))
                     {
-                        this.WriteType(type);
+                        this.WriteType(type, null);
                     }
 
                     Encoder.WriteTag(this.binaryWriter, keyEncoderInfo.Tag);
@@ -1180,7 +1187,7 @@ namespace Hypertable.Persistence.Serialization
                     Encoder.WriteByte(this.binaryWriter, (byte) flags, false);
                     if (flags.HasFlag(DictionaryFlags.Typed))
                     {
-                        this.WriteType(type);
+                        this.WriteType(type, null);
                     }
 
                     Encoder.WriteTag(this.binaryWriter, keyEncoderInfo.Tag);
@@ -1238,7 +1245,7 @@ namespace Hypertable.Persistence.Serialization
                 Encoder.WriteByte(this.binaryWriter, (byte) flags, false);
                 if (flags.HasFlag(DictionaryFlags.Typed))
                 {
-                    this.WriteType(type);
+                    this.WriteType(type, null);
                 }
 
                 Encoder.WriteTag(this.binaryWriter, valueEncoderInfo.Tag);
@@ -1296,7 +1303,7 @@ namespace Hypertable.Persistence.Serialization
                 Encoder.WriteByte(this.binaryWriter, (byte) flags, false);
                 if (flags.HasFlag(DictionaryFlags.Typed))
                 {
-                    this.WriteType(type);
+                    this.WriteType(type, null);
                 }
 
                 Encoder.WriteCount(this.binaryWriter, value.Count);
@@ -1348,7 +1355,7 @@ namespace Hypertable.Persistence.Serialization
 
                     if (flags.HasFlag(CollectionFlags.Typed))
                     {
-                        this.WriteType(type);
+                        this.WriteType(type, null);
                     }
 
                     Encoder.WriteTag(this.binaryWriter, encoderInfo.Tag);
@@ -1406,7 +1413,7 @@ namespace Hypertable.Persistence.Serialization
                 Encoder.WriteByte(this.binaryWriter, (byte) flags, false);
                 if (flags.HasFlag(CollectionFlags.Typed))
                 {
-                    this.WriteType(type);
+                    this.WriteType(type, null);
                 }
 
                 Encoder.WriteCount(this.binaryWriter, (int) inspector.Enumerable.Count(value));
@@ -1573,7 +1580,7 @@ namespace Hypertable.Persistence.Serialization
         /// </param>
         private void WriteType(BinaryWriter bw, object value, bool writeTag)
         {
-            Encoder.WriteType(bw, (Type) value, this.configuration, writeTag);
+            Encoder.WriteType(bw, (Type) value, null, this.configuration, writeTag);
         }
 
         /// <summary>
