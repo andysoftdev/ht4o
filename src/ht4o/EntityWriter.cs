@@ -286,11 +286,6 @@ namespace Hypertable.Persistence
                                     this.entityReference.TableName);
                             }
 
-                            if (this.reviewKey != null)
-                            {
-                                this.reviewKey(entity, this.key);
-                            }
-
                             //// TODO verbosity?
                             //// Logging.TraceEvent(TraceEventType.Verbose, () => string.Format(CultureInfo.InvariantCulture, @"Set {0}@{1}", this.tableMutator.Key, this.key));
                             this.tableMutator.Set(this.key, value);
@@ -361,6 +356,11 @@ namespace Hypertable.Persistence
                     case Behaviors.CreateNew:
                         this.key = er.GetKeyFromEntity(e, out this.newEntity);
                         break;
+                }
+
+                if (this.reviewKey != null)
+                {
+                    this.reviewKey(e, this.key);
                 }
 
                 return this.key;
