@@ -389,63 +389,6 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
-        ///     Determine if the type from the tag specified.
-        /// </summary>
-        /// <param name="tag">
-        ///     The type tag.
-        /// </param>
-        /// <returns>
-        ///     The type or typeof(object).
-        /// </returns>
-        internal static Type TypeFromTag(Tags tag)
-        {
-            tag &= ~Tags.Array;
-            switch (tag)
-            {
-                case Tags.SByte:
-                    return typeof(sbyte);
-                case Tags.Byte:
-                    return typeof(byte);
-                case Tags.Short:
-                    return typeof(short);
-                case Tags.UShort:
-                    return typeof(ushort);
-                case Tags.Int:
-                    return typeof(int);
-                case Tags.UInt:
-                    return typeof(uint);
-                case Tags.Long:
-                    return typeof(long);
-                case Tags.ULong:
-                    return typeof(ulong);
-                case Tags.Bool:
-                    return typeof(bool);
-                case Tags.Char:
-                    return typeof(char);
-                case Tags.Float:
-                    return typeof(float);
-                case Tags.Double:
-                    return typeof(double);
-                case Tags.Decimal:
-                    return typeof(decimal);
-                case Tags.DateTime:
-                    return typeof(DateTime);
-                case Tags.DateTimeOffset:
-                    return typeof(DateTimeOffset);
-                case Tags.String:
-                    return typeof(string);
-                case Tags.Guid:
-                    return typeof(Guid);
-                case Tags.Type:
-                    return typeof(Type).GetType();
-                case Tags.Uri:
-                    return typeof(Uri);
-            }
-
-            return typeof(object);
-        }
-
-        /// <summary>
         ///     Encodes the object specified.
         /// </summary>
         /// <param name="encoderInfo">

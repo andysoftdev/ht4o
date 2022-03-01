@@ -1137,6 +1137,11 @@ namespace Hypertable.Persistence.Test.Serialization
             #endregion
         }
 
+        internal class ObjectM
+        {
+            public object Item { get; set; }
+        }
+
         [Serializable]
         internal class ObjectSerializableA
         {
@@ -1341,6 +1346,31 @@ namespace Hypertable.Persistence.Test.Serialization
                 var a = new[] { "a", "b", "c", "d" };
                 var b = Serializer.ToByteArray(a);
                 Assert.IsNotNull(b);
+                var d = Deserializer.FromByteArray<object>(b);
+                Assert.IsNotNull(d);
+                Assert.IsInstanceOfType(d, typeof(string[]));
+                var da = (string[])d;
+                Assert.IsTrue(da.Length == 4);
+                Assert.AreEqual(da[0], "a");
+                Assert.AreEqual(da[1], "b");
+                Assert.AreEqual(da[2], "c");
+                Assert.AreEqual(da[3], "d");
+            }
+
+            {
+                var a = new ObjectM { Item = new[] { "a", "b", "c", "d" } };
+                var b = Serializer.ToByteArray(a);
+                Assert.IsNotNull(b);
+                var d = Deserializer.FromByteArray<ObjectM>(b);
+                Assert.IsNotNull(d);
+                Assert.IsInstanceOfType(d, typeof(ObjectM));
+                Assert.IsInstanceOfType(d.Item, typeof(string[]));
+            }
+
+            {
+                var a = new[] { "a", "b", "c", "d" };
+                var b = Serializer.ToByteArray(a);
+                Assert.IsNotNull(b);
                 var d = Deserializer.FromByteArray<object[]>(b);
                 Assert.IsNotNull(d);
                 Assert.IsInstanceOfType(d, typeof(object[]));
@@ -1416,6 +1446,7 @@ namespace Hypertable.Persistence.Test.Serialization
                         var binaryReader = deserializer.BinaryReader;
                         return new CustomTypeA { X = Decoder.ReadDouble(binaryReader), Y = Decoder.ReadInt(binaryReader), Z = Decoder.ReadLong(binaryReader) };
                     });
+
             {
                 var sA = new CustomTypeA { X = 1.9, Y = 234, Z = 35354634635L };
                 var b = Serializer.ToByteArray(sA);
@@ -1424,10 +1455,29 @@ namespace Hypertable.Persistence.Test.Serialization
             }
 
             {
+                var sA = new CustomTypeA { X = 1.9, Y = 234, Z = 35354634635L };
+                var b = Serializer.ToByteArray(sA);
+                Assert.IsNotNull(b);
+                var d = Deserializer.FromByteArray<object>(b);
+                Assert.IsInstanceOfType(d, typeof(CustomTypeA));
+                sA.AssertIsEqualCustomTypeA((CustomTypeA)d);
+            }
+
+            {
                 var av = new[] { new CustomTypeA { X = 1.9, Y = 234545, Z = 3545764535L }, new CustomTypeA { X = 2.9, Y = 5345, Z = 457535 } };
                 var b = Serializer.ToByteArray(av);
                 Assert.IsNotNull(b);
                 var avr = Deserializer.FromByteArray<CustomTypeA[]>(b);
+                Assert.IsTrue(Equatable.AreEqual((object)av, avr));
+            }
+
+            {
+                var av = new[] { new CustomTypeA { X = 1.9, Y = 234545, Z = 3545764535L }, new CustomTypeA { X = 2.9, Y = 5345, Z = 457535 } };
+                var b = Serializer.ToByteArray(av);
+                Assert.IsNotNull(b);
+                var d = Deserializer.FromByteArray<object>(b);
+                Assert.IsInstanceOfType(d, typeof(CustomTypeA[]));
+                var avr = (CustomTypeA[])d;
                 Assert.IsTrue(Equatable.AreEqual((object)av, avr));
             }
 
@@ -2275,7 +2325,14 @@ namespace Hypertable.Persistence.Test.Serialization
             Assert.IsNotNull(b);
             Assert.IsTrue(Deserializer.FromByteArray<double>(b) == 5.0);
 
-            //// TODO decimal
+            b = Serializer.ToByteArray(5.1111m);
+            Assert.IsNotNull(b);
+            Assert.IsTrue(Deserializer.FromByteArray<decimal>(b) == 5.1111m);
+
+            b = Serializer.ToByteArray(-5.1111m);
+            Assert.IsNotNull(b);
+            Assert.IsTrue(Deserializer.FromByteArray<decimal>(b) == -5.1111m);
+
             b = Serializer.ToByteArray(string.Empty);
             Assert.IsNotNull(b);
             Assert.IsTrue(Deserializer.FromByteArray<string>(b) == string.Empty);

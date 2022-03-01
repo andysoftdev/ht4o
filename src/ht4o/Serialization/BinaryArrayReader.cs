@@ -284,16 +284,15 @@ namespace Hypertable.Persistence.Serialization
                           | ((int) this.ptr[7] << 24);
                 var hi = ((int) this.ptr[8]) | ((int) this.ptr[9] << 8) | ((int) this.ptr[10] << 16)
                          | ((int) this.ptr[11] << 24);
-                var flags = ((int) this.ptr[12]) | ((int) this.ptr[13] << 8) | ((int) this.ptr[14] << 16)
-                            | ((int) this.ptr[15] << 24);
+
+                var sign = (this.ptr[15] & 0x80) > 0;
+                var scale = (byte)(this.ptr[14] & 0x7f);
 
                 this.ptr += 16;
 
                 try
                 {
-                    const int SignMask = unchecked((int) 0x80000000);
-                    const int ScaleShift = 16;
-                    return new Decimal(lo, mid, hi, (flags & SignMask) > 0, (byte) (flags >> ScaleShift));
+                    return new Decimal(lo, mid, hi, sign, scale);
                 }
                 catch (ArgumentException)
                 {

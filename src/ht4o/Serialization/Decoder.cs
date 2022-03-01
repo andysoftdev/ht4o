@@ -615,6 +615,17 @@ namespace Hypertable.Persistence.Serialization
         }
 
         /// <summary>
+        /// Attempts to get the type associated with the tag.
+        /// </summary>
+        /// <param name="tag">The tag.</param>
+        /// <param name="type">The type.</param>
+        /// <returns><c>true</c> if the type exists for the tag specified, otherwise <c>false</c>.</returns>
+        internal static bool TryGetType(Tags tag, out Type type)
+        {
+            return TypeCodes.TryGetValue((int)tag, out type);
+        }
+
+        /// <summary>
         ///     Attempts to read a value from the binary reader associated with the tag.
         /// </summary>
         /// <param name="binaryReader">

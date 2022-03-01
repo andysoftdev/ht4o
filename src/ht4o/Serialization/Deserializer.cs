@@ -727,7 +727,7 @@ namespace Hypertable.Persistence.Serialization
             {
                 if (destinationType == typeof(object))
                 {
-                    destinationType = Serializer.TypeFromTag(tag);
+                    destinationType = Deserializer.TypeFromTag(tag);
                 }
 
                 switch (tag)
@@ -877,7 +877,7 @@ namespace Hypertable.Persistence.Serialization
             {
                 var elementType = destinationType.IsArray
                     ? destinationType.GetElementType()
-                    : Serializer.TypeFromTag(tag);
+                    : Deserializer.TypeFromTag(tag);
                 var hasElementTag = (rankAndFlags & (byte) ArrayFlags.ValueTagged) > 0
                                     || ((rankAndFlags & (byte) ArrayFlags.ValueNotTagged) == 0 &&
                                         LegacyHasElementTag(tag, elementType));
@@ -1121,8 +1121,8 @@ namespace Hypertable.Persistence.Serialization
             if (destinationType == typeof(object))
             {
                 destinationType = flags.HasFlag(CollectionFlags.Set)
-                    ? typeof(HashSet<>).MakeGenericType(Serializer.TypeFromTag(tag))
-                    : typeof(List<>).MakeGenericType(Serializer.TypeFromTag(tag));
+                    ? typeof(HashSet<>).MakeGenericType(Deserializer.TypeFromTag(tag))
+                    : typeof(List<>).MakeGenericType(Deserializer.TypeFromTag(tag));
             }
 
             var inspector = InspectorForEnumerable(destinationType);
@@ -1230,12 +1230,12 @@ namespace Hypertable.Persistence.Serialization
             }
 
             var tagKey = flags.HasFlag(DictionaryFlags.KeyTypeTagged) ? Decoder.ReadTag(this.binaryReader) : Tags.Null;
-            var keyType = Serializer.TypeFromTag(tagKey);
+            var keyType = Deserializer.TypeFromTag(tagKey);
 
             var tagValue = flags.HasFlag(DictionaryFlags.ValueTypeTagged)
                 ? Decoder.ReadTag(this.binaryReader)
                 : Tags.Null;
-            var valueType = Serializer.TypeFromTag(tagValue);
+            var valueType = Deserializer.TypeFromTag(tagValue);
 
             if (destinationType == typeof(object))
             {
@@ -1825,6 +1825,63 @@ namespace Hypertable.Persistence.Serialization
             return tag == Tags.Object || tag == Tags.Int || tag == Tags.UInt || tag == Tags.Long || tag == Tags.ULong ||
                    tag == Tags.Float || tag == Tags.Double
                    || (tag >= Tags.FirstCustomType && !type.IsSealed);
+        }
+
+        /// <summary>
+        ///     Determine if the type from the tag specified.
+        /// </summary>
+        /// <param name="tag">
+        ///     The type tag.
+        /// </param>
+        /// <returns>
+        ///     The type or typeof(object).
+        /// </returns>
+        private static Type TypeFromTag(Tags tag)
+        {
+            tag &= ~Tags.Array;
+            switch (tag)
+            {
+                case Tags.SByte:
+                    return typeof(sbyte);
+                case Tags.Byte:
+                    return typeof(byte);
+                case Tags.Short:
+                    return typeof(short);
+                case Tags.UShort:
+                    return typeof(ushort);
+                case Tags.Int:
+                    return typeof(int);
+                case Tags.UInt:
+                    return typeof(uint);
+                case Tags.Long:
+                    return typeof(long);
+                case Tags.ULong:
+                    return typeof(ulong);
+                case Tags.Bool:
+                    return typeof(bool);
+                case Tags.Char:
+                    return typeof(char);
+                case Tags.Float:
+                    return typeof(float);
+                case Tags.Double:
+                    return typeof(double);
+                case Tags.Decimal:
+                    return typeof(decimal);
+                case Tags.DateTime:
+                    return typeof(DateTime);
+                case Tags.DateTimeOffset:
+                    return typeof(DateTimeOffset);
+                case Tags.String:
+                    return typeof(string);
+                case Tags.Guid:
+                    return typeof(Guid);
+                case Tags.Type:
+                    return typeof(Type).GetType();
+                case Tags.Uri:
+                    return typeof(Uri);
+            }
+
+            return Decoder.TryGetType(tag, out var type) ? type : typeof(object);
         }
 
         /// <summary>
