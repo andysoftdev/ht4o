@@ -8,7 +8,6 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Hypertable.Persistence</RootNamespace>
     <AssemblyName>ht4o</AssemblyName>
-    <PlatformToolset Condition="'$(PlatformToolset)' == ''">v140</PlatformToolset>
     <TargetFrameworkVersion Condition="'$(TargetFrameworkVersion)' == ''">v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -83,7 +82,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ht4n, Culture=neutral, PublicKeyToken=09a4dd7a5db0efca, processorArchitecture=x86">
+    <Reference Include="ht4n">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(Ht4n)</HintPath>
     </Reference>
