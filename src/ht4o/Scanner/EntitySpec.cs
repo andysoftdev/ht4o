@@ -22,6 +22,7 @@
 namespace Hypertable.Persistence.Scanner
 {
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     ///     The entity specification.
@@ -33,7 +34,7 @@ namespace Hypertable.Persistence.Scanner
         /// <summary>
         ///     The key comparer.
         /// </summary>
-        private static readonly KeyComparer KeyComparer = new KeyComparer();
+        private static readonly IEqualityComparer<Key> KeyComparer = PersistenceConfiguration.UseUnqualifiedKeys ? (IEqualityComparer<Key>)new RowComparer() : new KeyComparer();
 
         #endregion
 

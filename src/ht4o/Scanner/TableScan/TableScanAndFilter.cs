@@ -186,18 +186,7 @@ namespace Hypertable.Persistence.Scanner.TableScan
         /// <value>
         ///     <c>true</c> if there is something to scan, otherwise <c>false</c>.
         /// </value>
-        public override bool? IsEmpty
-        {
-            get
-            {
-                if (this.unqualifiedKeys.Count == 0)
-                {
-                    return this.keys.Count == 0;
-                }
-
-                return null;
-            }
-        }
+        public override bool? IsEmpty => this.unqualifiedKeys.Count == 0 && this.keys.Count == 0;
 
         #endregion
 
@@ -217,12 +206,15 @@ namespace Hypertable.Persistence.Scanner.TableScan
         /// </returns>
         public override bool TryRemoveScanTarget(Key key, out EntityScanTarget entityScanTarget)
         {
-            if (this.keys.TryRemove(key, out entityScanTarget))
+            if (!PersistenceConfiguration.UseUnqualifiedKeys)
             {
-                return true;
+                if (this.keys.TryRemove(key, out entityScanTarget))
+                {
+                    return true;
+                }
             }
 
-            return this.unqualifiedKeys.TryGetValue(key, out entityScanTarget);
+            return this.unqualifiedKeys.TryRemove(key, out entityScanTarget);
         }
 
         #endregion
@@ -251,7 +243,7 @@ namespace Hypertable.Persistence.Scanner.TableScan
 
             var added = false;
 
-            if (string.IsNullOrEmpty(entityScanTarget.Key.ColumnFamily))
+            if (PersistenceConfiguration.UseUnqualifiedKeys || string.IsNullOrEmpty(entityScanTarget.Key.ColumnFamily))
             {
                 entityScanTargetExisting = this.unqualifiedKeys.GetOrAdd(
                     entityScanTarget.Key,
@@ -346,12 +338,15 @@ namespace Hypertable.Persistence.Scanner.TableScan
         /// </returns>
         public override bool TryRemoveScanTarget(Key key, out EntityScanTarget entityScanTarget)
         {
-            if (this.keys.TryRemove(key, out entityScanTarget))
+            if (!PersistenceConfiguration.UseUnqualifiedKeys)
             {
-                return true;
+                if (this.keys.TryRemove(key, out entityScanTarget))
+                {
+                    return true;
+                }
             }
 
-            return this.unqualifiedKeys.TryGetValue(key, out entityScanTarget);
+            return this.unqualifiedKeys.TryRemove(key, out entityScanTarget);
         }
 
         #endregion
@@ -380,7 +375,7 @@ namespace Hypertable.Persistence.Scanner.TableScan
 
             var added = false;
 
-            if (string.IsNullOrEmpty(entityScanTarget.Key.ColumnFamily))
+            if (PersistenceConfiguration.UseUnqualifiedKeys || string.IsNullOrEmpty(entityScanTarget.Key.ColumnFamily))
             {
                 entityScanTargetExisting = this.unqualifiedKeys.GetOrAdd(
                     entityScanTarget.Key,

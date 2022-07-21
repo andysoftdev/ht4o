@@ -130,6 +130,14 @@ namespace Hypertable.Persistence
         #region Public Properties
 
         /// <summary>
+        ///     Gets or sets a value indicating whether to use unqualified keys or not.
+        /// </summary>
+        /// <value>
+        ///     If <c>true</c> the persistence uses unqualified keys, otherwise <c>false</c>.
+        /// </value>
+        static public bool UseUnqualifiedKeys { get; set; }
+
+        /// <summary>
         ///     Gets binding context.
         /// </summary>
         /// <value>
