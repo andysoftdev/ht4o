@@ -1103,7 +1103,7 @@ namespace Hypertable.Persistence.Serialization
             if (destinationType.IsArray)
             {
                 var elementType = destinationType.GetElementType();
-                var array = Array.CreateInstance(destinationType.GetElementType(), count);
+                var array = Array.CreateInstance(elementType, count);
                 this.objectRefs.Add(array);
                 for (var index = 0; index < count; ++index)
                 {
@@ -1842,46 +1842,69 @@ namespace Hypertable.Persistence.Serialization
             switch (tag)
             {
                 case Tags.SByte:
+                case Tags.SByte0:
                     return typeof(sbyte);
                 case Tags.Byte:
+                case Tags.Byte0:
                     return typeof(byte);
                 case Tags.Short:
+                case Tags.Short0:
                     return typeof(short);
                 case Tags.UShort:
+                case Tags.UShort0:
                     return typeof(ushort);
                 case Tags.Int:
+                case Tags.Int0:
                     return typeof(int);
                 case Tags.UInt:
+                case Tags.UInt0:
                     return typeof(uint);
                 case Tags.Long:
+                case Tags.Long0:
                     return typeof(long);
                 case Tags.ULong:
+                case Tags.ULong0:
                     return typeof(ulong);
                 case Tags.Bool:
+                case Tags.True:
+                case Tags.False:
                     return typeof(bool);
                 case Tags.Char:
                     return typeof(char);
                 case Tags.Float:
+                case Tags.Float0:
+                case Tags.FloatNaN:
                     return typeof(float);
                 case Tags.Double:
+                case Tags.Double0:
+                case Tags.DoubleNaN:
                     return typeof(double);
                 case Tags.Decimal:
                     return typeof(decimal);
                 case Tags.DateTime:
+                case Tags.DateTime0:
                     return typeof(DateTime);
                 case Tags.DateTimeOffset:
+                case Tags.DateTimeOffset0:
                     return typeof(DateTimeOffset);
+                case Tags.TimeSpan:
+                    return typeof(TimeSpan);
                 case Tags.String:
+                case Tags.StringEmpty:
                     return typeof(string);
                 case Tags.Guid:
                     return typeof(Guid);
                 case Tags.Type:
+                case Tags.TypeCode:
                     return typeof(Type).GetType();
                 case Tags.Uri:
                     return typeof(Uri);
+                case Tags.Null:
+                case Tags.Object:
+                    return typeof(object);
             }
 
-            return Decoder.TryGetType(tag, out var type) ? type : typeof(object);
+            return tag > Tags.FirstCustomType && Decoder.TryGetType(tag, out var type) ? type : typeof(object);
         }
 
         /// <summary>
