@@ -1422,6 +1422,17 @@ namespace Hypertable.Persistence.Test.Serialization
                 Assert.AreEqual(d[2], "7");
                 Assert.AreEqual(d[3], "77.77");
             }
+
+            {
+                var a = new StructA[] { new StructA(), new StructA() };
+                var b = Serializer.ToByteArray(a);
+                Assert.IsNotNull(b);
+                var d = Deserializer.FromByteArray<object>(b);
+                Assert.IsNotNull(d);
+                Assert.IsInstanceOfType(d, typeof(object[]));
+                var da = (object[])d;
+                Assert.IsTrue(da.Length == 2);
+            }
         }
 
         /// <summary>
