@@ -836,8 +836,11 @@ namespace Hypertable.Persistence
         /// </returns>
         internal ITableMutator GetTableMutator(string ns, string tableName)
         {
-            return this.tableMutators.GetOrAdd(this.GetFullyQualifiedTableName(ns, tableName),
+            lock (this.factoryContext.SyncRoot)
+            {
+                return this.tableMutators.GetOrAdd(this.GetFullyQualifiedTableName(ns, tableName),
                 s => this.GetTable(ns, tableName).CreateMutator(this.configuration.MutatorSpec));
+            }
         }
 
         /// <summary>

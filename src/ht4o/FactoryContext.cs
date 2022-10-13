@@ -23,7 +23,11 @@ namespace Hypertable.Persistence
 {
     using System;
     using System.Collections.Generic;
-    using Hypertable.Persistence.Collections.Concurrent;
+
+    using NamespaceDictionary =
+        Hypertable.Persistence.Collections.Concurrent.ConcurrentStringDictionary<INamespace>;
+    using TableDictionary =
+        Hypertable.Persistence.Collections.Concurrent.ConcurrentStringDictionary<ITable>;
 
     /// <summary>
     ///     The entity manager factory context.
@@ -55,13 +59,12 @@ namespace Hypertable.Persistence
         /// <summary>
         ///     Maps namespace names to database namespace instances.
         /// </summary>
-        private readonly ConcurrentStringDictionary<INamespace> namespaces =
-            new ConcurrentStringDictionary<INamespace>();
+        private readonly NamespaceDictionary namespaces = new NamespaceDictionary();
 
         /// <summary>
         ///     Maps full table names to database table instances.
         /// </summary>
-        private readonly ConcurrentStringDictionary<ITable> tables = new ConcurrentStringDictionary<ITable>();
+        private readonly TableDictionary tables = new TableDictionary();
 
         /// <summary>
         ///     Indicating whether this factory context has been disposed.
@@ -182,6 +185,14 @@ namespace Hypertable.Persistence
                 return this.GetNamespace(this.configuration.RootNamespace);
             }
         }
+
+        /// <summary>
+        ///     Gets the synchronization object.
+        /// </summary>
+        /// <value>
+        ///     The synchronization object.
+        /// </value>
+        internal object SyncRoot { get; } = new object();
 
         #endregion
 
@@ -311,9 +322,12 @@ namespace Hypertable.Persistence
         {
             this.ThrowIfDisposed();
 
-            return this.tables.GetOrAdd(
-                this.GetFullyQualifiedTableName(ns, tableName),
-                fullyQualifiedTableName => this.GetNamespace(ns).OpenTable(tableName, OpenDispositions.Force));
+            lock (this.SyncRoot)
+            {
+                return this.tables.GetOrAdd(
+                    this.GetFullyQualifiedTableName(ns, tableName),
+                    fullyQualifiedTableName => this.GetNamespace(ns).OpenTable(tableName, OpenDispositions.Force));
+            }
         }
 
         /// <summary>
