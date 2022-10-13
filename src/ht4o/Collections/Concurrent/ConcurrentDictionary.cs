@@ -58,8 +58,7 @@ namespace Hypertable.Persistence.Collections.Concurrent
         #endregion
     }
 
-    internal class
-        ConcurrentDictionary<TKey, TValue> : ConcurrentDictionary<TKey, TValue, Collections.EqualityComparer<TKey>>
+    internal class ConcurrentDictionary<TKey, TValue> : ConcurrentDictionary<TKey, TValue, Collections.EqualityComparer<TKey>>
     {
         #region Constructors and Destructors
 
