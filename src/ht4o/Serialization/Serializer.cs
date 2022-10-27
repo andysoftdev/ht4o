@@ -446,17 +446,23 @@ namespace Hypertable.Persistence.Serialization
         {
             var inspector = Inspector.InspectorForType(type);
 
-            if (inspector.IsEnum)
-            {
-                ////TODO needs to be declared as enum - deserialize to object!!!!
-                type = inspector.EnumType;
-            }
-
             EncoderInfo encoderInfo;
             if (this.TryGetEncoder(type, out encoderInfo))
             {
                 this.Encode(encoderInfo, value, true);
                 return;
+            }
+
+            if (inspector.IsEnum)
+            {
+                ////TODO needs to be declared as enum - deserialize to object!!!!
+                type = inspector.EnumType;
+
+                if (this.TryGetEncoder(type, out encoderInfo))
+                {
+                    this.Encode(encoderInfo, value, true);
+                    return;
+                }
             }
 
             if (inspector.IsArray)

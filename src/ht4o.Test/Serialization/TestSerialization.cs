@@ -51,9 +51,18 @@ namespace Hypertable.Persistence.Test.Serialization
 
         internal enum Numbers
         {
-            One, 
+            One,
 
-            Two, 
+            Two,
+
+            Three
+        }
+
+        internal enum CustomNumbers
+        {
+            One,
+
+            Two,
 
             Three
         }
@@ -1442,8 +1451,8 @@ namespace Hypertable.Persistence.Test.Serialization
         public void TestCustomTypes()
         {
             Encoder.Register(
-                0, 
-                typeof(CustomTypeA), 
+                0,
+                typeof(CustomTypeA),
                 (serializer, any) =>
                     {
                         var binaryWriter = serializer.BinaryWriter;
@@ -1457,6 +1466,23 @@ namespace Hypertable.Persistence.Test.Serialization
                         var binaryReader = deserializer.BinaryReader;
                         return new CustomTypeA { X = Decoder.ReadDouble(binaryReader), Y = Decoder.ReadInt(binaryReader), Z = Decoder.ReadLong(binaryReader) };
                     });
+
+
+
+            Encoder.Register(
+                1,
+                typeof(CustomNumbers),
+                (serializer, any) =>
+                {
+                    var bw = serializer.BinaryWriter;
+                    var e = (CustomNumbers)any;
+                    Encoder.WriteByte(bw, (byte)e, false);
+                },
+                deserializer =>
+                {
+                    var br = deserializer.BinaryReader;
+                    return (CustomNumbers)Decoder.ReadByte(br);
+                });
 
             {
                 var sA = new CustomTypeA { X = 1.9, Y = 234, Z = 35354634635L };
@@ -1497,6 +1523,22 @@ namespace Hypertable.Persistence.Test.Serialization
                 var b = Serializer.ToByteArray(av);
                 Assert.IsNotNull(b);
                 var avr = Deserializer.FromByteArray<List<CustomTypeA>>(b);
+                Assert.IsTrue(Equatable.AreEqual((object)av, avr));
+            }
+
+            {
+                var b = Serializer.ToByteArray(CustomNumbers.Three);
+                Assert.IsNotNull(b);
+                Assert.AreEqual(CustomNumbers.Three, Deserializer.FromByteArray<object>(b));
+            }
+
+            {
+                var av = new[] { CustomNumbers.One, CustomNumbers.Three };
+                var b = Serializer.ToByteArray(av);
+                Assert.IsNotNull(b);
+                var d = Deserializer.FromByteArray<object>(b);
+                Assert.IsInstanceOfType(d, typeof(CustomNumbers[]));
+                var avr = (CustomNumbers[])d;
                 Assert.IsTrue(Equatable.AreEqual((object)av, avr));
             }
         }
@@ -1739,15 +1781,19 @@ namespace Hypertable.Persistence.Test.Serialization
         {
             var b = Serializer.ToByteArray(Numbers.One);
             Assert.IsNotNull(b);
-            Assert.IsTrue(Deserializer.FromByteArray<Numbers>(b) == Numbers.One);
+            Assert.AreEqual(Numbers.One, Deserializer.FromByteArray<Numbers>(b));
 
             b = Serializer.ToByteArray(Numbers.Two);
             Assert.IsNotNull(b);
-            Assert.IsTrue(Deserializer.FromByteArray<Numbers>(b) == Numbers.Two);
+            Assert.AreEqual(Numbers.Two, Deserializer.FromByteArray<Numbers>(b));
 
             b = Serializer.ToByteArray(Numbers.Three);
             Assert.IsNotNull(b);
-            Assert.IsTrue(Deserializer.FromByteArray<Numbers>(b) == Numbers.Three);
+            Assert.AreEqual(Numbers.Three, Deserializer.FromByteArray<Numbers>(b));
+
+            b = Serializer.ToByteArray(Numbers.Three);
+            Assert.IsNotNull(b);
+            Assert.AreEqual(2, Deserializer.FromByteArray<object>(b));
         }
 
         /// <summary>

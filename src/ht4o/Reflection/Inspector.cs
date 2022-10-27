@@ -187,7 +187,7 @@ namespace Hypertable.Persistence.Reflection
         /// <value>
         ///     <c>true</c> if the inspector has properties, otherwise <c>false</c>.
         /// </value>
-        internal bool HasProperties => this.inspectedProperties.Count > 0;
+        internal bool HasProperties => this.inspectedProperties?.Count > 0;
 
         /// <summary>
         ///     Gets a value indicating whether the inspected type has a serialization handlers.
