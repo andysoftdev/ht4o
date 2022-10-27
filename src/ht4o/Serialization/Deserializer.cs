@@ -1904,7 +1904,7 @@ namespace Hypertable.Persistence.Serialization
                     return typeof(object);
             }
 
-            return tag > Tags.FirstCustomType && Decoder.TryGetType(tag, out var type) ? type : typeof(object);
+            return tag >= Tags.FirstCustomType && Decoder.TryGetType(tag, out var type) ? type : typeof(object);
         }
 
         /// <summary>
