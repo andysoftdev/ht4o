@@ -22,6 +22,8 @@
 namespace Hypertable.Persistence.Reflection
 {
     using System;
+    using System.Collections;
+    using System.Linq;
     using System.Reflection;
 
     /// <summary>
@@ -49,7 +51,18 @@ namespace Hypertable.Persistence.Reflection
         internal InspectedEnumerable(Type type)
         {
             this.InspectedType = type;
-            this.ElementType = type.IsGenericType ? type.GetGenericArguments()[0] : typeof(object);
+
+            if (type.IsGenericType && type.GetGenericArguments().Length == 1)
+            {
+                this.ElementType = type.GetGenericArguments()[0];
+            }
+            else
+            {
+                this.ElementType = type.GetInterfaces()
+                    .Where(t => typeof(IEnumerable).IsAssignableFrom(t) && t.IsGenericType && t.GetGenericArguments().Length == 1)
+                    .FirstOrDefault()?.GetGenericArguments()[0] ?? typeof(object);
+            }
+
             try
             {
                 this.Add = this.CreateAddMethod(type);
@@ -213,9 +226,13 @@ namespace Hypertable.Persistence.Reflection
         private Action<object, object> CreateAddMethod(Type type)
         {
             var methodInfo = type.GetMethod(
+                "AddInternal",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy,
+                null, new[] { this.ElementType }, null) ??
+                type.GetMethod(
                 "Add",
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy,
-                null, new[] {this.ElementType}, null);
+                null, new[] { this.ElementType }, null);
 
             if (methodInfo == null)
             {

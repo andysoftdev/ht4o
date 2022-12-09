@@ -129,7 +129,6 @@ namespace Hypertable.Persistence.Reflection
                 this.inspectedProperties = ReflectionExtensions.HasAttribute<SerializableAttribute>(type)
                     ? InspectFields(type)
                     : InspectProperties(type);
-                this.inspectedPropertiesPositional = this.inspectedProperties.ToArray();
 
                 if (typeof(IDictionary).IsAssignableFrom(type))
                 {
@@ -138,6 +137,10 @@ namespace Hypertable.Persistence.Reflection
                 else if (typeof(IEnumerable).IsAssignableFrom(type))
                 {
                     this.enumerable = InspectEnumerable(type);
+                    if (this.enumerable != null && type.Namespace.StartsWith("System.Collections"))
+                    {
+                        this.inspectedProperties.Clear();
+                    }
                 }
                 else if (type.HasInterface(typeof(ISerializable)))
                 {
@@ -147,6 +150,8 @@ namespace Hypertable.Persistence.Reflection
                         this.inspectedProperties.Clear();
                     }
                 }
+
+                this.inspectedPropertiesPositional = this.inspectedProperties.ToArray();
 
                 this.OnSerializing = CreateHandler<OnSerializingAttribute>(type);
                 this.OnSerialized = CreateHandler<OnSerializedAttribute>(type);

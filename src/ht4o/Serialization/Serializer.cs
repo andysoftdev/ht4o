@@ -48,6 +48,8 @@ namespace Hypertable.Persistence.Serialization
         private static readonly ConcurrentTypeDictionary<TypeSchema> TypeSchemaDictionary =
             new ConcurrentTypeDictionary<TypeSchema>();
 
+        private static readonly Type LinqEnumerableType = typeof(System.Linq.Enumerable);
+
         #endregion
 
         #region Fields
@@ -499,7 +501,7 @@ namespace Hypertable.Persistence.Serialization
             var enumerable = value as IEnumerable;
 
             ////TODO make better?
-            if (enumerable != null && (inspector.IsCollection || !inspector.HasProperties))
+            if (enumerable != null && !inspector.HasProperties && (inspector.IsCollection || type.DeclaringType == LinqEnumerableType))
             {
                 this.WriteEnumerable(inspector, serializeType, type, enumerable);
                 return;
