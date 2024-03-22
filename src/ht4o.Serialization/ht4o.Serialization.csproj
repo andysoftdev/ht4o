@@ -1,56 +1,33 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>Hypertable.Persistence</RootNamespace>
-    <AssemblyName>ht4o.Serialization</AssemblyName>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <PlatformToolset Condition="'$(PlatformToolset)' == ''">v140</PlatformToolset>
+    <RootNamespace>Hypertable.Persistence</RootNamespace>
+    <AssemblyTitle>ht4o.Serialization</AssemblyTitle>
+    <Company>ht4o.softdev.ch</Company>
+    <Product>ht4o.Serialization</Product>
+    <Description>Hypertable for Objects Serialization</Description>
+    <Copyright>Copyright © 2010-2024</Copyright>
+    <AssemblyVersion>0.9.8.11</AssemblyVersion>
+    <FileVersion>0.9.8.11</FileVersion>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <NoWarn>1587</NoWarn>
   </PropertyGroup>
-  
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\dist\$(PlatformToolset)\AnyCPU\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;HT4O_SERIALIZATION</DefineConstants>
-    <NoWarn>1587</NoWarn>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <RunCodeAnalysis>false</RunCodeAnalysis>
-    <CodeAnalysisLogFile>..\..\dist\$(PlatformToolset)\AnyCPU\Debug\ht4o.Serialization.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>..\..\ht4o.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
-    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
-    <DocumentationFile>..\..\dist\$(PlatformToolset)\AnyCPU\Debug\ht4o.Serialization.xml</DocumentationFile>
-    <Prefer32Bit>false</Prefer32Bit>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-  
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <OutputPath>..\..\dist\$(PlatformToolset)\AnyCPU\Release\</OutputPath>
-    <DefineConstants>TRACE;HT4O_SERIALIZATION</DefineConstants>
-    <Optimize>true</Optimize>
-    <NoWarn>1587</NoWarn>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <CodeAnalysisLogFile>..\..\dist\$(PlatformToolset)\AnyCPU\Release\ht4o.Serialization.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>ht4o.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
-    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
-    <DocumentationFile>..\..\dist\$(PlatformToolset)\AnyCPU\Release\ht4o.Serialization.xml</DocumentationFile>
-    <Prefer32Bit>false</Prefer32Bit>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>HT4O_SERIALIZATION</DefineConstants>
   </PropertyGroup>
-  
-  <ItemGroup>
-    <PackageReference Include="System.Buffers" Version="4.5.1" />
-    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.7.0" />
-  </ItemGroup>
+
   <ItemGroup>
     <Compile Include="..\ht4o\Attributes\IgnoreAttribute.cs" />
     <Compile Include="..\ht4o\Attributes\TransientAttribute.cs" />
@@ -112,4 +89,10 @@
     <Compile Include="..\ht4o\Serialization\TypeSchemaProperty.cs" />
     <Compile Include="..\ht4o\Serialization\WritableMemoryStream.cs" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Buffers" Version="4.5.1" />
+    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.7.0" />
+  </ItemGroup>
+
 </Project>

@@ -22,19 +22,6 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-#if X64
-[assembly: AssemblyTitle("ht4o.Test (x64)")]
-#else
-
-[assembly: AssemblyTitle("ht4o.Test (x86)")]
-#endif
-
-[assembly: AssemblyProduct("ht4o.Test")]
-[assembly: AssemblyDescription("Hypertable for objects tests")]
-[assembly: AssemblyCompany("ht4o.softdev.ch")]
-[assembly: AssemblyCopyright("Copyright © 2010-2016")]
-[assembly: AssemblyVersion("0.9.8.11")]
-[assembly: AssemblyFileVersion("0.9.8.11")]
 [assembly: ComVisible(false)]
 [assembly: Guid("4aa86b83-dda8-49d8-b4e3-04422e310355")]
 

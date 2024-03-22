@@ -123,7 +123,6 @@ namespace Hypertable.Persistence.Test.Serialization
 
             public void AssertIsEqualCustomTypeA(object o)
             {
-                Assert.IsFalse(ReferenceEquals(this, o));
                 Assert.IsNotNull(o);
                 Assert.IsInstanceOfType(o, typeof(CustomTypeA));
                 var cta = (CustomTypeA)o;

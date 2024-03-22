@@ -23,19 +23,6 @@ using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-#if X64
-[assembly: AssemblyTitle("ht4o (x64)")]
-#else
-
-[assembly: AssemblyTitle("ht4o (x86)")]
-#endif
-
-[assembly: AssemblyProduct("ht4o")]
-[assembly: AssemblyDescription("Hypertable for Objects")]
-[assembly: AssemblyCompany("ht4o.softdev.ch")]
-[assembly: AssemblyCopyright("Copyright © 2010-2016")]
-[assembly: AssemblyVersion("0.9.8.11")]
-[assembly: AssemblyFileVersion("0.9.8.11")]
 [assembly: CLSCompliant(true)]
 [assembly: ComVisible(false)]
 [assembly: Guid("a065c528-0e86-454d-85fb-93f98225a81a")]

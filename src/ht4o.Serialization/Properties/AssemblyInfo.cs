@@ -23,14 +23,6 @@ using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("ht4o serialization")]
-
-[assembly: AssemblyProduct("ht4o")]
-[assembly: AssemblyDescription("Hypertable for Objects")]
-[assembly: AssemblyCompany("ht4o.softdev.ch")]
-[assembly: AssemblyCopyright("Copyright © 2010-2016")]
-[assembly: AssemblyVersion("0.9.8.11")]
-[assembly: AssemblyFileVersion("0.9.8.11")]
 [assembly: CLSCompliant(true)]
 [assembly: ComVisible(false)]
 [assembly: Guid("2A106696-631B-495F-A27D-84A38D2D4493")]
